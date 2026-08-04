@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   AlertTriangleIcon,
   CheckIcon,
+  PaletteIcon,
   PlusIcon,
   RotateCcwIcon,
   SearchIcon,
@@ -19,6 +20,7 @@ import {
 '../../data/palettes';
 import { isValidHex, normalizeHex } from '../../utils/color';
 import { checkContrast, contrastFailures } from '../../utils/contrast';
+import { assignRoles, parseHexList } from '../../utils/palette';
 import type { Palette, ThemeColors } from '../../types/content';
 
 function PaletteCard({
@@ -86,6 +88,7 @@ export function ThemeEditor() {
   const { theme } = content;
   const [query, setQuery] = useState('');
   const [newName, setNewName] = useState('');
+  const [pasted, setPasted] = useState('');
   const [notice, setNotice] = useState<{text: string;warn?: boolean;} | null>(null);
 
   const customPalettes = useMemo(() => theme.customPalettes ?? [], [theme.customPalettes]);
@@ -111,6 +114,18 @@ export function ThemeEditor() {
       (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
     );
   }, [customPalettes, query]);
+
+  const pastedColors = useMemo(() => parseHexList(pasted), [pasted]);
+  const pastedRoles = useMemo(() => assignRoles(pastedColors), [pastedColors]);
+
+  function applyPasted() {
+    // A pasted set is not one of the saved palettes, so it has no id until saved.
+    updateTheme({ paletteId: '', colors: { ...pastedRoles } });
+    setNotice({
+      text: `Applied ${pastedColors.length} pasted colours. Name them below to save the palette.`
+    });
+    setPasted('');
+  }
 
   function selectPalette(palette: Palette) {
     updateTheme({ paletteId: palette.id, colors: { ...palette.colors } });
@@ -191,6 +206,77 @@ export function ThemeEditor() {
           </h3>
         </div>
 
+        {/* Paste a palette from anywhere — this is where colours come in, as opposed
+            to the name field below, which only names the six colours already set. */}
+        <div className="mt-3 rounded-md border border-slate-200 bg-slate-50/60 p-3">
+          <label className="block">
+            <span className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
+              Paste colours
+            </span>
+            <input
+              type="text"
+              value={pasted}
+              onChange={(e) => setPasted(e.target.value)}
+              placeholder="#D90000 #FFEA93 #8DB355 #000000"
+              className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm text-slate-900 outline-none placeholder:font-sans placeholder:text-slate-400 focus:border-emerald focus:ring-2 focus:ring-emerald/15" />
+
+          </label>
+          <p className="mt-1 text-xs text-slate-400">
+            Any number of hex codes, from Coolors, Adobe or anywhere else — spaces, commas or new
+            lines all work.
+          </p>
+
+          {pastedColors.length > 0 &&
+          <>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {pastedColors.map((hex) =>
+              <div key={hex} className="w-[4.5rem]">
+                    <span
+                  className="block h-12 w-full rounded-md border border-slate-200"
+                  style={{ backgroundColor: hex }} />
+
+                    <span className="mt-1 block text-center font-mono text-[10px] uppercase text-slate-500">
+                      {hex}
+                    </span>
+                  </div>
+              )}
+              </div>
+
+              <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+                  How they will be used
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  The site needs six specific roles, so colours are matched by lightness and nudged
+                  where needed to stay readable.
+                </p>
+                <ul className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  {COLOR_FIELDS.map((field) =>
+                <li key={field.key} className="flex items-center gap-2">
+                      <span
+                    className="h-5 w-5 shrink-0 rounded border border-slate-200"
+                    style={{ backgroundColor: pastedRoles[field.key] }} />
+
+                      <span className="truncate text-xs text-slate-600">{field.label}</span>
+                      <span className="ml-auto font-mono text-[10px] uppercase text-slate-400">
+                        {pastedRoles[field.key]}
+                      </span>
+                    </li>
+                )}
+                </ul>
+                <button
+                type="button"
+                onClick={applyPasted}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-emerald px-4 py-2 text-xs font-medium text-white hover:bg-emerald-deep">
+
+                  <PaletteIcon className="h-3.5 w-3.5" />
+                  Use these {pastedColors.length} colours
+                </button>
+              </div>
+            </>
+          }
+        </div>
+
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
           <input
             type="text"
@@ -215,10 +301,19 @@ export function ThemeEditor() {
             Save current colours
           </button>
         </div>
+        {/* The mistake this catches: pasting hex codes into the *name* box, which
+            only names the colours already set rather than importing new ones. */}
+        {parseHexList(newName).length > 0 ?
+        <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Those look like colours, not a name. Paste them into <strong>Paste colours</strong> above to
+            actually use them — this box only names the six colours that are already applied.
+          </p> :
+
         <p className="mt-2 text-xs text-slate-400">
-          Saves the six colours below as a reusable palette. Reusing a name updates that palette.
-          Your palettes are stored with your content, so they are available wherever you sign in.
-        </p>
+            Saves the six colours below as a reusable palette. Reusing a name updates that palette.
+            Your palettes are stored with your content, so they are available wherever you sign in.
+          </p>
+        }
 
         {customPalettes.length > 0 &&
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
