@@ -1,31 +1,6 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { CartContext, type CartContextValue, type CartLine } from './cart-context';
 import type { Product } from '../types/content';
-
-export interface CartLine {
-  id: string;
-  name: string;
-  metal: string;
-  price: string;
-  image: string;
-  qty: number;
-}
-
-interface CartContextValue {
-  lines: CartLine[];
-  wishlist: string[];
-  isOpen: boolean;
-  count: number;
-  totalLabel: string;
-  addItem: (product: Product, qty?: number) => void;
-  setQty: (id: string, qty: number) => void;
-  removeItem: (id: string) => void;
-  clear: () => void;
-  openCart: () => void;
-  closeCart: () => void;
-  toggleWishlist: (id: string) => void;
-}
-
-const CartContext = createContext<CartContextValue | null>(null);
 
 function priceToNumber(price: string): number {
   const digits = price.replace(/[^\d]/g, '');
@@ -116,8 +91,3 @@ export function CartProvider({ children }: {children: React.ReactNode;}) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-export function useCart(): CartContextValue {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart must be used inside a CartProvider');
-  return ctx;
-}

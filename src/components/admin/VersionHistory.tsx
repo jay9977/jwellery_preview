@@ -10,7 +10,7 @@ import {
   Trash2Icon,
   UploadIcon } from
 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import { deleteSnapshot, listSnapshots, saveSnapshot, type Snapshot } from '../../utils/snapshots';
 import { exportContent, importContent } from '../../utils/contentIO';
 import { isConnected } from '../../utils/backend';

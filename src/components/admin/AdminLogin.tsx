@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2Icon, LockIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { EyeIcon, EyeOffIcon, Loader2Icon, LockIcon } from 'lucide-react';
+import { useContent } from '../../hooks/useContent';
 import { isConnected } from '../../utils/backend';
 import { loginAdmin } from '../../utils/api';
 
@@ -18,6 +18,7 @@ export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo') 
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const connected = isConnected(backend);
   const demoAvailable = DEMO_PASSWORD.length > 0;
 
@@ -88,25 +89,49 @@ export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo') 
 
               </label>
           }
-            <label className="block">
-              <span className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
-                Password
-              </span>
-              <input
-              type="password"
-              value={password}
-              autoFocus
-              autoComplete="current-password"
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError('');
-              }}
-              aria-invalid={Boolean(error)}
-              className={`mt-2 w-full rounded-md border px-3 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-emerald/15 ${
-              error ? 'border-red-400' : 'border-slate-300 focus:border-emerald'}`
-              } />
+            {/* Not a wrapping <label>: the toggle sits inside the field, and a button
+                inside a label would also fire the label's focus behaviour. */}
+            <div>
+              <label
+              htmlFor="admin-password"
+              className="block text-[11px] font-medium uppercase tracking-widest text-slate-500">
 
-            </label>
+                Password
+              </label>
+              <div className="relative mt-2">
+                <input
+                id="admin-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                autoFocus
+                autoComplete="current-password"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError('');
+                }}
+                aria-invalid={Boolean(error)}
+                className={`w-full rounded-md border py-2.5 pl-3 pr-11 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-emerald/15 ${
+                error ? 'border-red-400' : 'border-slate-300 focus:border-emerald'}`
+                } />
+
+                <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                // tabIndex -1 keeps Tab going straight from the field to Sign in.
+                tabIndex={-1}
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 transition-colors hover:text-slate-700">
+
+                  {showPassword ?
+                <EyeOffIcon className="h-4 w-4" /> :
+
+                <EyeIcon className="h-4 w-4" />
+                }
+                </button>
+              </div>
+            </div>
             {error &&
           <p role="alert" className="text-xs text-red-600">
                 {error}

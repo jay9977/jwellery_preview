@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
@@ -11,62 +11,50 @@ import {
   LogOutIcon,
   MonitorIcon,
   PencilIcon,
+  PlusIcon,
   RefreshCwIcon,
   RotateCcwIcon,
   SmartphoneIcon,
   UploadIcon } from
 'lucide-react';
-import { useContent } from '../contexts/ContentContext';
-import { SECTION_LABELS } from '../data/defaultContent';
+import { useContent } from '../hooks/useContent';
+import { isCustomSectionId, sectionLabel } from '../data/sections';
 import { SectionEditor } from '../components/admin/SectionEditor';
 import { GlobalEditor } from '../components/admin/GlobalEditor';
 import { ThemeEditor } from '../components/admin/ThemeEditor';
 import { VersionHistory } from '../components/admin/VersionHistory';
 import { BackendEditor } from '../components/admin/BackendEditor';
 import { SyncBadge } from '../components/admin/SyncBadge';
-import { AdminLogin } from '../components/admin/AdminLogin';
 import { Subscribers } from '../components/admin/Subscribers';
+import { SocialLinks } from '../components/admin/SocialLinks';
 import { ContactMessages } from '../components/admin/ContactMessages';
 import { exportContent, importContent } from '../utils/contentIO';
-import { isConnected } from '../utils/backend';
-import { verifyToken } from '../utils/api';
+import { useAdminAuth } from '../hooks/useAdminAuth';
 import type { SectionId } from '../types/content';
 
-type Tab = 'global' | 'theme' | 'versions' | 'subscribers' | 'messages' | 'backend' | SectionId;
-
-/** Only ever gates the offline demo editor — a real session is gated by the server. */
-const DEMO_AUTH_KEY = 'aurelle.admin.demo-authed';
+type Tab = 'global' | 'theme' | 'social' | 'versions' | 'subscribers' | 'messages' | 'backend' | SectionId;
 
 export function Admin() {
-  const { content, backend, updateBackend, toggleSection, moveSection, replaceContent, resetAll } = useContent();
-  const connected = isConnected(backend);
-  const [authState, setAuthState] = useState<'checking' | 'in' | 'out'>('checking');
+  const { content, backend, isDirty, toggleSection, moveSection, addSection, replaceContent, resetAll } =
+  useContent();
+  const { state: authState, signOut } = useAdminAuth();
   const [tab, setTab] = useState<Tab>('hero');
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [previewKey, setPreviewKey] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [importError, setImportError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  /* When a server is connected the gate is the token itself: it is checked against
-     /auth/me, so flipping a flag in devtools no longer opens the editor. */
+  /* The selected tab can outlive its section — deleted here, or missing from content
+     that was pulled, imported or reset. Fall back to the first section that exists. */
+  const NON_SECTION_TABS = ['global', 'theme', 'social', 'versions', 'subscribers', 'messages', 'backend'];
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (connected) {
-        const ok = await verifyToken(backend);
-        if (!cancelled) setAuthState(ok ? 'in' : 'out');
-        return;
-      }
-      const demo = window.sessionStorage.getItem(DEMO_AUTH_KEY) === 'yes';
-      if (!cancelled) setAuthState(demo ? 'in' : 'out');
-    })();
-    return () => {
-      cancelled = true;
-    };
+    if (NON_SECTION_TABS.includes(tab) || content.sections[tab]) return;
+    setTab(content.order.find((id) => content.sections[id]) ?? 'global');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected, backend.baseUrl, backend.apiKey]);
+  }, [tab, content.sections, content.order]);
 
   if (authState === 'checking') {
     return (
@@ -77,18 +65,10 @@ export function Admin() {
 
   }
 
-  if (authState === 'out') {
-    return (
-      <AdminLogin
-        onSuccess={(mode) => {
-          if (mode === 'demo') window.sessionStorage.setItem(DEMO_AUTH_KEY, 'yes');
-          setAuthState('in');
-        }} />);
+  // The editor never renders a login form — signing in happens at /admin-login.
+  if (authState === 'out') return <Navigate to="/admin-login" replace />;
 
-
-  }
-
-  const visibleCount = content.order.filter((id) => content.sections[id].visible).length;
+  const visibleCount = content.order.filter((id) => content.sections[id]?.visible).length;
 
   function openPreview() {
     setPreviewKey((k) => k + 1);
@@ -194,23 +174,41 @@ export function Admin() {
               </button>
             }
 
+            {confirmSignOut ?
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">
+                  {isDirty ? 'You have unsaved changes. Sign out anyway?' : 'Sign out?'}
+                </span>
+                <button
+                type="button"
+                onClick={signOut}
+                className="rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-700">
+
+                  Yes, sign out
+                </button>
+                <button
+                type="button"
+                onClick={() => setConfirmSignOut(false)}
+                className="rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600">
+
+                  Cancel
+                </button>
+              </div> :
+
             <button
               type="button"
-              onClick={() => {
-                window.sessionStorage.removeItem(DEMO_AUTH_KEY);
-                updateBackend({ apiKey: '' });
-                setAuthState('out');
-              }}
-              aria-label="Sign out"
-              className="rounded-md border border-slate-300 p-2 text-slate-500 hover:border-slate-400 hover:text-slate-800">
-              
-              <LogOutIcon className="h-3.5 w-3.5" />
-            </button>
+              onClick={() => setConfirmSignOut(true)}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 hover:border-red-400 hover:text-red-600">
+
+                <LogOutIcon className="h-3.5 w-3.5" />
+                Sign out
+              </button>
+            }
 
             <Link
               to="/"
               className="inline-flex items-center gap-1.5 rounded-md bg-emerald px-3.5 py-2 text-xs font-medium text-white hover:bg-emerald-deep">
-              
+
               <ArrowLeftIcon className="h-3.5 w-3.5" />
               Open site
             </Link>
@@ -301,6 +299,17 @@ export function Admin() {
               </button>
               <button
               type="button"
+              onClick={() => setTab('social')}
+              className={`w-full rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
+              tab === 'social' ?
+              'border-emerald bg-white text-emerald' :
+              'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`
+              }>
+
+                Social & media links
+              </button>
+              <button
+              type="button"
               onClick={() => setTab('versions')}
               className={`w-full rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
               tab === 'versions' ?
@@ -352,6 +361,8 @@ export function Admin() {
               <ul className="divide-y divide-slate-100">
                 {content.order.map((id, index) => {
                 const section = content.sections[id];
+                // An order entry with no section behind it must not take the panel down.
+                if (!section) return null;
                 const isActive = tab === id;
                 return (
                   <li key={id} className={`flex items-center gap-1 px-2 py-2 ${isActive ? 'bg-emerald/5' : ''}`}>
@@ -366,15 +377,16 @@ export function Admin() {
                         isActive ? 'text-emerald' : section.visible ? 'text-slate-800' : 'text-slate-400'}`
                         }>
                         
-                          {SECTION_LABELS[id]}
+                          {sectionLabel(id, section)}
                         </span>
                         <span className="text-[11px] text-slate-400">
                           {section.visible ? 'Visible' : 'Hidden'}
+                          {isCustomSectionId(id) && ' · added by you'}
                         </span>
                       </button>
                       <button
                       type="button"
-                      aria-label={`Move ${SECTION_LABELS[id]} up`}
+                      aria-label={`Move ${sectionLabel(id, section)} up`}
                       onClick={() => moveSection(id, -1)}
                       disabled={index === 0}
                       className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-25">
@@ -383,7 +395,7 @@ export function Admin() {
                       </button>
                       <button
                       type="button"
-                      aria-label={`Move ${SECTION_LABELS[id]} down`}
+                      aria-label={`Move ${sectionLabel(id, section)} down`}
                       onClick={() => moveSection(id, 1)}
                       disabled={index === content.order.length - 1}
                       className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-25">
@@ -392,7 +404,7 @@ export function Admin() {
                       </button>
                       <button
                       type="button"
-                      aria-label={`${section.visible ? 'Hide' : 'Show'} ${SECTION_LABELS[id]}`}
+                      aria-label={`${section.visible ? 'Hide' : 'Show'} ${sectionLabel(id, section)}`}
                       onClick={() => toggleSection(id)}
                       className={`rounded p-1.5 hover:bg-slate-100 ${
                       section.visible ? 'text-emerald' : 'text-slate-400'}`
@@ -408,6 +420,16 @@ export function Admin() {
 
               })}
               </ul>
+              <div className="border-t border-slate-200 p-2">
+                <button
+                  type="button"
+                  onClick={() => setTab(addSection())}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-slate-300 px-3 py-2.5 text-xs font-medium text-slate-600 hover:border-emerald hover:text-emerald">
+
+                  <PlusIcon className="h-3.5 w-3.5" />
+                  Add a section
+                </button>
+              </div>
             </div>
 
             <p className="px-1 text-xs leading-relaxed text-slate-500">
@@ -422,6 +444,8 @@ export function Admin() {
           <main className="pb-16">
             {tab === 'theme' ?
           <ThemeEditor /> :
+          tab === 'social' ?
+          <SocialLinks /> :
           tab === 'versions' ?
           <VersionHistory /> :
           tab === 'subscribers' ?
@@ -433,7 +457,7 @@ export function Admin() {
           tab === 'global' ?
           <GlobalEditor /> :
 
-          <SectionEditor id={tab} />
+          <SectionEditor id={tab} onDeleted={() => setTab('hero')} />
           }
           </main>
         </div>

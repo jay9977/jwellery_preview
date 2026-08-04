@@ -1,8 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { ImageIcon, Loader2Icon, UploadIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { AlertTriangleIcon, ImageIcon, Loader2Icon, PlayIcon, UploadIcon } from 'lucide-react';
+import { useContent } from '../../hooks/useContent';
 import { isConnected } from '../../utils/backend';
 import { uploadImage } from '../../utils/api';
+import { isVideo, parseMedia } from '../../utils/media';
+import { MediaEmbed } from '../site/MediaEmbed';
 
 interface BaseProps {
   label: string;
@@ -157,6 +159,60 @@ export function ImageField({ label, value, onChange }: BaseProps) {
           <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
         </div>
       </div>
+    </div>);
+
+}
+
+/**
+ * URL field for a video or image. Tells the admin what the link was recognised as
+ * and previews it, so a wrong paste is obvious before it reaches the live page.
+ */
+export function MediaField({ label, value, onChange, placeholder, hint }: BaseProps) {
+  const media = parseMedia(value);
+  const unusable = value.trim().length > 0 && media.kind === 'none';
+
+  return (
+    <div>
+      <span className="text-[11px] font-medium uppercase tracking-widest text-slate-500">{label}</span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder ?? 'https://youtube.com/watch?v=… or https://…/clip.mp4'}
+        className={`mt-2 w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-emerald/15 ${
+        unusable ? 'border-red-400' : 'border-slate-300 focus:border-emerald'}`
+        } />
+
+      {hint && <span className="mt-1 block text-xs text-slate-400">{hint}</span>}
+
+      {value.trim() &&
+      <div className="mt-2">
+          <span
+          className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium ${
+          unusable ? 'bg-red-50 text-red-700' : 'bg-emerald/10 text-emerald'}`
+          }>
+
+            {unusable ?
+          <AlertTriangleIcon className="h-3 w-3" /> :
+          isVideo(media) ?
+          <PlayIcon className="h-3 w-3" /> :
+
+          <ImageIcon className="h-3 w-3" />
+          }
+            {media.description || 'Not recognised'}
+          </span>
+
+          {!unusable &&
+        <div className="mt-2 max-w-xs overflow-hidden rounded-md border border-slate-200">
+              <MediaEmbed
+            url={value}
+            title={label}
+            aspect={media.kind === 'image' ? 'aspect-[4/3]' : 'aspect-video'} />
+
+            </div>
+        }
+        </div>
+      }
     </div>);
 
 }

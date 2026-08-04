@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { HeartIcon, MenuIcon, SearchIcon, ShoppingBagIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
-import { useCart } from '../../contexts/CartContext';
+import { HeartIcon, MenuIcon, SearchIcon, ShoppingBagIcon, XIcon } from 'lucide-react';
+import { useContent } from '../../hooks/useContent';
+import { useCart } from '../../hooks/useCart';
 
 export function Header() {
   const { content } = useContent();
@@ -89,13 +88,6 @@ export function Header() {
                 </span>
               }
             </button>
-            <Link
-              to="/admin"
-              className="ml-2 hidden items-center gap-2 border border-ink/15 px-3 py-2 text-[10px] uppercase leading-none tracking-[0.16em] text-ink/65 transition-colors hover:border-emerald hover:text-emerald sm:flex">
-              
-              <SlidersHorizontalIcon className="h-3.5 w-3.5" />
-              Admin
-            </Link>
           </div>
         </div>
 
@@ -112,9 +104,6 @@ export function Header() {
                   {item.label}
                 </a>
             )}
-              <Link to="/admin" className="meta block py-3.5 text-emerald">
-                Admin panel
-              </Link>
             </div>
           </nav>
         }

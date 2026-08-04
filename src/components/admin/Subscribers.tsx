@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { DownloadIcon, Loader2Icon, MailIcon, RefreshCwIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import { isConnected } from '../../utils/backend';
 import { fetchSubscribers, type RemoteSubscriber } from '../../utils/api';
 

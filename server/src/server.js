@@ -29,6 +29,12 @@ if (!JWT_SECRET || JWT_SECRET.length < 32 || PLACEHOLDER_SECRETS.has(JWT_SECRET)
   process.exit(1);
 }
 
+/**
+ * A real bcrypt hash of a value nobody will guess. Compared against when the
+ * requested admin does not exist, so login takes the same time either way.
+ */
+const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
+
 const prisma = new PrismaClient();
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -142,7 +148,10 @@ app.post('/api/auth/login', loginLimiter, async (req, res, next) => {
       admin = admins[0];
     }
 
-    if (!admin || !(await bcrypt.compare(String(password), admin.passwordHash))) {
+    // Always run a bcrypt compare, even with no matching admin. Skipping it for an
+    // unknown email would answer far faster and leak which addresses exist.
+    const ok = await bcrypt.compare(String(password), admin?.passwordHash ?? DUMMY_HASH);
+    if (!admin || !ok) {
       return res.status(401).json({ error: 'Invalid credentials.' });
     }
     const token = jwt.sign(
@@ -228,6 +237,10 @@ app.post('/api/contact', publicLimiter, async (req, res, next) => {
   try {
     const body = req.body ?? {};
     const str = (v, max) => String(v ?? '').trim().slice(0, max);
+    // Honeypot: a hidden field no human fills in. Answer 201 so a bot cannot tell
+    // it was caught, but store nothing.
+    if (str(body.website, 200)) return res.status(201).json({ ok: true });
+
     const name = str(body.name, 120);
     const email = str(body.email, 254).toLowerCase();
     const message = str(body.message, 5000);
@@ -237,6 +250,14 @@ app.post('/api/contact', publicLimiter, async (req, res, next) => {
       return res.status(400).json({ error: 'Please provide a valid email address.' });
     }
     if (message.length < 5) return res.status(400).json({ error: 'Please include a short message.' });
+
+    // One sender cannot queue an unbounded number of enquiries.
+    const recent = await prisma.contactMessage.count({
+      where: { email, createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) } }
+    });
+    if (recent >= 5) {
+      return res.status(429).json({ error: 'You have already sent several messages. We will reply shortly.' });
+    }
 
     await prisma.contactMessage.create({
       data: { name, email, message, phone: str(body.phone, 40), subject: str(body.subject, 160) }
@@ -250,9 +271,15 @@ app.post('/api/contact', publicLimiter, async (req, res, next) => {
 /** Admin: list contact enquiries */
 app.get('/api/contact', requireAuth, async (_req, res, next) => {
   try {
-    const messages = await prisma.contactMessage.findMany({ orderBy: { createdAt: 'desc' }, take: 500 });
-    const unread = await prisma.contactMessage.count({ where: { read: false } });
-    res.json({ messages, unread });
+    const LIMIT = 500;
+    const [messages, unread, total] = await Promise.all([
+    prisma.contactMessage.findMany({ orderBy: { createdAt: 'desc' }, take: LIMIT }),
+    prisma.contactMessage.count({ where: { read: false } }),
+    prisma.contactMessage.count()]
+    );
+    // `total` lets the admin panel say when older messages are being held back,
+    // rather than silently showing a truncated list.
+    res.json({ messages, unread, total, truncated: total > messages.length });
   } catch (err) {
     next(err);
   }
@@ -304,6 +331,37 @@ app.post('/api/upload', writeLimiter, requireAuth, upload.single('image'), (req,
   if (!req.file) return res.status(400).json({ error: 'No image file received (field name: "image").' });
   const base = process.env.PUBLIC_URL?.replace(/\/$/, '') || `${req.protocol}://${req.get('host')}`;
   res.status(201).json({ url: `${base}/uploads/${req.file.filename}` });
+});
+
+/**
+ * Admin: delete uploaded files nothing refers to any more.
+ * A file is kept if it is named in the live content OR in any stored version, so
+ * restoring an old snapshot never lands on broken images.
+ */
+app.post('/api/uploads/prune', writeLimiter, requireAuth, async (req, res, next) => {
+  try {
+    const dryRun = req.query.dryRun === '1';
+    const [content, versions] = await Promise.all([
+    assembleContent(prisma),
+    prisma.contentVersion.findMany({ select: { content: true } })]
+    );
+    const haystack = JSON.stringify(content) + versions.map((v) => JSON.stringify(v.content)).join('');
+
+    const files = fs.readdirSync(UPLOAD_DIR);
+    const orphans = files.filter((name) => !haystack.includes(name));
+    if (!dryRun) {
+      for (const name of orphans) {
+        try {
+          fs.unlinkSync(path.join(UPLOAD_DIR, name));
+        } catch (err) {
+          console.error(`Could not delete upload ${name}:`, err.message);
+        }
+      }
+    }
+    res.json({ scanned: files.length, removed: dryRun ? 0 : orphans.length, orphans, dryRun });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /* ---------- errors ---------- */

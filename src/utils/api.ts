@@ -23,6 +23,8 @@ export interface ContactEnquiry {
   phone?: string;
   subject?: string;
   message: string;
+  /** Honeypot. Always empty for a real person; the server drops anything with a value. */
+  website?: string;
 }
 
 export interface RemoteContactMessage extends Required<ContactEnquiry> {
@@ -121,9 +123,20 @@ export async function submitContact(config: BackendConfig, enquiry: ContactEnqui
 /** GET /contact → enquiries plus the unread count (admin only) */
 export async function fetchContactMessages(
 config: BackendConfig)
-: Promise<{messages: RemoteContactMessage[];unread: number;}> {
-  const payload = await request<{messages?: RemoteContactMessage[];unread?: number;}>(config, '/contact');
-  return { messages: payload?.messages ?? [], unread: payload?.unread ?? 0 };
+: Promise<{messages: RemoteContactMessage[];unread: number;total: number;truncated: boolean;}> {
+  const payload = await request<{
+    messages?: RemoteContactMessage[];
+    unread?: number;
+    total?: number;
+    truncated?: boolean;
+  }>(config, '/contact');
+  const messages = payload?.messages ?? [];
+  return {
+    messages,
+    unread: payload?.unread ?? 0,
+    total: payload?.total ?? messages.length,
+    truncated: payload?.truncated ?? false
+  };
 }
 
 /** PATCH /contact/:id → mark an enquiry read or unread */
@@ -138,6 +151,19 @@ read: boolean)
 /** DELETE /contact/:id */
 export async function deleteContactMessage(config: BackendConfig, id: number): Promise<void> {
   await request<void>(config, `/contact/${id}`, { method: 'DELETE' });
+}
+
+/** POST /uploads/prune → delete uploaded files nothing references any more */
+export async function pruneUploads(
+config: BackendConfig,
+dryRun = false)
+: Promise<{scanned: number;removed: number;orphans: string[];}> {
+  const payload = await request<{scanned?: number;removed?: number;orphans?: string[];}>(
+    config,
+    `/uploads/prune${dryRun ? '?dryRun=1' : ''}`,
+    { method: 'POST' }
+  );
+  return { scanned: payload?.scanned ?? 0, removed: payload?.removed ?? 0, orphans: payload?.orphans ?? [] };
 }
 
 /** GET /versions → server-side version history (admin only) */

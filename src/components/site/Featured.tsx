@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { EyeIcon, HeartIcon } from 'lucide-react';
-import { useCart } from '../../contexts/CartContext';
+import { useCart } from '../../hooks/useCart';
 import type { FeaturedSection, Product } from '../../types/content';
 import { SectionHeading } from './SectionHeading';
 import { QuickView } from './QuickView';

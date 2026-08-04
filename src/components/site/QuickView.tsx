@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HeartIcon, MinusIcon, PlusIcon, ShieldCheckIcon, TruckIcon, XIcon } from 'lucide-react';
-import { useCart } from '../../contexts/CartContext';
+import { useCart } from '../../hooks/useCart';
 import type { Product } from '../../types/content';
 
 interface QuickViewProps {

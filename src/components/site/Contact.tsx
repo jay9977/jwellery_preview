@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckIcon, ClockIcon, Loader2Icon, MailIcon, MapPinIcon, MessageCircleIcon, PhoneIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import { SectionHeading } from './SectionHeading';
 import { socialIcon, usableSocialLinks } from '../../data/social';
 import type { ContactSection } from '../../types/content';
@@ -33,7 +33,8 @@ export function Contact({ data }: {data: ContactSection;}) {
   const { content, sendEnquiry } = useContent();
   const social = usableSocialLinks(content.footer.social);
 
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  // `website` is a honeypot: hidden from people, irresistible to bots.
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [error, setError] = useState('');
 
@@ -71,7 +72,8 @@ export function Contact({ data }: {data: ContactSection;}) {
         email: form.email.trim(),
         phone: form.phone.trim(),
         subject: form.subject.trim(),
-        message: form.message.trim()
+        message: form.message.trim(),
+        website: form.website
       });
       setStatus('done');
     } catch (err) {
@@ -186,7 +188,7 @@ export function Contact({ data }: {data: ContactSection;}) {
                   <button
                 type="button"
                 onClick={() => {
-                  setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+                  setForm({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
                   setStatus('idle');
                 }}
                 className="btn btn-outline btn-sm mt-6">
@@ -200,6 +202,18 @@ export function Contact({ data }: {data: ContactSection;}) {
                   {data.formNote && <p className="body-sm mt-2 text-ink/60">{data.formNote}</p>}
 
                   <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+                    <div aria-hidden className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+                      <label htmlFor="contact-website">Leave this field empty</label>
+                      <input
+                    id="contact-website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={form.website}
+                    onChange={(e) => update('website', e.target.value)} />
+
+                    </div>
+
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <label className="block">
                         <span className="eyebrow text-ink/50">Your name</span>

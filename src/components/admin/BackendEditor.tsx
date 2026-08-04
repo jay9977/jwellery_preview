@@ -5,19 +5,43 @@ import {
   DownloadCloudIcon,
   Loader2Icon,
   PlugZapIcon,
+  SearchIcon,
+  Trash2Icon,
   UploadCloudIcon } from
 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import { TextField, ToggleField } from './Fields';
-import { pingBackend } from '../../utils/api';
+import { pingBackend, pruneUploads } from '../../utils/api';
 import { isConnected } from '../../utils/backend';
 
 export function BackendEditor() {
   const { backend, updateBackend, publish, pull, syncStatus, syncError, lastSyncedAt, isDirty } = useContent();
   const [testState, setTestState] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
   const [testMessage, setTestMessage] = useState('');
+  const [pruneState, setPruneState] = useState<'idle' | 'working' | 'ok' | 'fail'>('idle');
+  const [pruneMessage, setPruneMessage] = useState('');
 
   const connected = isConnected(backend);
+
+  async function handlePrune(dryRun: boolean) {
+    setPruneState('working');
+    setPruneMessage('');
+    try {
+      const result = await pruneUploads(backend, dryRun);
+      const list = result.orphans.length ? ` (${result.orphans.slice(0, 5).join(', ')}${result.orphans.length > 5 ? '…' : ''})` : '';
+      setPruneMessage(
+        result.orphans.length === 0 ?
+        `Scanned ${result.scanned} file${result.scanned === 1 ? '' : 's'} — nothing unused.` :
+        dryRun ?
+        `${result.orphans.length} of ${result.scanned} file(s) are unused${list}.` :
+        `Deleted ${result.removed} unused file${result.removed === 1 ? '' : 's'} of ${result.scanned}.`
+      );
+      setPruneState('ok');
+    } catch (error) {
+      setPruneMessage(error instanceof Error ? error.message : 'Clean-up failed.');
+      setPruneState('fail');
+    }
+  }
 
   async function handleTest() {
     setTestState('testing');
@@ -160,6 +184,52 @@ export function BackendEditor() {
           </p>
         }
       </section>
+
+      {connected &&
+      <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+            Uploaded images
+          </h3>
+          <p className="mt-2 text-sm text-slate-500">
+            Images stay on the server after you remove them from a section. Clean-up deletes only the
+            files nothing refers to — anything used by the live page or a saved version is kept.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+            type="button"
+            onClick={() => void handlePrune(true)}
+            disabled={pruneState === 'working'}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 hover:border-slate-400 disabled:opacity-50">
+
+              {pruneState === 'working' ?
+            <Loader2Icon className="h-3.5 w-3.5 animate-spin" /> :
+
+            <SearchIcon className="h-3.5 w-3.5" />
+            }
+              Check for unused files
+            </button>
+            <button
+            type="button"
+            onClick={() => void handlePrune(false)}
+            disabled={pruneState === 'working'}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 hover:border-red-400 hover:text-red-600 disabled:opacity-50">
+
+              <Trash2Icon className="h-3.5 w-3.5" />
+              Delete unused files
+            </button>
+          </div>
+          {pruneMessage &&
+        <p
+          role="status"
+          className={`mt-3 rounded-md px-3 py-2 text-xs ${
+          pruneState === 'fail' ? 'bg-red-50 text-red-700' : 'bg-emerald/10 text-emerald'}`
+          }>
+
+              {pruneMessage}
+            </p>
+        }
+        </section>
+      }
 
       <section className="rounded-lg border border-slate-200 bg-white p-4">
         <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">

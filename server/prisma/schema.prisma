@@ -75,5 +75,7 @@ model ContentVersion {
   content   Json
   createdAt DateTime @default(now())
 
+  // Both the history list and the retention sweep sort by this.
+  @@index([createdAt])
   @@map("content_versions")
 }

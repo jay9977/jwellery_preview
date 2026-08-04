@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState } from
-'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultContent } from '../data/defaultContent';
 import { FONT_PAIRS } from '../data/palettes';
 import { hexToRgbTriple } from '../utils/color';
@@ -23,43 +15,52 @@ import {
   submitSubscriber,
   type ContactEnquiry } from
 '../utils/api';
-import type { SectionId, Sections, SiteContent, Theme } from '../types/content';
+import { createCustomSection, isCustomSectionId } from '../data/sections';
+import { ContentContext, type ContentContextValue, type SyncStatus } from './content-context';
+import type {
+  BuiltInSectionId,
+  CustomSection,
+  SectionId,
+  Sections,
+  SiteContent,
+  Theme } from
+'../types/content';
 
 const STORAGE_KEY = 'aurelle.site.content.v1';
 
-export type SyncStatus = 'offline' | 'loading' | 'synced' | 'saving' | 'error';
-
-interface ContentContextValue {
-  content: SiteContent;
-  isDirty: boolean;
-  backend: BackendConfig;
-  syncStatus: SyncStatus;
-  syncError: string;
-  lastSyncedAt: string;
-  updateBackend: (patch: Partial<BackendConfig>) => void;
-  publish: () => Promise<void>;
-  pull: () => Promise<void>;
-  subscribeEmail: (email: string) => Promise<void>;
-  sendEnquiry: (enquiry: ContactEnquiry) => Promise<void>;
-  updateBrand: (patch: Partial<SiteContent['brand']>) => void;
-  updateSeo: (patch: Partial<SiteContent['seo']>) => void;
-  updateAnnouncement: (patch: Partial<SiteContent['announcement']>) => void;
-  updateFooter: (patch: Partial<SiteContent['footer']>) => void;
-  updateNav: (nav: SiteContent['nav']) => void;
-  updateTheme: (patch: Partial<Theme>) => void;
-  updateSection: <K extends SectionId>(id: K, patch: Partial<Sections[K]>) => void;
-  toggleSection: (id: SectionId) => void;
-  moveSection: (id: SectionId, direction: -1 | 1) => void;
-  replaceContent: (next: SiteContent) => void;
-  resetAll: () => void;
+/**
+ * Merge each saved section over its default *individually*. Replacing the whole
+ * `sections` object would mean any field added to a built-in section after the
+ * content was last saved comes back `undefined` — which is how a shipped section
+ * silently loses a feature. Custom sections have no default and pass through.
+ */
+function mergeSections(saved: Partial<Sections> | undefined): Sections {
+  const merged = { ...defaultContent.sections } as Sections;
+  for (const [id, section] of Object.entries(saved ?? {})) {
+    if (!section || typeof section !== 'object') continue;
+    const base = defaultContent.sections[id];
+    merged[id] = base ? { ...base, ...section } : section;
+  }
+  return merged;
 }
-
-const ContentContext = createContext<ContentContextValue | null>(null);
 
 function normalize(parsed: Partial<SiteContent> | null | undefined): SiteContent {
   if (!parsed || typeof parsed !== 'object') return defaultContent;
-  const order = (parsed.order ?? []).filter((id) => id in defaultContent.sections);
-  const missing = defaultContent.order.filter((id) => !order.includes(id));
+
+  // Every section that exists after the merge — built-ins plus any the admin added.
+  const known = new Set([
+  ...Object.keys(defaultContent.sections),
+  ...Object.keys(parsed.sections ?? {})]
+  );
+  const order = (parsed.order ?? []).filter((id) => known.has(String(id)));
+  // Sections that exist but are missing from the order (a new built-in after an
+  // upgrade, or a custom section saved without one) are appended rather than lost —
+  // built-ins in their default sequence, then anything the admin created.
+  const missing = [
+  ...defaultContent.order.filter((id) => !order.includes(id)),
+  ...[...known].filter((id) => !order.includes(id) && !defaultContent.order.includes(id))];
+
+
   return {
     ...defaultContent,
     ...parsed,
@@ -73,7 +74,7 @@ function normalize(parsed: Partial<SiteContent> | null | undefined): SiteContent
     // Merged, not replaced: content saved before a field existed (e.g. footer.social)
     // must still come back with that field rather than undefined.
     footer: { ...defaultContent.footer, ...parsed.footer },
-    sections: { ...defaultContent.sections, ...parsed.sections }
+    sections: mergeSections(parsed.sections)
   };
 }
 
@@ -260,21 +261,70 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     [mutate]
   );
 
+  /**
+   * Patch a section that must already exist. A section can vanish between render
+   * and click — deleted here, or absent from content pulled from the server — and
+   * patching a missing one would write a malformed section rather than fail loudly.
+   */
+  const patchSection = useCallback(
+    (id: SectionId, patch: object) =>
+    mutate((prev) => {
+      const current = prev.sections[id];
+      if (!current) return prev;
+      return { ...prev, sections: { ...prev.sections, [id]: { ...current, ...patch } } };
+    }),
+    [mutate]
+  );
+
   const updateSection = useCallback(
-    <K extends SectionId,>(id: K, patch: Partial<Sections[K]>) =>
-    mutate((prev) => ({
-      ...prev,
-      sections: { ...prev.sections, [id]: { ...prev.sections[id], ...patch } }
-    })),
+    <K extends BuiltInSectionId,>(id: K, patch: Partial<Sections[K]>) => patchSection(id, patch),
+    [patchSection]
+  );
+
+  const updateCustomSection = useCallback(
+    (id: SectionId, patch: Partial<CustomSection>) => patchSection(id, patch),
+    [patchSection]
+  );
+
+  const renameSection = useCallback(
+    (id: SectionId, label: string) => patchSection(id, { label: label.trim() }),
+    [patchSection]
+  );
+
+  const addSection = useCallback(
+    (label = 'New section') => {
+      const { id, section } = createCustomSection(label);
+      mutate((prev) => ({
+        ...prev,
+        order: [...prev.order, id],
+        sections: { ...prev.sections, [id]: section }
+      }));
+      return id;
+    },
+    [mutate]
+  );
+
+  const removeSection = useCallback(
+    (id: SectionId) => {
+      // Built-in sections can be hidden but never deleted — their content would be
+      // unrecoverable and the landing page expects them to exist.
+      if (!isCustomSectionId(id)) return;
+      mutate((prev) => {
+        const sections = { ...prev.sections };
+        delete sections[id as string];
+        return { ...prev, order: prev.order.filter((o) => o !== id), sections };
+      });
+    },
     [mutate]
   );
 
   const toggleSection = useCallback(
     (id: SectionId) =>
-    mutate((prev) => ({
-      ...prev,
-      sections: { ...prev.sections, [id]: { ...prev.sections[id], visible: !prev.sections[id].visible } }
-    })),
+    mutate((prev) => {
+      const current = prev.sections[id];
+      if (!current) return prev;
+      return { ...prev, sections: { ...prev.sections, [id]: { ...current, visible: !current.visible } } };
+    }),
     [mutate]
   );
 
@@ -321,8 +371,12 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
       updateNav,
       updateTheme,
       updateSection,
+      updateCustomSection,
       toggleSection,
       moveSection,
+      renameSection,
+      addSection,
+      removeSection,
       replaceContent,
       resetAll
     }),
@@ -345,8 +399,12 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     updateNav,
     updateTheme,
     updateSection,
+    updateCustomSection,
     toggleSection,
     moveSection,
+    renameSection,
+    addSection,
+    removeSection,
     replaceContent,
     resetAll]
 
@@ -355,8 +413,3 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;
 }
 
-export function useContent(): ContentContextValue {
-  const ctx = useContext(ContentContext);
-  if (!ctx) throw new Error('useContent must be used inside a ContentProvider');
-  return ctx;
-}

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XIcon } from 'lucide-react';
-import { useCart } from '../../contexts/CartContext';
+import { useCart } from '../../hooks/useCart';
 
 export function CartDrawer() {
   const { isOpen, closeCart, lines, setQty, removeItem, totalLabel, clear } = useCart();

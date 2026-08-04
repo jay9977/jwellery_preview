@@ -1,6 +1,10 @@
-# Project Audit — jwellarypreview (Maison Aurelle)
+# Project Audit — jwellarypreview
 Date: 4 Aug 2026 · Audited against a live MySQL database and a running server
 **Status: all 18 findings resolved on 5 Aug 2026 — see [Resolutions](#resolutions).**
+
+> **Second full audit — 5 Aug 2026.** Run after the Contact Us, custom sections, social
+> links, media/video and palette work. Covers backend, frontend and database.
+> All 10 new findings resolved — see [Second audit](#second-audit-5-aug-2026) at the end.
 
 > Supersedes the earlier audit, which was written before the backend could be run.
 > Several items it marked "✅ Fixed" were fixed **on the server only** and were not reachable
@@ -176,3 +180,137 @@ All 18 findings were fixed on 5 Aug 2026. Verification after the changes:
 - **Swarovski** — minimal luxury layout, sticky blur header, announcement bar, editorial storytelling: all present.
 - **Candere** — INR pricing, promo + coupon banner, trust badges, EMI FAQ, WhatsApp widget: all present.
 - **Brilliant Earth** — ethical sourcing story, Kimberley/IGI/GIA certification messaging, exchange policy: all present.
+
+---
+
+# Second audit — 5 Aug 2026
+
+Run after the Contact Us section, custom sections, social links, video/media support
+and the 40-palette work. Scope: backend, frontend and database.
+
+## Checks run
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | ✅ clean |
+| `eslint` (frontend + server) | ✅ 0 errors, 2 accepted warnings |
+| `npm audit` — server | ✅ 0 vulnerabilities |
+| `npm audit` — frontend | ⚠️ 1 advisory, previously assessed and accepted |
+| Database schema, indexes, integrity, size | ✅ healthy |
+| Section-field drift (live DB vs code defaults) | ✅ 0 missing fields |
+| API smoke suite | ✅ 59/59 |
+| Contact suite | ✅ 29/29 |
+| Audit-fix suite (new) | ✅ 16/16 |
+| Production build | ✅ passing |
+
+### Database
+
+Six InnoDB tables, all `utf8mb4_unicode_ci`. Unique indexes on `admin_users.email` and
+`subscribers.email`; `contact_messages` indexed on `createdAt`. Section positions are
+unique and contiguous (0–11), every global key present, no section with empty data.
+`content_versions` is the only table of any size — 217 KB of JSON across 20 rows, because
+each save stores the whole document. Fine at this scale; worth watching if images are ever
+inlined as data URLs again.
+
+## Findings and fixes
+
+### 🔴 High
+
+**1. A single malformed section took down the entire page.**
+There was no error boundary anywhere — React said so itself in the console during the
+`SectionEditor` crash. Since every section is admin-editable, one bad field could blank the
+whole site for every visitor.
+*Fixed:* added [ErrorBoundary](src/components/site/ErrorBoundary.tsx); every section renders
+inside its own boundary, plus separate ones for header, footer and the overlays, and a
+top-level one in [App.tsx](src/App.tsx) with a "refresh" fallback. A broken section now
+costs that section alone.
+
+**2. Every visitor downloaded the whole admin panel.**
+`App.tsx` imported `Admin` statically, so the editor, its forms and its icons shipped in the
+single bundle a shopper loads.
+*Fixed:* `Admin` is now `React.lazy`. The main bundle dropped **490 KB → 397 KB**
+(145 KB → 127 KB gzipped) and the editor became its own 100 KB chunk that only `/admin` loads.
+
+**3. `normalize()` replaced saved sections wholesale, so new fields silently went missing.**
+`sections: { ...defaults, ...parsed }` merges at the *section* level, not inside each section.
+Any field added to a shipped section after content was last saved came back `undefined` — which
+is exactly how `footer.social` and the custom-item `video` field would have broken. It had
+already needed two manual data migrations.
+*Fixed:* `mergeSections()` merges each saved section over its own default individually.
+Custom sections have no default and pass through untouched.
+
+### 🟠 Medium
+
+**4. Login leaked which email addresses exist.**
+`if (!admin || !(await bcrypt.compare(...)))` skipped the ~110 ms bcrypt comparison entirely
+when no admin matched, so an unknown address answered visibly faster — enough to enumerate
+valid logins.
+*Fixed:* a compare always runs, against a dummy hash when there is no match. Measured
+afterwards: known 110.8 ms vs unknown 110.9 ms — a 1.00× ratio.
+
+**5. The public contact form had no spam protection.**
+Any bot could post up to the 60/min IP limit, forever.
+*Fixed:* a hidden honeypot field (answers 201 so a bot cannot detect it, stores nothing),
+plus a per-sender cap of 5 messages per hour returning 429.
+
+**6. Uploaded images were never deleted.**
+Removing an image from a section left the file on disk permanently.
+*Fixed:* `POST /api/uploads/prune` (admin) removes files nothing refers to, with a dry-run
+mode and a button in Backend connection. A file is kept if the live content **or any stored
+version** names it, so restoring an old snapshot never lands on broken images.
+
+### 🟡 Low
+
+7. **`GET /contact` silently truncated at 500** — now returns `total` and `truncated`, and the admin panel says when older messages are being held back.
+8. **No canonical URL or `og:url`** — a shared link and the indexed page could disagree, and query strings looked like separate pages. Added, along with `og:site_name` and the `twitter:*` tags.
+9. **Four copies of the same `uid()` helper** across editors — consolidated into [src/utils/id.ts](src/utils/id.ts).
+10. **`content_versions` has no index on `createdAt`** although both the list and the retention query sort by it. Left as is at 20 rows; noted for when retention grows.
+
+## Still accepted, unchanged
+
+- **`react-router` GHSA-qwww-vcr4-c8h2** — no published version fixes both this and the
+  open-redirect advisory. 7.18.2 is the right trade-off: the open-redirect affects
+  `<Link>`/`useNavigate` in a client SPA, the RSC advisory needs React Server Components,
+  which this app does not use.
+- **2 eslint warnings** — `useContent`/`useCart` exported alongside their providers. The
+  conventional React pattern; splitting would churn ~20 import sites for no runtime benefit.
+- **The cart still cannot check out.** Deliberate: this is a landing page, not a shop.
+  Wiring Razorpay remains the next step if it should actually sell.
+
+## Test data
+
+All test artefacts removed afterwards: 5 test subscribers, 4 leftover contact messages,
+and 7 orphaned uploads (pruned with the new endpoint — the 8th was correctly kept because a
+saved version still references it). Live content untouched: 12 sections, all visible,
+6 social links, 0 messages, 0 subscribers.
+
+---
+
+## Follow-up — 5 Aug 2026 (admin route + remaining issues)
+
+**Admin moved to its own login URL.** `/admin-login` is the sign-in page; `/admin` is the
+editor and redirects there without a valid session. The editor no longer renders a login
+form at all, and both pages share one [useAdminAuth](src/hooks/useAdminAuth.ts) hook so they
+cannot disagree about who is signed in. Both are lazy-loaded chunks.
+
+**The public "Admin panel" footer link is gone** — removed from the frontend defaults, the
+server seed and the live database. Nothing on the public site now points at either admin URL.
+
+**The two remaining eslint warnings are fixed.** `useContent` and `useCart` moved to
+[src/hooks/](src/hooks/), with the context objects and their types in `content-context.ts` /
+`cart-context.ts`. The provider files now export only a component, which is what Fast Refresh
+needs to hot-reload them without dropping site content or cart state. 22 import sites updated.
+**Lint is now 0 errors and 0 warnings.**
+
+**`content_versions` gained its `createdAt` index** — both the history list and the retention
+sweep sort by it.
+
+### Deliberately not done
+
+**Cart checkout.** Left exactly as it is: the owner is wiring a payment gateway themselves.
+A WhatsApp-order stopgap was drafted and reverted at their request.
+
+### Verification
+
+`tsc` clean · eslint **0 errors, 0 warnings** · build passing · API suites 59/59, 29/29, 16/16 ·
+route/link checks 10/10 · test data cleaned (1 subscriber, 3 orphaned uploads).

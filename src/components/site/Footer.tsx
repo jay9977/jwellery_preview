@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PhoneIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import { socialIcon, usableSocialLinks } from '../../data/social';
 
 export function Footer() {

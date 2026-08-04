@@ -1,4 +1,5 @@
-export type SectionId =
+/** Sections that ship with the product and have their own bespoke component. */
+export type BuiltInSectionId =
 'hero' |
 'categories' |
 'featured' |
@@ -11,6 +12,14 @@ export type SectionId =
 'faq' |
 'contact' |
 'newsletter';
+
+/**
+ * Any section id on the page. Built-in ids are suggested by autocomplete, but
+ * sections created from the admin panel get their own generated ids.
+ * The `Record<never, never>` intersection is what keeps the literal suggestions
+ * alive — a plain `string` would swallow them.
+ */
+export type SectionId = BuiltInSectionId | (string & Record<never, never>);
 
 export type IconKey = 'gem' | 'truck' | 'shield' | 'refresh' | 'award' | 'headset';
 
@@ -103,6 +112,8 @@ export interface HeroSlide {
 
 export interface HeroSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   autoplay: boolean;
   slides: HeroSlide[];
 }
@@ -116,6 +127,8 @@ export interface CategoryItem {
 
 export interface CategoriesSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -134,6 +147,8 @@ export interface Product {
 
 export interface FeaturedSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -143,6 +158,8 @@ export interface FeaturedSection {
 
 export interface PromoSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   body: string;
@@ -160,6 +177,8 @@ export interface TrustItem {
 
 export interface TrustSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   title: string;
   items: TrustItem[];
 }
@@ -174,6 +193,8 @@ export interface Testimonial {
 
 export interface TestimonialsSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   items: Testimonial[];
@@ -181,6 +202,8 @@ export interface TestimonialsSection {
 
 export interface EditorialSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   body: string;
@@ -194,6 +217,8 @@ export interface EditorialSection {
 
 export interface NewsletterSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   title: string;
   body: string;
   ctaLabel: string;
@@ -208,6 +233,8 @@ export interface GalleryItem {
 
 export interface GallerySection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   handle: string;
@@ -226,6 +253,8 @@ export interface JournalPost {
 
 export interface JournalSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -241,6 +270,8 @@ export interface FaqItem {
 
 export interface FaqSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   items: FaqItem[];
@@ -260,6 +291,8 @@ export interface FooterContent {
 
 export interface ContactSection {
   visible: boolean;
+  /** Admin-editable display name. Falls back to the built-in label. */
+  label?: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -279,6 +312,67 @@ export interface ContactSection {
   showSocial: boolean;
 }
 
+/* ---------- Sections created from the admin panel ---------- */
+
+/** Layouts a custom section can be rendered with. */
+export type CustomLayout = 'text' | 'cards' | 'banner' | 'gallery' | 'video';
+
+/** Background band a custom section sits on. */
+export type SectionBackground = 'cream' | 'sand' | 'ink';
+
+export interface CustomItem {
+  id: string;
+  title: string;
+  text: string;
+  image: string;
+  /**
+   * YouTube / Vimeo link or a video-file URL. When set it replaces `image`
+   * as the item's media, so a grid can mix photos and videos.
+   */
+  video: string;
+  linkLabel: string;
+  linkHref: string;
+}
+
+export interface CustomSection {
+  /** Discriminator: present only on admin-created sections. */
+  kind: 'custom';
+  visible: boolean;
+  label?: string;
+  layout: CustomLayout;
+  background: SectionBackground;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  /** Used by the `text` layout. Blank lines start a new paragraph. */
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+  /** Used by the `banner` layout. */
+  image: string;
+  /** Used by the `video` layout: a YouTube / Vimeo link or a video-file URL. */
+  video: string;
+  /** Poster frame shown before a video *file* plays. YouTube and Vimeo supply their own. */
+  videoPoster: string;
+  /** Used by the `cards`, `gallery` and `video` layouts. */
+  items: CustomItem[];
+}
+
+export type SiteSection =
+HeroSection |
+CategoriesSection |
+FeaturedSection |
+PromoSection |
+TrustSection |
+TestimonialsSection |
+EditorialSection |
+GallerySection |
+JournalSection |
+FaqSection |
+ContactSection |
+NewsletterSection |
+CustomSection;
+
 export interface Sections {
   hero: HeroSection;
   categories: CategoriesSection;
@@ -292,6 +386,8 @@ export interface Sections {
   faq: FaqSection;
   contact: ContactSection;
   newsletter: NewsletterSection;
+  /** Sections added from the admin panel, keyed by their generated id. */
+  [id: string]: SiteSection;
 }
 
 export interface SiteContent {

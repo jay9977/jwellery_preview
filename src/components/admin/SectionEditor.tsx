@@ -1,10 +1,24 @@
-import { useContent } from '../../contexts/ContentContext';
-import { SECTION_LABELS } from '../../data/defaultContent';
-import { ImageField, SelectField, TextAreaField, TextField, ToggleField } from './Fields';
+import { useState } from 'react';
+import { Trash2Icon } from 'lucide-react';
+import { useContent } from '../../hooks/useContent';
+import {
+  BACKGROUND_OPTIONS,
+  LAYOUT_OPTIONS,
+  createCustomItem,
+  isCustomSection,
+  isCustomSectionId,
+  sectionLabel } from
+'../../data/sections';
+import { ImageField, MediaField, SelectField, TextAreaField, TextField, ToggleField } from './Fields';
 import { ItemList } from './ItemList';
-import type { IconKey, SectionId } from '../../types/content';
-
-const uid = (prefix: string) => `${prefix}-${Date.now()}-${Math.round(Math.random() * 1000)}`;
+import { parseMedia } from '../../utils/media';
+import { uid } from '../../utils/id';
+import type {
+  CustomLayout,
+  IconKey,
+  SectionBackground,
+  SectionId } from
+'../../types/content';
 
 const ICON_OPTIONS: {value: IconKey;label: string;}[] = [
 { value: 'gem', label: 'Gem' },
@@ -15,23 +29,251 @@ const ICON_OPTIONS: {value: IconKey;label: string;}[] = [
 { value: 'headset', label: 'Support' }];
 
 
-export function SectionEditor({ id }: {id: SectionId;}) {
-  const { content, updateSection, toggleSection } = useContent();
+export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () => void;}) {
+  const { content, updateSection, updateCustomSection, toggleSection, renameSection, removeSection } =
+  useContent();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const section = content.sections[id];
+
+  /* The selected section can disappear under us — deleted here, removed in another
+     tab, or absent from content pulled from the server. Say so instead of crashing. */
+  if (!section) {
+    return (
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
+        <h2 className="text-lg font-medium text-slate-900">This section is no longer here</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          It was deleted, or the content loaded from the server does not include it. Pick another
+          section from the sidebar.
+        </p>
+        <button
+          type="button"
+          onClick={() => onDeleted?.()}
+          className="mt-4 rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 hover:border-slate-400">
+
+          Back to the first section
+        </button>
+      </div>);
+
+  }
+
+  const custom = isCustomSection(section) ? section : null;
 
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald">Section</p>
-        <h2 className="mt-1 text-2xl font-medium text-slate-900">{SECTION_LABELS[id]}</h2>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald">
+          {isCustomSectionId(id) ? 'Your section' : 'Section'}
+        </p>
+        <h2 className="mt-1 text-2xl font-medium text-slate-900">{sectionLabel(id, section)}</h2>
       </header>
 
-      <ToggleField
-        label={section.visible ? 'Visible on the landing page' : 'Hidden from the landing page'}
-        description="Hide a section to remove it from the live page without deleting its content."
-        checked={section.visible}
-        onChange={() => toggleSection(id)} />
-      
+      <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <TextField
+          label="Section name"
+          value={section.label ?? ''}
+          onChange={(v) => renameSection(id, v)}
+          placeholder={sectionLabel(id)}
+          hint="Only shown in this admin panel, to help you find the section. Leave empty for the default name." />
+
+        <ToggleField
+          label={section.visible ? 'Visible on the landing page' : 'Hidden from the landing page'}
+          description="Hide a section to remove it from the live page without deleting its content."
+          checked={section.visible}
+          onChange={() => toggleSection(id)} />
+
+      </div>
+
+
+      {custom &&
+      <>
+          <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+            <SelectField
+            label="Layout"
+            value={custom.layout}
+            onChange={(v) => updateCustomSection(id, { layout: v as CustomLayout })}
+            options={LAYOUT_OPTIONS.map(({ value, label }) => ({ value, label }))} />
+
+            <p className="-mt-2 text-xs text-slate-400">
+              {LAYOUT_OPTIONS.find((l) => l.value === custom.layout)?.hint}
+            </p>
+            <SelectField
+            label="Background"
+            value={custom.background}
+            onChange={(v) => updateCustomSection(id, { background: v as SectionBackground })}
+            options={BACKGROUND_OPTIONS} />
+
+          </div>
+
+          <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+            <TextField
+            label="Eyebrow"
+            value={custom.eyebrow}
+            onChange={(v) => updateCustomSection(id, { eyebrow: v })}
+            hint="Small label above the heading. Leave empty to hide." />
+
+            <TextField
+            label="Heading"
+            value={custom.title}
+            onChange={(v) => updateCustomSection(id, { title: v })}
+            hint="Leave empty to hide." />
+
+            <TextAreaField
+            label="Sub-heading"
+            value={custom.subtitle}
+            onChange={(v) => updateCustomSection(id, { subtitle: v })}
+            hint="Leave empty to hide." />
+
+          </div>
+
+          {custom.layout === 'text' &&
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <TextAreaField
+            label="Body text"
+            value={custom.body}
+            onChange={(v) => updateCustomSection(id, { body: v })}
+            hint="Leave a blank line between paragraphs." />
+
+            </div>
+        }
+
+          {custom.layout === 'banner' &&
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <ImageField
+            label="Background image"
+            value={custom.image}
+            onChange={(v) => updateCustomSection(id, { image: v })} />
+
+            </div>
+        }
+
+          {custom.layout === 'video' &&
+        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+              <MediaField
+            label="Main video"
+            value={custom.video ?? ''}
+            onChange={(v) => updateCustomSection(id, { video: v })}
+            hint="Paste a YouTube or Vimeo link, or a direct video file URL (.mp4, .webm). Add more videos below." />
+
+              {parseMedia(custom.video ?? '').kind === 'file' &&
+          <ImageField
+            label="Poster image"
+            value={custom.videoPoster ?? ''}
+            onChange={(v) => updateCustomSection(id, { videoPoster: v })} />
+
+          }
+            </div>
+        }
+
+          <div className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2">
+            <TextField
+            label="Button label"
+            value={custom.ctaLabel}
+            onChange={(v) => updateCustomSection(id, { ctaLabel: v })}
+            hint="Leave empty to hide the button." />
+
+            <TextField
+            label="Button link"
+            value={custom.ctaHref}
+            onChange={(v) => updateCustomSection(id, { ctaHref: v })}
+            placeholder="#contact or https://…" />
+
+          </div>
+
+          {(custom.layout === 'cards' || custom.layout === 'gallery' || custom.layout === 'video') &&
+        <ItemList
+          title={
+          custom.layout === 'cards' ? 'Cards' : custom.layout === 'video' ? 'More videos' : 'Images & videos'
+          }
+          addLabel={custom.layout === 'cards' ? 'Add card' : 'Add item'}
+          items={custom.items}
+          onChange={(items) => updateCustomSection(id, { items })}
+          itemTitle={(item, index) => item.title || item.text || `Item ${index + 1}`}
+          createItem={createCustomItem}
+          emptyText={
+          custom.layout === 'video' ?
+          'No extra videos. The main video above is enough on its own.' :
+          'Nothing here yet. Add one to fill the grid.'
+          }
+          renderItem={(item, update) =>
+          <>
+                <MediaField
+              label="Video link"
+              value={item.video ?? ''}
+              onChange={(v) => update({ video: v })}
+              hint="YouTube, Vimeo or a video file. Leave empty to use the image below instead." />
+
+                {!(item.video ?? '').trim() &&
+            <ImageField label="Image" value={item.image ?? ''} onChange={(v) => update({ image: v })} />
+            }
+                {custom.layout !== 'gallery' &&
+            <TextField label="Title" value={item.title} onChange={(v) => update({ title: v })} />
+            }
+                <TextAreaField
+              label={custom.layout === 'gallery' ? 'Caption' : 'Text'}
+              value={item.text}
+              onChange={(v) => update({ text: v })}
+              hint="Leave empty to hide." />
+
+                {custom.layout === 'cards' &&
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <TextField
+                label="Link label"
+                value={item.linkLabel}
+                onChange={(v) => update({ linkLabel: v })}
+                hint="Leave empty to hide." />
+
+                    <TextField
+                label="Link target"
+                value={item.linkHref}
+                onChange={(v) => update({ linkHref: v })}
+                placeholder="#contact or https://…" />
+
+                  </div>
+            }
+              </>
+          } />
+
+        }
+
+          <div className="rounded-lg border border-red-200 bg-red-50/50 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-red-700">Danger zone</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Deleting removes this section and its content from the page for good.
+            </p>
+            {confirmDelete ?
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+              type="button"
+              onClick={() => {
+                removeSection(id);
+                setConfirmDelete(false);
+                onDeleted?.();
+              }}
+              className="rounded-md bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700">
+
+                  Yes, delete “{sectionLabel(id, section)}”
+                </button>
+                <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              className="rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600">
+
+                  Cancel
+                </button>
+              </div> :
+
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-100">
+
+                <Trash2Icon className="h-3.5 w-3.5" />
+                Delete this section
+              </button>
+          }
+          </div>
+        </>
+      }
 
       {id === 'hero' &&
       <>

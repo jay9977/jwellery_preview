@@ -8,7 +8,7 @@ import {
   ShieldCheckIcon,
   Trash2Icon } from
 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import {
   COLOR_FIELDS,
   CUSTOM_PALETTE_PREFIX,

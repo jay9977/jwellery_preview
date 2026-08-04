@@ -462,8 +462,8 @@
           },
           {
             "id": "fl-12",
-            "label": "Admin panel",
-            "href": "/admin"
+            "label": "Gift cards",
+            "href": "#promo"
           }
         ]
       }
@@ -472,27 +472,39 @@
     "social": [
       {
         "id": "s-1",
-        "platform": "instagram",
-        "label": "Instagram",
-        "url": "https://instagram.com/"
+        "platform": "facebook",
+        "label": "Facebook",
+        "url": "https://facebook.com/maisonaurelle"
       },
       {
         "id": "s-2",
-        "platform": "facebook",
-        "label": "Facebook",
-        "url": "https://facebook.com/"
+        "platform": "instagram",
+        "label": "Instagram",
+        "url": "https://instagram.com/maisonaurelle"
       },
       {
         "id": "s-3",
         "platform": "youtube",
         "label": "YouTube",
-        "url": "https://youtube.com/"
+        "url": "https://youtube.com/@maisonaurelle"
       },
       {
         "id": "s-4",
-        "platform": "pinterest",
-        "label": "Pinterest",
-        "url": "https://pinterest.com/"
+        "platform": "twitter",
+        "label": "X / Twitter",
+        "url": "https://x.com/maisonaurelle"
+      },
+      {
+        "id": "s-5",
+        "platform": "linkedin",
+        "label": "LinkedIn",
+        "url": "https://linkedin.com/company/maisonaurelle"
+      },
+      {
+        "id": "s-6",
+        "platform": "email",
+        "label": "Email",
+        "url": "mailto:care@maisonaurelle.com"
       }
     ]
   }

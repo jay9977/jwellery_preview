@@ -1,5 +1,5 @@
 import { AlertTriangleIcon, CheckIcon, CloudOffIcon, Loader2Icon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 
 export function SyncBadge() {
   const { syncStatus, isDirty } = useContent();

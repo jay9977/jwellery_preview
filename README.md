@@ -68,10 +68,15 @@ Vite inlines these values at build time, so **never put a secret in the root `.e
 
 ## 4. Sign in to the admin panel
 
-1. Open `http://localhost:5173/admin`
+1. Open **`http://localhost:5173/admin-login`**
 2. Sign in with the `ADMIN_PASSWORD` from `server/.env` (email optional while there is one admin)
 3. The server verifies it and issues a JWT, held in that browser tab only
-4. Every edit auto-publishes to MySQL (or use **Publish now** in Backend connection)
+4. You land on `/admin` — the editor. Every edit auto-publishes to MySQL (or use
+   **Publish now** in Backend connection)
+
+`/admin` is the editor and nothing else: opening it without a valid session redirects to
+`/admin-login`. There is deliberately **no link to either page anywhere on the public site** —
+reach them by typing the URL.
 
 To edit offline with no server at all, set `VITE_ADMIN_DEMO_PASSWORD` in the root `.env`
 and rebuild. Leave it empty in production — offline editing is disabled when it is unset,
@@ -83,6 +88,12 @@ so no working password ever ships in the bundle.
 - **Hide / unhide** any section (eye icon in the sidebar)
 - **Reorder** sections (up/down arrows)
 - **Add / delete items** inside sections (slides, products, FAQs, …)
+- **Add your own sections** — "Add a section" in the sidebar creates one in any of four
+  layouts (text block, cards grid, image banner, image gallery) on any of three background
+  bands, with its own heading, copy, button and items. Custom sections reorder, hide and
+  delete like the built-in ones
+- **Rename any section** — the sidebar name is editable per section (admin-panel only, it
+  does not appear on the live page); clearing it restores the default name
 - **Theme**: 6 colour palettes + 4 font pairs
 - **Brand, SEO, header nav, announcement bar, footer**
 - **Image upload** — with the backend connected, images are stored on the server (`server/uploads/`) instead of bloating the database

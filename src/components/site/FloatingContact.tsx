@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpIcon, MessageCircleIcon, PhoneIcon, XIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 
 /**
  * Candere-style floating contact launcher: WhatsApp chat + phone call,

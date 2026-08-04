@@ -1,4 +1,4 @@
-import { useContent } from '../contexts/ContentContext';
+import { useContent } from '../hooks/useContent';
 import { Header } from '../components/site/Header';
 import { Footer } from '../components/site/Footer';
 import { Hero } from '../components/site/Hero';
@@ -13,6 +13,9 @@ import { Journal } from '../components/site/Journal';
 import { Faq } from '../components/site/Faq';
 import { Contact } from '../components/site/Contact';
 import { Newsletter } from '../components/site/Newsletter';
+import { CustomBlock } from '../components/site/CustomBlock';
+import { ErrorBoundary } from '../components/site/ErrorBoundary';
+import { isCustomSection, sectionLabel } from '../data/sections';
 import { CartDrawer } from '../components/site/CartDrawer';
 import { FloatingContact } from '../components/site/FloatingContact';
 import { SeoHead } from '../components/site/SeoHead';
@@ -22,7 +25,18 @@ export function Landing() {
   const { content } = useContent();
   const { sections, order } = content;
 
+  /** Each section is isolated, so one malformed field cannot blank the page. */
   function renderSection(id: SectionId) {
+    const element = renderSectionBody(id);
+    if (!element) return null;
+    return (
+      <ErrorBoundary key={id} label={sectionLabel(id, sections[id])}>
+        {element}
+      </ErrorBoundary>);
+
+  }
+
+  function renderSectionBody(id: SectionId) {
     if (!sections[id]?.visible) return null;
     switch (id) {
       case 'hero':
@@ -49,8 +63,11 @@ export function Landing() {
         return <Contact key={id} data={sections.contact} />;
       case 'newsletter':
         return <Newsletter key={id} data={sections.newsletter} />;
-      default:
-        return null;
+      default: {
+        // Sections added from the admin panel render through the generic block.
+        const section = sections[id];
+        return isCustomSection(section) ? <CustomBlock key={id} data={section} /> : null;
+      }
     }
   }
 
@@ -58,8 +75,10 @@ export function Landing() {
 
   return (
     <div id="top" className="min-h-screen w-full bg-cream">
-      <SeoHead seo={content.seo} />
-      <Header />
+      <SeoHead seo={content.seo} siteName={content.brand.name} />
+      <ErrorBoundary label="Header" fallback={null}>
+        <Header />
+      </ErrorBoundary>
       <main>
         {visibleCount === 0 ?
         <div className="shell max-w-xl py-32 text-center">
@@ -72,9 +91,16 @@ export function Landing() {
         order.map(renderSection)
         }
       </main>
-      <Footer />
-      <CartDrawer />
-      <FloatingContact />
+      <ErrorBoundary label="Footer" fallback={null}>
+        <Footer />
+      </ErrorBoundary>
+      {/* Overlays are non-essential chrome — if they break, the page still reads. */}
+      <ErrorBoundary label="Cart drawer" fallback={null}>
+        <CartDrawer />
+      </ErrorBoundary>
+      <ErrorBoundary label="Floating contact" fallback={null}>
+        <FloatingContact />
+      </ErrorBoundary>
     </div>);
 
 }

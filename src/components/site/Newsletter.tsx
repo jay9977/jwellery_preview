@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckIcon } from 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import type { NewsletterSection } from '../../types/content';
 
 export function Newsletter({ data }: {data: NewsletterSection;}) {

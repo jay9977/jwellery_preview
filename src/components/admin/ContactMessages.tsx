@@ -8,7 +8,7 @@ import {
   RefreshCwIcon,
   Trash2Icon } from
 'lucide-react';
-import { useContent } from '../../contexts/ContentContext';
+import { useContent } from '../../hooks/useContent';
 import { isConnected } from '../../utils/backend';
 import {
   deleteContactMessage,
@@ -32,6 +32,8 @@ export function ContactMessages() {
   const connected = isConnected(backend);
   const [rows, setRows] = useState<RemoteContactMessage[]>([]);
   const [unread, setUnread] = useState(0);
+  /** Total on the server when it is larger than the page we were given; 0 otherwise. */
+  const [truncated, setTruncated] = useState(0);
   const [status, setStatus] = useState<'idle' | 'loading'>('idle');
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -45,6 +47,7 @@ export function ContactMessages() {
       const data = await fetchContactMessages(backend);
       setRows(data.messages);
       setUnread(data.unread);
+      setTruncated(data.truncated ? data.total : 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load messages.');
     } finally {
@@ -148,6 +151,12 @@ export function ContactMessages() {
           {error &&
         <p role="alert" className="border-b border-slate-200 bg-red-50 px-4 py-2 text-xs text-red-700">
               {error}
+            </p>
+        }
+
+          {truncated > 0 &&
+        <p className="border-b border-slate-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+              Showing the {rows.length} most recent of {truncated} messages. Export the CSV to get everything.
             </p>
         }
 

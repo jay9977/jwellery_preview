@@ -1,7 +1,7 @@
-import type { SectionId, SiteContent } from '../types/content';
+import type { BuiltInSectionId, SiteContent } from '../types/content';
 import { FONT_PAIRS, PALETTES } from './palettes';
 
-export const SECTION_LABELS: Record<SectionId, string> = {
+export const SECTION_LABELS: Record<BuiltInSectionId, string> = {
   hero: 'Hero Slider',
   categories: 'Shop by Category',
   featured: 'Featured Jewellery',
@@ -370,16 +370,18 @@ export const defaultContent: SiteContent = {
       { id: 'fl-9', label: 'Our craft', href: '#editorial' },
       { id: 'fl-10', label: 'Responsible sourcing', href: '#editorial' },
       { id: 'fl-11', label: 'Book an appointment', href: '#contact' },
-      { id: 'fl-12', label: 'Admin panel', href: '/admin' }]
+      { id: 'fl-12', label: 'Gift cards', href: '#promo' }]
 
     }],
 
     copyright: '© 2026 Maison Aurelle Fine Jewellery. All rights reserved.',
     social: [
-    { id: 's-1', platform: 'instagram', label: 'Instagram', url: 'https://instagram.com/' },
-    { id: 's-2', platform: 'facebook', label: 'Facebook', url: 'https://facebook.com/' },
-    { id: 's-3', platform: 'youtube', label: 'YouTube', url: 'https://youtube.com/' },
-    { id: 's-4', platform: 'pinterest', label: 'Pinterest', url: 'https://pinterest.com/' }]
+    { id: 's-1', platform: 'facebook', label: 'Facebook', url: 'https://facebook.com/maisonaurelle' },
+    { id: 's-2', platform: 'instagram', label: 'Instagram', url: 'https://instagram.com/maisonaurelle' },
+    { id: 's-3', platform: 'youtube', label: 'YouTube', url: 'https://youtube.com/@maisonaurelle' },
+    { id: 's-4', platform: 'twitter', label: 'X / Twitter', url: 'https://x.com/maisonaurelle' },
+    { id: 's-5', platform: 'linkedin', label: 'LinkedIn', url: 'https://linkedin.com/company/maisonaurelle' },
+    { id: 's-6', platform: 'email', label: 'Email', url: 'mailto:care@maisonaurelle.com' }]
 
   }
 };
