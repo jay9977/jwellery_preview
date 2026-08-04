@@ -6,8 +6,8 @@ export interface BackendConfig {
   autoPublish: boolean;
 }
 
-const KEY = 'aurelle.backend.config.v1';
-const TOKEN_KEY = 'aurelle.admin.token';
+const KEY = 'girija.backend.config.v1';
+const TOKEN_KEY = 'girija.admin.token';
 
 /**
  * Build-time API URL. This is what makes the *public* site read from the server:

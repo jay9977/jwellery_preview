@@ -1,9 +1,9 @@
 {
-  "name": "aurelle-server",
+  "name": "girija-server",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Node.js + Express + Prisma (MySQL) backend for the Maison Aurelle landing page CMS",
+  "description": "Node.js + Express + Prisma (MySQL) backend for the Maison girija landing page CMS",
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",

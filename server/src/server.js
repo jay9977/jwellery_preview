@@ -127,7 +127,7 @@ const publicLimiter = rateLimit({
 
 /* ---------- routes ---------- */
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'aurelle-server', time: new Date().toISOString() });
+  res.json({ ok: true, service: 'girija-server', time: new Date().toISOString() });
 });
 
 /** Admin login -> JWT */
@@ -380,7 +380,7 @@ app.use((err, req, res, _next) => {
 /* ---------- start ---------- */
 const port = Number(process.env.PORT ?? 4000);
 const server = app.listen(port, () => {
-  console.log(`✔ Aurelle server running at http://localhost:${port}`);
+  console.log(`✔ girija server running at http://localhost:${port}`);
   console.log(`  API base URL for the admin panel: http://localhost:${port}/api`);
   console.log(`  Allowed origins: ${origins.join(', ')}`);
 });

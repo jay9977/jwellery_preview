@@ -26,7 +26,7 @@ import type {
   Theme } from
 '../types/content';
 
-const STORAGE_KEY = 'aurelle.site.content.v1';
+const STORAGE_KEY = 'girija.site.content.v1';
 
 /**
  * Merge each saved section over its default *individually*. Replacing the whole

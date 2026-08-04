@@ -16,7 +16,7 @@ Date: 4 Aug 2026 · Audited against a live MySQL database and a running server
 |---|---|
 | `npm install` (root + server) | ✅ 285 + 111 packages |
 | `prisma generate` | ✅ Client v5.22.0 |
-| `prisma db push` → `aurelle_db` @ localhost:3306 | ✅ 5 tables created |
+| `prisma db push` → `girija_db` @ localhost:3306 | ✅ 5 tables created |
 | `npm run db:seed` | ✅ 1 admin, 11 sections, 6 global settings, 1 version |
 | API smoke test (38 assertions) | ✅ 38/38 passing (1 bug found and fixed) |
 | `vite build` | ✅ 401 kB JS / 121 kB gzip |
@@ -27,8 +27,8 @@ Date: 4 Aug 2026 · Audited against a live MySQL database and a running server
 ### Database state after push + seed
 
 ```
-aurelle_db
-├── admin_users        1 row   (admin@aurelle.com)
+girija_db
+├── admin_users        1 row   (admin@girija.com)
 ├── sections          11 rows  (hero…newsletter, all visible, positions 0-10)
 ├── global_settings    6 rows  (announcement, brand, footer, nav, seo, theme)
 ├── subscribers        0 rows
@@ -57,7 +57,7 @@ Test data (2 subscribers, 2 uploaded files) was cleaned up; content was restored
 
 **1. The public site never talks to the backend — admin edits are invisible to visitors.**
 `defaultBackendConfig` is `{ enabled: false, baseUrl: '' }` ([src/utils/backend.ts:10](src/utils/backend.ts#L10)) and
-the only source of that config is `localStorage['aurelle.backend.config.v1']`. There is no `import.meta.env.VITE_*`
+the only source of that config is `localStorage['girija.backend.config.v1']`. There is no `import.meta.env.VITE_*`
 anywhere in `src/`. So the connection exists **only in the one browser where an admin typed it in**.
 Every real visitor renders the hardcoded [src/data/defaultContent.ts](src/data/defaultContent.ts) — never the database.
 The CMS, the server and the MySQL data are effectively decorative in production.
@@ -85,13 +85,13 @@ Related: `multer@1.4.5` is deprecated with known vulnerabilities — upgrade to 
 
 **5. No rate limiting on `POST /api/auth/login`.** Unlimited password guesses, no lockout, no delay. Add `express-rate-limit`.
 
-**6. Demo password `aurelle2026` is hardcoded in the shipped bundle.**
+**6. Demo password `girija2026` is hardcoded in the shipped bundle.**
 [src/components/admin/AdminLogin.tsx:9](src/components/admin/AdminLogin.tsx#L9). Because of #1, every visitor to
 `/admin` lands in "offline mode", where this password opens the whole editor. It only mutates their own
 localStorage, so there is no server-side damage — but the admin UI and all content structure are exposed.
 
 **7. The admin auth gate is client-side only.**
-`sessionStorage['aurelle.admin.authed'] = 'yes'` in devtools skips the login screen entirely
+`sessionStorage['girija.admin.authed'] = 'yes'` in devtools skips the login screen entirely
 ([src/pages/Admin.tsx:31](src/pages/Admin.tsx#L31)). Server writes still require a valid JWT, so the blast radius is local.
 
 **8. The JWT is stored in `localStorage` and rendered in a visible text field.**
@@ -148,7 +148,7 @@ All 18 findings were fixed on 5 Aug 2026. Verification after the changes:
 | 3 | `JWT_SECRET` and `ADMIN_PASSWORD` rotated to generated values; the admin row was re-seeded. The server now **refuses to start** if `JWT_SECRET` is missing, under 32 characters, or a known placeholder. |
 | 4 | SVG removed from the accepted upload types. Saved filenames take their extension from the verified mimetype, so an `image/png` upload named `evil.html` is stored as `.png`. `/uploads` is served with `nosniff` and `default-src 'none'; sandbox`. `multer` upgraded to 2.x. |
 | 5 | `express-rate-limit` on login (10 failed attempts / 15 min, successes not counted), plus limits on write and public routes. |
-| 6 | The hardcoded `aurelle2026` is gone. Offline demo login now reads `VITE_ADMIN_DEMO_PASSWORD`, which is unset by default — with no value set the offline editor cannot be opened, and no working password ships in the bundle (verified absent from `dist`). |
+| 6 | The hardcoded `girija2026` is gone. Offline demo login now reads `VITE_ADMIN_DEMO_PASSWORD`, which is unset by default — with no value set the offline editor cannot be opened, and no working password ships in the bundle (verified absent from `dist`). |
 | 7 | New `GET /api/auth/me`; the admin panel calls it before rendering the editor, so a flag flipped in devtools no longer opens it. The sessionStorage flag now only gates the offline demo mode. |
 | 8 | The JWT moved to `sessionStorage` under its own key and is stripped from the localStorage config. The Backend tab shows a masked status (`token ••••abcd`) with a Clear token button instead of the raw value in a text input. |
 | 9 | `IconKey` bug fixed in [SectionEditor.tsx:243](src/components/admin/SectionEditor.tsx#L243); 24 unused `React` imports removed. `npm run build` now runs `tsc --noEmit` first, and `npm run typecheck` was added. |

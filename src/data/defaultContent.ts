@@ -43,14 +43,14 @@ export const defaultContent: SiteContent = {
     colors: { ...PALETTES[0].colors }
   },
   seo: {
-    title: 'Maison Aurelle · Certified Fine Jewellery & Bridal Diamonds',
+    title: 'Maison girija · Certified Fine Jewellery & Bridal Diamonds',
     description:
     'Ethically sourced, IGI and GIA certified diamond and gold jewellery, hand-finished in our atelier. Free insured shipping, 30-day exchange and lifetime servicing.',
     keywords: 'diamond jewellery, engagement rings, bridal sets, gold bangles, certified diamonds',
     ogImage: IMAGES.hero
   },
   brand: {
-    name: 'Maison Aurelle',
+    name: 'Maison girija',
     tagline: 'Fine jewellery, made to be remembered',
     phone: '+91 98200 11223'
   },
@@ -130,7 +130,7 @@ export const defaultContent: SiteContent = {
       items: [
       {
         id: 'p-1',
-        name: 'Aurelle Halo Ring',
+        name: 'girija Halo Ring',
         metal: '18K Rose Gold · 0.75ct',
         price: '₹1,24,900',
         compareAt: '₹1,49,000',
@@ -172,12 +172,12 @@ export const defaultContent: SiteContent = {
       title: 'Flat 15% off on making charges',
       body: 'Plus a complimentary velvet travel case with every purchase above ₹75,000. Valid till the end of the month, in store and online.',
       ctaLabel: 'Claim the offer',
-      couponCode: 'AURELLE15',
+      couponCode: 'girija15',
       image: IMAGES.promo
     },
     trust: {
       visible: true,
-      title: 'The Maison Aurelle promise',
+      title: 'The Maison girija promise',
       items: [
       { id: 't-1', icon: 'gem', title: 'Certified diamonds', text: 'Every stone IGI or GIA certified, with full traceability.' },
       { id: 't-2', icon: 'truck', title: 'Insured delivery', text: 'Free, fully insured shipping across India in 3–5 days.' },
@@ -220,7 +220,7 @@ export const defaultContent: SiteContent = {
       visible: true,
       eyebrow: 'Since 1987',
       title: 'Four generations of hands, one obsession with finish',
-      body: 'Every Aurelle piece passes through nine sets of hands — wax carver, setter, polisher, gemmologist — before it earns our hallmark. We buy only from Kimberley-certified suppliers, and we publish the origin of every stone above half a carat.',
+      body: 'Every girija piece passes through nine sets of hands — wax carver, setter, polisher, gemmologist — before it earns our hallmark. We buy only from Kimberley-certified suppliers, and we publish the origin of every stone above half a carat.',
       ctaLabel: 'Read our craft story',
       image: IMAGES.editorial,
       stat1Value: '38 yrs',
@@ -232,7 +232,7 @@ export const defaultContent: SiteContent = {
       visible: true,
       eyebrow: 'Lookbook',
       title: 'Worn by you',
-      handle: '@maisonaurelle',
+      handle: '@maisongirija',
       items: [
       { id: 'g-1', image: IMAGES.editorial, caption: 'Stacked rings, everyday' },
       { id: 'g-2', image: IMAGES.necklaces, caption: 'The Lumière pendant' },
@@ -318,9 +318,9 @@ export const defaultContent: SiteContent = {
       title: 'Contact our atelier',
       subtitle:
       'Questions about a piece, a custom commission or an order already on its way — a gemmologist will get back to you within one working day.',
-      address: 'Maison Aurelle Atelier, 12 Altamount Road, Mumbai 400026, India',
+      address: 'Maison girija Atelier, 12 Altamount Road, Mumbai 400026, India',
       phone: '+91 98200 12345',
-      email: 'care@maisonaurelle.com',
+      email: 'care@maisongirija.com',
       hours: 'Mon–Sat, 10am – 7pm IST',
       whatsapp: '+91 98200 12345',
       mapEmbedUrl: '',
@@ -341,7 +341,7 @@ export const defaultContent: SiteContent = {
   },
   footer: {
     about:
-    'Maison Aurelle is a family-run atelier crafting certified fine jewellery for weddings, milestones and everyday wear.',
+    'Maison girija is a family-run atelier crafting certified fine jewellery for weddings, milestones and everyday wear.',
     columns: [
     {
       id: 'f-1',
@@ -374,14 +374,14 @@ export const defaultContent: SiteContent = {
 
     }],
 
-    copyright: '© 2026 Maison Aurelle Fine Jewellery. All rights reserved.',
+    copyright: '© 2026 Maison girija Fine Jewellery. All rights reserved.',
     social: [
-    { id: 's-1', platform: 'facebook', label: 'Facebook', url: 'https://facebook.com/maisonaurelle' },
-    { id: 's-2', platform: 'instagram', label: 'Instagram', url: 'https://instagram.com/maisonaurelle' },
-    { id: 's-3', platform: 'youtube', label: 'YouTube', url: 'https://youtube.com/@maisonaurelle' },
-    { id: 's-4', platform: 'twitter', label: 'X / Twitter', url: 'https://x.com/maisonaurelle' },
-    { id: 's-5', platform: 'linkedin', label: 'LinkedIn', url: 'https://linkedin.com/company/maisonaurelle' },
-    { id: 's-6', platform: 'email', label: 'Email', url: 'mailto:care@maisonaurelle.com' }]
+    { id: 's-1', platform: 'facebook', label: 'Facebook', url: 'https://facebook.com/maisongirija' },
+    { id: 's-2', platform: 'instagram', label: 'Instagram', url: 'https://instagram.com/maisongirija' },
+    { id: 's-3', platform: 'youtube', label: 'YouTube', url: 'https://youtube.com/@maisongirija' },
+    { id: 's-4', platform: 'twitter', label: 'X / Twitter', url: 'https://x.com/maisongirija' },
+    { id: 's-5', platform: 'linkedin', label: 'LinkedIn', url: 'https://linkedin.com/company/maisongirija' },
+    { id: 's-6', platform: 'email', label: 'Email', url: 'mailto:care@maisongirija.com' }]
 
   }
 };

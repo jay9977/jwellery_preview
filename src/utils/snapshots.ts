@@ -1,6 +1,6 @@
 import type { SiteContent } from '../types/content';
 
-const KEY = 'aurelle.snapshots.v1';
+const KEY = 'girija.snapshots.v1';
 
 export interface Snapshot {
   id: string;

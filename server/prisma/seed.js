@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main() {
   /* ---- 1. Admin user ---- */
-  const email = process.env.ADMIN_EMAIL ?? 'admin@aurelle.com';
+  const email = process.env.ADMIN_EMAIL ?? 'admin@girija.com';
   const password = process.env.ADMIN_PASSWORD ?? 'ChangeMe@123';
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.adminUser.upsert({

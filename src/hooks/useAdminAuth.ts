@@ -4,7 +4,7 @@ import { isConnected } from '../utils/backend';
 import { verifyToken } from '../utils/api';
 
 /** Only ever gates the offline demo editor — a real session is gated by the server. */
-export const DEMO_AUTH_KEY = 'aurelle.admin.demo-authed';
+export const DEMO_AUTH_KEY = 'girija.admin.demo-authed';
 
 export type AdminAuthState = 'checking' | 'in' | 'out';
 
