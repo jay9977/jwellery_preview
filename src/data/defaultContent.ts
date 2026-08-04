@@ -12,6 +12,7 @@ export const SECTION_LABELS: Record<SectionId, string> = {
   gallery: 'Lookbook Gallery',
   journal: 'Journal / Blog',
   faq: 'FAQ',
+  contact: 'Contact Us',
   newsletter: 'Newsletter Signup'
 };
 
@@ -59,7 +60,8 @@ export const defaultContent: SiteContent = {
   { id: 'nav-3', label: 'Gold', href: '#featured' },
   { id: 'nav-4', label: 'Gifting', href: '#promo' },
   { id: 'nav-5', label: 'Our Craft', href: '#editorial' },
-  { id: 'nav-6', label: 'Journal', href: '#journal' }],
+  { id: 'nav-6', label: 'Journal', href: '#journal' },
+  { id: 'nav-7', label: 'Contact', href: '#contact' }],
 
   announcement: {
     visible: true,
@@ -77,6 +79,7 @@ export const defaultContent: SiteContent = {
   'gallery',
   'journal',
   'faq',
+  'contact',
   'newsletter'],
 
   sections: {
@@ -309,6 +312,25 @@ export const defaultContent: SiteContent = {
       }]
 
     },
+    contact: {
+      visible: true,
+      eyebrow: 'Talk to us',
+      title: 'Contact our atelier',
+      subtitle:
+      'Questions about a piece, a custom commission or an order already on its way — a gemmologist will get back to you within one working day.',
+      address: 'Maison Aurelle Atelier, 12 Altamount Road, Mumbai 400026, India',
+      phone: '+91 98200 12345',
+      email: 'care@maisonaurelle.com',
+      hours: 'Mon–Sat, 10am – 7pm IST',
+      whatsapp: '+91 98200 12345',
+      mapEmbedUrl: '',
+      showForm: true,
+      formTitle: 'Send us a message',
+      formNote: 'We reply to every enquiry personally. Your details are never shared.',
+      formCtaLabel: 'Send enquiry',
+      successMessage: 'Thank you — your message is with our team. We usually reply within one working day.',
+      showSocial: true
+    },
     newsletter: {
       visible: true,
       title: 'First look at new collections',
@@ -338,7 +360,7 @@ export const defaultContent: SiteContent = {
       { id: 'fl-5', label: 'FAQ', href: '#faq' },
       { id: 'fl-6', label: 'Shipping & returns', href: '#trust' },
       { id: 'fl-7', label: 'Care & servicing', href: '#trust' },
-      { id: 'fl-8', label: 'Contact us', href: '#newsletter' }]
+      { id: 'fl-8', label: 'Contact us', href: '#contact' }]
 
     },
     {
@@ -347,11 +369,17 @@ export const defaultContent: SiteContent = {
       links: [
       { id: 'fl-9', label: 'Our craft', href: '#editorial' },
       { id: 'fl-10', label: 'Responsible sourcing', href: '#editorial' },
-      { id: 'fl-11', label: 'Book an appointment', href: '#newsletter' },
+      { id: 'fl-11', label: 'Book an appointment', href: '#contact' },
       { id: 'fl-12', label: 'Admin panel', href: '/admin' }]
 
     }],
 
-    copyright: '© 2026 Maison Aurelle Fine Jewellery. All rights reserved.'
+    copyright: '© 2026 Maison Aurelle Fine Jewellery. All rights reserved.',
+    social: [
+    { id: 's-1', platform: 'instagram', label: 'Instagram', url: 'https://instagram.com/' },
+    { id: 's-2', platform: 'facebook', label: 'Facebook', url: 'https://facebook.com/' },
+    { id: 's-3', platform: 'youtube', label: 'YouTube', url: 'https://youtube.com/' },
+    { id: 's-4', platform: 'pinterest', label: 'Pinterest', url: 'https://pinterest.com/' }]
+
   }
 };

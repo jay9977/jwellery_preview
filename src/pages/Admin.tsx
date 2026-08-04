@@ -26,12 +26,13 @@ import { BackendEditor } from '../components/admin/BackendEditor';
 import { SyncBadge } from '../components/admin/SyncBadge';
 import { AdminLogin } from '../components/admin/AdminLogin';
 import { Subscribers } from '../components/admin/Subscribers';
+import { ContactMessages } from '../components/admin/ContactMessages';
 import { exportContent, importContent } from '../utils/contentIO';
 import { isConnected } from '../utils/backend';
 import { verifyToken } from '../utils/api';
 import type { SectionId } from '../types/content';
 
-type Tab = 'global' | 'theme' | 'versions' | 'subscribers' | 'backend' | SectionId;
+type Tab = 'global' | 'theme' | 'versions' | 'subscribers' | 'messages' | 'backend' | SectionId;
 
 /** Only ever gates the offline demo editor — a real session is gated by the server. */
 const DEMO_AUTH_KEY = 'aurelle.admin.demo-authed';
@@ -322,6 +323,17 @@ export function Admin() {
               </button>
               <button
               type="button"
+              onClick={() => setTab('messages')}
+              className={`w-full rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
+              tab === 'messages' ?
+              'border-emerald bg-white text-emerald' :
+              'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`
+              }>
+
+                Contact messages
+              </button>
+              <button
+              type="button"
               onClick={() => setTab('backend')}
               className={`w-full rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
               tab === 'backend' ?
@@ -414,6 +426,8 @@ export function Admin() {
           <VersionHistory /> :
           tab === 'subscribers' ?
           <Subscribers /> :
+          tab === 'messages' ?
+          <ContactMessages /> :
           tab === 'backend' ?
           <BackendEditor /> :
           tab === 'global' ?

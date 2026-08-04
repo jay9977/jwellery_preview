@@ -11,6 +11,7 @@ import { Editorial } from '../components/site/Editorial';
 import { Gallery } from '../components/site/Gallery';
 import { Journal } from '../components/site/Journal';
 import { Faq } from '../components/site/Faq';
+import { Contact } from '../components/site/Contact';
 import { Newsletter } from '../components/site/Newsletter';
 import { CartDrawer } from '../components/site/CartDrawer';
 import { FloatingContact } from '../components/site/FloatingContact';
@@ -44,6 +45,8 @@ export function Landing() {
         return <Journal key={id} data={sections.journal} />;
       case 'faq':
         return <Faq key={id} data={sections.faq} />;
+      case 'contact':
+        return <Contact key={id} data={sections.contact} />;
       case 'newsletter':
         return <Newsletter key={id} data={sections.newsletter} />;
       default:

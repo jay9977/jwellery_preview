@@ -354,6 +354,118 @@ export function SectionEditor({ id }: {id: SectionId;}) {
         </div>
       }
 
+      {id === 'contact' &&
+      <>
+          <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+            <TextField
+            label="Eyebrow"
+            value={content.sections.contact.eyebrow}
+            onChange={(v) => updateSection('contact', { eyebrow: v })} />
+
+            <TextField
+            label="Title"
+            value={content.sections.contact.title}
+            onChange={(v) => updateSection('contact', { title: v })} />
+
+            <TextAreaField
+            label="Subtitle"
+            value={content.sections.contact.subtitle}
+            onChange={(v) => updateSection('contact', { subtitle: v })} />
+
+          </div>
+
+          <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+              Contact details
+            </p>
+            <TextAreaField
+            label="Address"
+            value={content.sections.contact.address}
+            onChange={(v) => updateSection('contact', { address: v })}
+            hint="Leave empty to hide" />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <TextField
+              label="Phone"
+              value={content.sections.contact.phone}
+              onChange={(v) => updateSection('contact', { phone: v })}
+              hint="Leave empty to hide" />
+
+              <TextField
+              label="Email"
+              value={content.sections.contact.email}
+              onChange={(v) => updateSection('contact', { email: v })}
+              hint="Leave empty to hide" />
+
+              <TextField
+              label="Opening hours"
+              value={content.sections.contact.hours}
+              onChange={(v) => updateSection('contact', { hours: v })}
+              hint="Leave empty to hide" />
+
+              <TextField
+              label="WhatsApp number"
+              value={content.sections.contact.whatsapp}
+              onChange={(v) => updateSection('contact', { whatsapp: v })}
+              hint="Leave empty to hide the chat button" />
+
+            </div>
+            <TextField
+            label="Google Maps embed URL"
+            value={content.sections.contact.mapEmbedUrl}
+            onChange={(v) => updateSection('contact', { mapEmbedUrl: v })}
+            placeholder="https://www.google.com/maps/embed?pb=…"
+            hint="Google Maps → Share → Embed a map → copy the src URL. Leave empty to hide the map." />
+
+            <ToggleField
+            label="Show social links here"
+            description="Uses the same links as the footer, edited in Brand, header & footer."
+            checked={content.sections.contact.showSocial}
+            onChange={(value) => updateSection('contact', { showSocial: value })} />
+
+          </div>
+
+          <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+              Enquiry form
+            </p>
+            <ToggleField
+            label="Show the contact form"
+            description="Messages are stored on the server and appear in the Contact messages tab."
+            checked={content.sections.contact.showForm}
+            onChange={(value) => updateSection('contact', { showForm: value })} />
+
+            {content.sections.contact.showForm &&
+          <>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextField
+                label="Form title"
+                value={content.sections.contact.formTitle}
+                onChange={(v) => updateSection('contact', { formTitle: v })} />
+
+                  <TextField
+                label="Button label"
+                value={content.sections.contact.formCtaLabel}
+                onChange={(v) => updateSection('contact', { formCtaLabel: v })} />
+
+                </div>
+                <TextField
+              label="Fine print"
+              value={content.sections.contact.formNote}
+              onChange={(v) => updateSection('contact', { formNote: v })} />
+
+                <TextAreaField
+              label="Thank-you message"
+              value={content.sections.contact.successMessage}
+              onChange={(v) => updateSection('contact', { successMessage: v })}
+              hint="Shown after a message is sent successfully." />
+
+              </>
+          }
+          </div>
+        </>
+      }
+
       {id === 'newsletter' &&
       <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
           <TextField

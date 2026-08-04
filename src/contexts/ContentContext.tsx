@@ -16,7 +16,13 @@ import {
   persistBackendConfig,
   type BackendConfig } from
 '../utils/backend';
-import { fetchRemoteContent, pushRemoteContent, submitSubscriber } from '../utils/api';
+import {
+  fetchRemoteContent,
+  pushRemoteContent,
+  submitContact,
+  submitSubscriber,
+  type ContactEnquiry } from
+'../utils/api';
 import type { SectionId, Sections, SiteContent, Theme } from '../types/content';
 
 const STORAGE_KEY = 'aurelle.site.content.v1';
@@ -34,6 +40,7 @@ interface ContentContextValue {
   publish: () => Promise<void>;
   pull: () => Promise<void>;
   subscribeEmail: (email: string) => Promise<void>;
+  sendEnquiry: (enquiry: ContactEnquiry) => Promise<void>;
   updateBrand: (patch: Partial<SiteContent['brand']>) => void;
   updateSeo: (patch: Partial<SiteContent['seo']>) => void;
   updateAnnouncement: (patch: Partial<SiteContent['announcement']>) => void;
@@ -63,6 +70,9 @@ function normalize(parsed: Partial<SiteContent> | null | undefined): SiteContent
       colors: { ...defaultContent.theme.colors, ...parsed.theme?.colors }
     },
     seo: { ...defaultContent.seo, ...parsed.seo },
+    // Merged, not replaced: content saved before a field existed (e.g. footer.social)
+    // must still come back with that field rather than undefined.
+    footer: { ...defaultContent.footer, ...parsed.footer },
     sections: { ...defaultContent.sections, ...parsed.sections }
   };
 }
@@ -195,6 +205,19 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     [backend]
   );
 
+  const sendEnquiry = useCallback(
+    async (enquiry: ContactEnquiry) => {
+      // Same rule as the newsletter: never show a success the message did not get.
+      if (!isConnected(backend)) {
+        throw new Error(
+          'The contact form is unavailable right now. Please call or email us instead.'
+        );
+      }
+      await submitContact(backend, enquiry);
+    },
+    [backend]
+  );
+
   /* ---------- content mutations ---------- */
   const mutate = useCallback((updater: (prev: SiteContent) => SiteContent) => {
     setIsDirty(true);
@@ -290,6 +313,7 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
       publish,
       pull,
       subscribeEmail,
+      sendEnquiry,
       updateBrand,
       updateSeo,
       updateAnnouncement,
@@ -313,6 +337,7 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     publish,
     pull,
     subscribeEmail,
+    sendEnquiry,
     updateBrand,
     updateSeo,
     updateAnnouncement,

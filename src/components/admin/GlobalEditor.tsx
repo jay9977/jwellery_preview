@@ -1,6 +1,8 @@
 import { useContent } from '../../contexts/ContentContext';
-import { TextAreaField, TextField, ToggleField } from './Fields';
+import { SelectField, TextAreaField, TextField, ToggleField } from './Fields';
 import { ItemList } from './ItemList';
+import { SOCIAL_OPTIONS, socialPlaceholder } from '../../data/social';
+import type { SocialPlatform } from '../../types/content';
 
 const uid = (prefix: string) => `${prefix}-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 
@@ -127,10 +129,50 @@ export function GlobalEditor() {
                   <TextField label="Link target" value={link.href} onChange={(v) => updateLink({ href: v })} />
                 </div>
             } />
-          
+
           </>
         } />
-      
+
+      <ItemList
+        title="Social & media links"
+        addLabel="Add link"
+        items={content.footer.social}
+        onChange={(social) => updateFooter({ social })}
+        itemTitle={(item) => item.label || item.platform}
+        createItem={() => ({
+          id: uid('s'),
+          platform: 'instagram' as SocialPlatform,
+          label: 'Instagram',
+          url: ''
+        })}
+        emptyText="No social links yet. Add one to show the icons in the footer and Contact section."
+        renderItem={(link, updateLink) =>
+        <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <SelectField
+              label="Platform"
+              value={link.platform}
+              onChange={(v) => {
+                const platform = v as SocialPlatform;
+                const preset = SOCIAL_OPTIONS.find((o) => o.value === platform);
+                // Keep a label the admin typed; otherwise follow the platform.
+                const isDefaultLabel = SOCIAL_OPTIONS.some((o) => o.label === link.label);
+                updateLink({ platform, ...(isDefaultLabel && preset ? { label: preset.label } : {}) });
+              }}
+              options={SOCIAL_OPTIONS} />
+
+              <TextField label="Label" value={link.label} onChange={(v) => updateLink({ label: v })} />
+            </div>
+            <TextField
+            label="URL"
+            value={link.url}
+            onChange={(v) => updateLink({ url: v })}
+            placeholder={socialPlaceholder(link.platform)}
+            hint="Leave empty to hide this icon without deleting it." />
+
+          </>
+        } />
+
     </div>);
 
 }

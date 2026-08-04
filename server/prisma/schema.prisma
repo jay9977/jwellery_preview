@@ -53,6 +53,21 @@ model Subscriber {
   @@map("subscribers")
 }
 
+/// Enquiries sent from the Contact Us form on the landing page
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(120)
+  email     String   @db.VarChar(254)
+  phone     String   @default("") @db.VarChar(40)
+  subject   String   @default("") @db.VarChar(160)
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("contact_messages")
+}
+
 /// Automatic snapshots of the full content document (version history)
 model ContentVersion {
   id        Int      @id @default(autoincrement())

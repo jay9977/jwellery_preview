@@ -9,9 +9,31 @@ export type SectionId =
 'gallery' |
 'journal' |
 'faq' |
+'contact' |
 'newsletter';
 
 export type IconKey = 'gem' | 'truck' | 'shield' | 'refresh' | 'award' | 'headset';
+
+/** Platforms the social/media links can point at. `website` is the catch-all. */
+export type SocialPlatform =
+'instagram' |
+'facebook' |
+'youtube' |
+'twitter' |
+'linkedin' |
+'pinterest' |
+'tiktok' |
+'whatsapp' |
+'telegram' |
+'email' |
+'website';
+
+export interface SocialLink {
+  id: string;
+  platform: SocialPlatform;
+  label: string;
+  url: string;
+}
 
 export interface NavItem {
   id: string;
@@ -232,6 +254,29 @@ export interface FooterContent {
     links: NavItem[];
   }[];
   copyright: string;
+  /** Social / media links. Rendered in the footer and in the Contact section. */
+  social: SocialLink[];
+}
+
+export interface ContactSection {
+  visible: boolean;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  /** Blank fields are hidden rather than rendered empty. */
+  address: string;
+  phone: string;
+  email: string;
+  hours: string;
+  whatsapp: string;
+  /** Google Maps "Embed a map" src URL. Blank hides the map. */
+  mapEmbedUrl: string;
+  showForm: boolean;
+  formTitle: string;
+  formNote: string;
+  formCtaLabel: string;
+  successMessage: string;
+  showSocial: boolean;
 }
 
 export interface Sections {
@@ -245,6 +290,7 @@ export interface Sections {
   gallery: GallerySection;
   journal: JournalSection;
   faq: FaqSection;
+  contact: ContactSection;
   newsletter: NewsletterSection;
 }
 

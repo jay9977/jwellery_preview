@@ -17,6 +17,20 @@ export interface RemoteSubscriber {
   createdAt: string;
 }
 
+export interface ContactEnquiry {
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+}
+
+export interface RemoteContactMessage extends Required<ContactEnquiry> {
+  id: number;
+  read: boolean;
+  createdAt: string;
+}
+
 function endpoint(config: BackendConfig, path: string): string {
   return `${config.baseUrl.trim().replace(/\/$/, '')}${path}`;
 }
@@ -97,6 +111,33 @@ export async function submitSubscriber(config: BackendConfig, email: string): Pr
 export async function fetchSubscribers(config: BackendConfig): Promise<RemoteSubscriber[]> {
   const payload = await request<{subscribers?: RemoteSubscriber[];}>(config, '/subscribers');
   return payload?.subscribers ?? [];
+}
+
+/** POST /contact → store an enquiry from the Contact Us form */
+export async function submitContact(config: BackendConfig, enquiry: ContactEnquiry): Promise<void> {
+  await request<void>(config, '/contact', { method: 'POST', body: JSON.stringify(enquiry) });
+}
+
+/** GET /contact → enquiries plus the unread count (admin only) */
+export async function fetchContactMessages(
+config: BackendConfig)
+: Promise<{messages: RemoteContactMessage[];unread: number;}> {
+  const payload = await request<{messages?: RemoteContactMessage[];unread?: number;}>(config, '/contact');
+  return { messages: payload?.messages ?? [], unread: payload?.unread ?? 0 };
+}
+
+/** PATCH /contact/:id → mark an enquiry read or unread */
+export async function setContactMessageRead(
+config: BackendConfig,
+id: number,
+read: boolean)
+: Promise<void> {
+  await request<void>(config, `/contact/${id}`, { method: 'PATCH', body: JSON.stringify({ read }) });
+}
+
+/** DELETE /contact/:id */
+export async function deleteContactMessage(config: BackendConfig, id: number): Promise<void> {
+  await request<void>(config, `/contact/${id}`, { method: 'DELETE' });
 }
 
 /** GET /versions → server-side version history (admin only) */

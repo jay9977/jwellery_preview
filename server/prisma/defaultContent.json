@@ -23,12 +23,41 @@
     "phone": "+91 98200 11223"
   },
   "nav": [
-    { "id": "nav-1", "label": "Engagement", "href": "#categories" },
-    { "id": "nav-2", "label": "Diamonds", "href": "#featured" },
-    { "id": "nav-3", "label": "Gold", "href": "#featured" },
-    { "id": "nav-4", "label": "Gifting", "href": "#promo" },
-    { "id": "nav-5", "label": "Our Craft", "href": "#editorial" },
-    { "id": "nav-6", "label": "Journal", "href": "#journal" }
+    {
+      "id": "nav-1",
+      "label": "Engagement",
+      "href": "#categories"
+    },
+    {
+      "id": "nav-2",
+      "label": "Diamonds",
+      "href": "#featured"
+    },
+    {
+      "id": "nav-3",
+      "label": "Gold",
+      "href": "#featured"
+    },
+    {
+      "id": "nav-4",
+      "label": "Gifting",
+      "href": "#promo"
+    },
+    {
+      "id": "nav-5",
+      "label": "Our Craft",
+      "href": "#editorial"
+    },
+    {
+      "id": "nav-6",
+      "label": "Journal",
+      "href": "#journal"
+    },
+    {
+      "id": "nav-7",
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "announcement": {
     "visible": true,
@@ -46,6 +75,7 @@
     "gallery",
     "journal",
     "faq",
+    "contact",
     "newsletter"
   ],
   "sections": {
@@ -79,10 +109,30 @@
       "title": "Shop by category",
       "subtitle": "Four houses of craft, one standard of finish.",
       "items": [
-        { "id": "cat-1", "title": "Engagement Rings", "caption": "240+ designs", "image": "/5f2ce6fe-ae11-47f6-bdd7-492c795e26db.jpg" },
-        { "id": "cat-2", "title": "Earrings", "caption": "180+ designs", "image": "/1b9349e0-3204-4747-9fdd-6f4f9d4ae1b2.jpg" },
-        { "id": "cat-3", "title": "Necklaces", "caption": "120+ designs", "image": "/9060c6ae-43da-47e8-8157-2aa34f885062.jpg" },
-        { "id": "cat-4", "title": "Bracelets", "caption": "90+ designs", "image": "/da864486-67e2-4b70-ab54-7d4cccabd89b.jpg" }
+        {
+          "id": "cat-1",
+          "title": "Engagement Rings",
+          "caption": "240+ designs",
+          "image": "/5f2ce6fe-ae11-47f6-bdd7-492c795e26db.jpg"
+        },
+        {
+          "id": "cat-2",
+          "title": "Earrings",
+          "caption": "180+ designs",
+          "image": "/1b9349e0-3204-4747-9fdd-6f4f9d4ae1b2.jpg"
+        },
+        {
+          "id": "cat-3",
+          "title": "Necklaces",
+          "caption": "120+ designs",
+          "image": "/9060c6ae-43da-47e8-8157-2aa34f885062.jpg"
+        },
+        {
+          "id": "cat-4",
+          "title": "Bracelets",
+          "caption": "90+ designs",
+          "image": "/da864486-67e2-4b70-ab54-7d4cccabd89b.jpg"
+        }
       ]
     },
     "featured": {
@@ -143,10 +193,30 @@
       "visible": true,
       "title": "The Maison Aurelle promise",
       "items": [
-        { "id": "t-1", "icon": "gem", "title": "Certified diamonds", "text": "Every stone IGI or GIA certified, with full traceability." },
-        { "id": "t-2", "icon": "truck", "title": "Insured delivery", "text": "Free, fully insured shipping across India in 3–5 days." },
-        { "id": "t-3", "icon": "refresh", "title": "30-day exchange", "text": "Change your mind, or your size, with no questions asked." },
-        { "id": "t-4", "icon": "shield", "title": "Lifetime servicing", "text": "Complimentary cleaning, polishing and re-plating forever." }
+        {
+          "id": "t-1",
+          "icon": "gem",
+          "title": "Certified diamonds",
+          "text": "Every stone IGI or GIA certified, with full traceability."
+        },
+        {
+          "id": "t-2",
+          "icon": "truck",
+          "title": "Insured delivery",
+          "text": "Free, fully insured shipping across India in 3–5 days."
+        },
+        {
+          "id": "t-3",
+          "icon": "refresh",
+          "title": "30-day exchange",
+          "text": "Change your mind, or your size, with no questions asked."
+        },
+        {
+          "id": "t-4",
+          "icon": "shield",
+          "title": "Lifetime servicing",
+          "text": "Complimentary cleaning, polishing and re-plating forever."
+        }
       ]
     },
     "testimonials": {
@@ -195,12 +265,36 @@
       "title": "Worn by you",
       "handle": "@maisonaurelle",
       "items": [
-        { "id": "g-1", "image": "/b3114d75-2704-4097-998c-0ee579e1e09a.jpg", "caption": "Stacked rings, everyday" },
-        { "id": "g-2", "image": "/9060c6ae-43da-47e8-8157-2aa34f885062.jpg", "caption": "The Lumière pendant" },
-        { "id": "g-3", "image": "/1b9349e0-3204-4747-9fdd-6f4f9d4ae1b2.jpg", "caption": "Festive drops" },
-        { "id": "g-4", "image": "/da864486-67e2-4b70-ab54-7d4cccabd89b.jpg", "caption": "Rivière on repeat" },
-        { "id": "g-5", "image": "/42249ea0-d991-43cd-ab3a-09084d8b829f.jpg", "caption": "Bridal, backstage" },
-        { "id": "g-6", "image": "/d1067c91-5550-49a5-9a10-babd26de23d2.jpg", "caption": "She said yes" }
+        {
+          "id": "g-1",
+          "image": "/b3114d75-2704-4097-998c-0ee579e1e09a.jpg",
+          "caption": "Stacked rings, everyday"
+        },
+        {
+          "id": "g-2",
+          "image": "/9060c6ae-43da-47e8-8157-2aa34f885062.jpg",
+          "caption": "The Lumière pendant"
+        },
+        {
+          "id": "g-3",
+          "image": "/1b9349e0-3204-4747-9fdd-6f4f9d4ae1b2.jpg",
+          "caption": "Festive drops"
+        },
+        {
+          "id": "g-4",
+          "image": "/da864486-67e2-4b70-ab54-7d4cccabd89b.jpg",
+          "caption": "Rivière on repeat"
+        },
+        {
+          "id": "g-5",
+          "image": "/42249ea0-d991-43cd-ab3a-09084d8b829f.jpg",
+          "caption": "Bridal, backstage"
+        },
+        {
+          "id": "g-6",
+          "image": "/d1067c91-5550-49a5-9a10-babd26de23d2.jpg",
+          "caption": "She said yes"
+        }
       ]
     },
     "journal": {
@@ -272,6 +366,24 @@
       "body": "Join our list for private previews, atelier notes and early access to festive pricing.",
       "ctaLabel": "Subscribe",
       "note": "No more than two emails a month. Unsubscribe anytime."
+    },
+    "contact": {
+      "visible": true,
+      "eyebrow": "Talk to us",
+      "title": "Contact our atelier",
+      "subtitle": "Questions about a piece, a custom commission or an order already on its way — a gemmologist will get back to you within one working day.",
+      "address": "Maison Aurelle Atelier, 12 Altamount Road, Mumbai 400026, India",
+      "phone": "+91 98200 12345",
+      "email": "care@maisonaurelle.com",
+      "hours": "Mon–Sat, 10am – 7pm IST",
+      "whatsapp": "+91 98200 12345",
+      "mapEmbedUrl": "",
+      "showForm": true,
+      "formTitle": "Send us a message",
+      "formNote": "We reply to every enquiry personally. Your details are never shared.",
+      "formCtaLabel": "Send enquiry",
+      "successMessage": "Thank you — your message is with our team. We usually reply within one working day.",
+      "showSocial": true
     }
   },
   "footer": {
@@ -281,33 +393,107 @@
         "id": "f-1",
         "title": "Shop",
         "links": [
-          { "id": "fl-1", "label": "Engagement rings", "href": "#categories" },
-          { "id": "fl-2", "label": "Earrings", "href": "#categories" },
-          { "id": "fl-3", "label": "Necklaces", "href": "#categories" },
-          { "id": "fl-4", "label": "Gifting under ₹50k", "href": "#promo" }
+          {
+            "id": "fl-1",
+            "label": "Engagement rings",
+            "href": "#categories"
+          },
+          {
+            "id": "fl-2",
+            "label": "Earrings",
+            "href": "#categories"
+          },
+          {
+            "id": "fl-3",
+            "label": "Necklaces",
+            "href": "#categories"
+          },
+          {
+            "id": "fl-4",
+            "label": "Gifting under ₹50k",
+            "href": "#promo"
+          }
         ]
       },
       {
         "id": "f-2",
         "title": "Support",
         "links": [
-          { "id": "fl-5", "label": "FAQ", "href": "#faq" },
-          { "id": "fl-6", "label": "Shipping & returns", "href": "#trust" },
-          { "id": "fl-7", "label": "Care & servicing", "href": "#trust" },
-          { "id": "fl-8", "label": "Contact us", "href": "#newsletter" }
+          {
+            "id": "fl-5",
+            "label": "FAQ",
+            "href": "#faq"
+          },
+          {
+            "id": "fl-6",
+            "label": "Shipping & returns",
+            "href": "#trust"
+          },
+          {
+            "id": "fl-7",
+            "label": "Care & servicing",
+            "href": "#trust"
+          },
+          {
+            "id": "fl-8",
+            "label": "Contact us",
+            "href": "#contact"
+          }
         ]
       },
       {
         "id": "f-3",
         "title": "House",
         "links": [
-          { "id": "fl-9", "label": "Our craft", "href": "#editorial" },
-          { "id": "fl-10", "label": "Responsible sourcing", "href": "#editorial" },
-          { "id": "fl-11", "label": "Book an appointment", "href": "#newsletter" },
-          { "id": "fl-12", "label": "Admin panel", "href": "/admin" }
+          {
+            "id": "fl-9",
+            "label": "Our craft",
+            "href": "#editorial"
+          },
+          {
+            "id": "fl-10",
+            "label": "Responsible sourcing",
+            "href": "#editorial"
+          },
+          {
+            "id": "fl-11",
+            "label": "Book an appointment",
+            "href": "#contact"
+          },
+          {
+            "id": "fl-12",
+            "label": "Admin panel",
+            "href": "/admin"
+          }
         ]
       }
     ],
-    "copyright": "© 2026 Maison Aurelle Fine Jewellery. All rights reserved."
+    "copyright": "© 2026 Maison Aurelle Fine Jewellery. All rights reserved.",
+    "social": [
+      {
+        "id": "s-1",
+        "platform": "instagram",
+        "label": "Instagram",
+        "url": "https://instagram.com/"
+      },
+      {
+        "id": "s-2",
+        "platform": "facebook",
+        "label": "Facebook",
+        "url": "https://facebook.com/"
+      },
+      {
+        "id": "s-3",
+        "platform": "youtube",
+        "label": "YouTube",
+        "url": "https://youtube.com/"
+      },
+      {
+        "id": "s-4",
+        "platform": "pinterest",
+        "label": "Pinterest",
+        "url": "https://pinterest.com/"
+      }
+    ]
   }
 }

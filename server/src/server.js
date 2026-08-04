@@ -223,6 +223,72 @@ app.post('/api/subscribers', publicLimiter, async (req, res, next) => {
   }
 });
 
+/** Public: contact-form enquiry */
+app.post('/api/contact', publicLimiter, async (req, res, next) => {
+  try {
+    const body = req.body ?? {};
+    const str = (v, max) => String(v ?? '').trim().slice(0, max);
+    const name = str(body.name, 120);
+    const email = str(body.email, 254).toLowerCase();
+    const message = str(body.message, 5000);
+
+    if (!name) return res.status(400).json({ error: 'Please tell us your name.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address.' });
+    }
+    if (message.length < 5) return res.status(400).json({ error: 'Please include a short message.' });
+
+    await prisma.contactMessage.create({
+      data: { name, email, message, phone: str(body.phone, 40), subject: str(body.subject, 160) }
+    });
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Admin: list contact enquiries */
+app.get('/api/contact', requireAuth, async (_req, res, next) => {
+  try {
+    const messages = await prisma.contactMessage.findMany({ orderBy: { createdAt: 'desc' }, take: 500 });
+    const unread = await prisma.contactMessage.count({ where: { read: false } });
+    res.json({ messages, unread });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Admin: mark an enquiry read / unread */
+app.patch('/api/contact/:id', writeLimiter, requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Message id must be a number.' });
+    if (typeof req.body?.read !== 'boolean') {
+      return res.status(400).json({ error: 'Body must contain a boolean "read".' });
+    }
+    const existing = await prisma.contactMessage.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Message not found.' });
+    const message = await prisma.contactMessage.update({ where: { id }, data: { read: req.body.read } });
+    res.json({ message });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Admin: delete an enquiry */
+app.delete('/api/contact/:id', writeLimiter, requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Message id must be a number.' });
+    const existing = await prisma.contactMessage.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Message not found.' });
+    await prisma.contactMessage.delete({ where: { id } });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
 /** Admin: list subscribers */
 app.get('/api/subscribers', requireAuth, async (_req, res, next) => {
   try {

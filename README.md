@@ -88,6 +88,12 @@ so no working password ever ships in the bundle.
 - **Image upload** — with the backend connected, images are stored on the server (`server/uploads/`) instead of bloating the database
 - **Version history** — restore any of the last 20 server snapshots, plus 12 named local ones
 - **Newsletter subscribers** — browse signups and export them as CSV
+- **Contact Us section** — address, phone, email, hours, WhatsApp button, optional Google Maps
+  embed and an enquiry form; every field can be blanked to hide it
+- **Contact messages** — read enquiries in the admin panel, mark read/unread, delete, export CSV
+- **Social & media links** — add any number of links (Instagram, Facebook, YouTube, X, LinkedIn,
+  Pinterest, TikTok, WhatsApp, Telegram, email or any URL); they render in the footer and in the
+  Contact section
 
 ## API endpoints (base: `http://localhost:4000/api`)
 
@@ -100,6 +106,10 @@ so no working password ever ships in the bundle.
 | PUT | `/content` | JWT | save content (edit/hide/reorder/delete) |
 | POST | `/subscribers` | – | newsletter signup |
 | GET | `/subscribers` | JWT | list signups |
+| POST | `/contact` | – | Contact Us enquiry |
+| GET | `/contact` | JWT | list enquiries + unread count |
+| PATCH | `/contact/:id` | JWT | `{ read }` — mark read / unread |
+| DELETE | `/contact/:id` | JWT | delete an enquiry |
 | POST | `/upload` | JWT | image upload (multipart, field `image`) |
 | GET | `/versions` | JWT | version history |
 | GET | `/versions/:id` | JWT | one snapshot, including its content |

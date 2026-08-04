@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
-import { InstagramIcon, PhoneIcon } from 'lucide-react';
+import { PhoneIcon } from 'lucide-react';
 import { useContent } from '../../contexts/ContentContext';
+import { socialIcon, usableSocialLinks } from '../../data/social';
 
 export function Footer() {
   const { content } = useContent();
   const { brand, footer } = content;
+  const social = usableSocialLinks(footer.social);
 
   return (
     <footer className="section-y-sm w-full bg-ink text-cream">
@@ -46,13 +48,27 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col-reverse items-center justify-between gap-4 border-t border-cream/10 pt-6 sm:flex-row">
           <p className="text-xs text-cream/45">{footer.copyright}</p>
-          <a
-            href="#top"
-            aria-label="Instagram"
-            className="flex h-9 w-9 items-center justify-center border border-cream/20 text-cream/70 transition-colors hover:border-gold hover:text-gold">
-            
-            <InstagramIcon className="h-4 w-4" />
-          </a>
+          {social.length > 0 &&
+          <ul className="flex flex-wrap items-center justify-center gap-2">
+              {social.map((link) => {
+              const Icon = socialIcon(link.platform);
+              return (
+                <li key={link.id}>
+                    <a
+                    href={link.url}
+                    target={link.url.startsWith('mailto:') ? undefined : '_blank'}
+                    rel="noreferrer"
+                    title={link.label}
+                    aria-label={link.label}
+                    className="flex h-9 w-9 items-center justify-center border border-cream/20 text-cream/70 transition-colors hover:border-gold hover:text-gold">
+
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  </li>);
+
+            })}
+            </ul>
+          }
         </div>
       </div>
     </footer>);
