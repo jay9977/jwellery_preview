@@ -1,0 +1,64 @@
+// Prisma schema — MySQL (works with MySQL Workbench / local MySQL server)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// Admin users who can log in to the /admin panel
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+/// One row per landing-page section (hero, categories, featured, ...)
+/// visible  -> hide / unhide from admin panel
+/// position -> ordering of sections on the landing page
+/// data     -> the section's full content (slides, items, titles, ...)
+model Section {
+  id        String   @id
+  visible   Boolean  @default(true)
+  position  Int
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("sections")
+}
+
+/// Global site settings stored one row per key:
+/// theme, seo, brand, nav, announcement, footer
+model GlobalSetting {
+  key       String   @id
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("global_settings")
+}
+
+/// Newsletter signups from the landing page
+model Subscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("subscribers")
+}
+
+/// Automatic snapshots of the full content document (version history)
+model ContentVersion {
+  id        Int      @id @default(autoincrement())
+  label     String   @default("autosave")
+  content   Json
+  createdAt DateTime @default(now())
+
+  @@map("content_versions")
+}

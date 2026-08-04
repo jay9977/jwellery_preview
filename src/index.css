@@ -1,0 +1,164 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&family=Marcellus&family=Karla:wght@300;400;500;600&family=Lora:wght@400;500;600&family=Work+Sans:wght@300;400;500;600&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+:root {
+  --c-cream: 250 246 240;
+  --c-sand: 239 231 220;
+  --c-ink: 28 25 23;
+  --c-accent: 20 69 59;
+  --c-accent-deep: 14 50 43;
+  --c-gold: 176 141 87;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: Jost, ui-sans-serif, system-ui, sans-serif;
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+::selection {
+  background-color: rgb(var(--c-gold) / 0.35);
+}
+:focus-visible {
+  outline: 2px solid rgb(var(--c-accent));
+  outline-offset: 2px;
+}
+body {
+  font-family: var(--font-body);
+  background-color: rgb(var(--c-cream));
+  color: rgb(var(--c-ink));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* ---------- Layout rhythm ---------- */
+.shell {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) {
+  .shell {
+    padding-inline: 2rem;
+  }
+}
+.section-y {
+  padding-block: 4.5rem;
+}
+.section-y-sm {
+  padding-block: 3.5rem;
+}
+@media (min-width: 1024px) {
+  .section-y {
+    padding-block: 6rem;
+  }
+  .section-y-sm {
+    padding-block: 4rem;
+  }
+}
+/* ---------- Typography scale ---------- */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.display-1 {
+  font-size: clamp(2.125rem, 4.4vw, 3.375rem);
+  line-height: 1.06;
+}
+.display-2 {
+  font-size: clamp(1.75rem, 3vw, 2.375rem);
+  line-height: 1.14;
+}
+.display-3 {
+  font-size: clamp(1.5rem, 2.2vw, 1.75rem);
+  line-height: 1.2;
+}
+.display-4 {
+  font-size: 1.3125rem;
+  line-height: 1.3;
+}
+.body-base {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+.body-sm {
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.eyebrow {
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.meta {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9375rem 1.75rem;
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.btn-sm {
+  padding: 0.8125rem 1.25rem;
+}
+.btn-primary {
+  background-color: rgb(var(--c-accent));
+  color: rgb(var(--c-cream));
+}
+.btn-primary:hover {
+  background-color: rgb(var(--c-accent-deep));
+}
+.btn-outline {
+  border: 1px solid rgb(var(--c-ink) / 0.2);
+  color: rgb(var(--c-ink));
+}
+.btn-outline:hover {
+  border-color: rgb(var(--c-ink) / 0.55);
+}
+.btn-light {
+  background-color: rgb(var(--c-cream));
+  color: rgb(var(--c-accent));
+}
+.btn-light:hover {
+  background-color: rgb(var(--c-gold));
+  color: rgb(var(--c-ink));
+}
+.link-underline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgb(var(--c-ink) / 0.3);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.link-underline:hover {
+  color: rgb(var(--c-accent));
+  border-color: rgb(var(--c-accent));
+}

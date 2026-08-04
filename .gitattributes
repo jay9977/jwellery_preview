@@ -1,0 +1,21 @@
+# Normalise line endings so Windows checkouts stop warning on every `git add`.
+# Text files are stored LF in the repo and checked out with native endings.
+* text=auto
+
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.cjs  text eol=lf
+*.json text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.md   text eol=lf
+*.prisma text eol=lf
+.env.example text eol=lf
+
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.avif binary
+*.gif binary
