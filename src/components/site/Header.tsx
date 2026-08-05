@@ -47,7 +47,15 @@ export function Header() {
           </nav>
 
           <a href="#top" className="flex flex-1 flex-col items-center gap-1 lg:flex-none">
+            {brand.logo ?
+            <img
+              src={brand.logo}
+              alt={brand.name}
+              style={{ height: brand.logoHeight }}
+              className="w-auto max-w-[220px] object-contain sm:max-w-[280px]" /> :
+
             <span className="display text-[26px] leading-none text-ink sm:text-[30px]">{brand.name}</span>
+            }
             <span className="meta hidden text-[9px] text-ink/45 sm:block">{brand.tagline}</span>
           </a>
 

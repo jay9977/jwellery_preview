@@ -52,7 +52,11 @@ export const defaultContent: SiteContent = {
   brand: {
     name: 'Maison girija',
     tagline: 'Fine jewellery, made to be remembered',
-    phone: '+91 98200 11223'
+    phone: '+91 98200 11223',
+    logo: '',
+    logoHeight: 44,
+    footerLogo: '',
+    footerLogoHeight: 40
   },
   nav: [
   { id: 'nav-1', label: 'Engagement', href: '#categories' },

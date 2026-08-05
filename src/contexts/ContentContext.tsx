@@ -71,6 +71,7 @@ function normalize(parsed: Partial<SiteContent> | null | undefined): SiteContent
       colors: { ...defaultContent.theme.colors, ...parsed.theme?.colors }
     },
     seo: { ...defaultContent.seo, ...parsed.seo },
+    brand: { ...defaultContent.brand, ...parsed.brand },
     // Merged, not replaced: content saved before a field existed (e.g. footer.social)
     // must still come back with that field rather than undefined.
     footer: { ...defaultContent.footer, ...parsed.footer },

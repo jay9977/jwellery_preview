@@ -13,7 +13,15 @@ export function Footer() {
       <div className="shell">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)] lg:gap-8">
           <div className="max-w-xs">
+            {brand.footerLogo ?
+            <img
+              src={brand.footerLogo}
+              alt={brand.name}
+              style={{ height: brand.footerLogoHeight }}
+              className="w-auto max-w-[220px] object-contain" /> :
+
             <p className="display text-[1.625rem] leading-none">{brand.name}</p>
+            }
             <p className="body-sm mt-4 text-cream/55">{footer.about}</p>
             <a
               href={`tel:${brand.phone.replace(/\s/g, '')}`}

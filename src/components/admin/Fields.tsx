@@ -217,6 +217,39 @@ export function MediaField({ label, value, onChange, placeholder, hint }: BasePr
 
 }
 
+/** Numeric size control — used for logo heights, where a free-text px value invites typos. */
+export function SliderField({
+  label,
+  value,
+  onChange,
+  min = 20,
+  max = 120,
+  step = 1,
+  hint
+
+
+
+}: {label: string;value: number;onChange: (value: number) => void;min?: number;max?: number;step?: number;hint?: string;}) {
+  return (
+    <label className="block">
+      <span className="flex items-center justify-between">
+        <span className="text-[11px] font-medium uppercase tracking-widest text-slate-500">{label}</span>
+        <span className="text-xs tabular-nums text-slate-400">{value}px</span>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="mt-2 w-full accent-emerald" />
+
+      {hint && <span className="mt-1 block text-xs text-slate-400">{hint}</span>}
+    </label>);
+
+}
+
 export function ToggleField({
   label,
   checked,

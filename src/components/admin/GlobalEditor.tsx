@@ -1,5 +1,5 @@
 import { useContent } from '../../hooks/useContent';
-import { TextAreaField, TextField, ToggleField } from './Fields';
+import { ImageField, SliderField, TextAreaField, TextField, ToggleField } from './Fields';
 import { ItemList } from './ItemList';
 import { uid } from '../../utils/id';
 
@@ -18,6 +18,41 @@ export function GlobalEditor() {
         <TextField label="Store name" value={content.brand.name} onChange={(v) => updateBrand({ name: v })} />
         <TextField label="Tagline" value={content.brand.tagline} onChange={(v) => updateBrand({ tagline: v })} />
         <TextField label="Phone" value={content.brand.phone} onChange={(v) => updateBrand({ phone: v })} />
+      </div>
+
+      <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Logo</h3>
+        <p className="-mt-2 text-xs text-slate-500">
+          Leave a logo empty to show the store name as text instead. A transparent PNG works best — uploads
+          accept JPG, PNG, WebP, GIF and AVIF up to 8&nbsp;MB.
+        </p>
+
+        <ImageField
+          label="Header logo"
+          value={content.brand.logo}
+          onChange={(v) => updateBrand({ logo: v })} />
+
+        <SliderField
+          label="Header logo height"
+          value={content.brand.logoHeight}
+          onChange={(v) => updateBrand({ logoHeight: v })}
+          min={24}
+          max={96}
+          hint="The header bar is 72px tall — keep the logo below that." />
+
+        <div className="border-t border-slate-100 pt-4">
+          <ImageField
+            label="Footer logo"
+            value={content.brand.footerLogo}
+            onChange={(v) => updateBrand({ footerLogo: v })} />
+        </div>
+        <SliderField
+          label="Footer logo height"
+          value={content.brand.footerLogoHeight}
+          onChange={(v) => updateBrand({ footerLogoHeight: v })}
+          min={24}
+          max={96}
+          hint="The footer is dark — use a light or white version of your logo here." />
       </div>
 
       <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">

@@ -85,6 +85,14 @@ export interface Brand {
   name: string;
   tagline: string;
   phone: string;
+  /** Header logo image. Empty falls back to the store name as text. */
+  logo: string;
+  /** Rendered header logo height in px — logos vary wildly in aspect ratio. */
+  logoHeight: number;
+  /** Footer logo image. Empty falls back to the store name as text. */
+  footerLogo: string;
+  /** Rendered footer logo height in px. */
+  footerLogoHeight: number;
 }
 
 export interface SeoSettings {
