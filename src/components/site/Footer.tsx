@@ -14,11 +14,16 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)] lg:gap-8">
           <div className="max-w-xs">
             {brand.footerLogo ?
-            <img
-              src={brand.footerLogo}
-              alt={brand.name}
-              style={{ height: brand.footerLogoHeight }}
-              className="w-auto max-w-[220px] object-contain" /> :
+            // The footer band is dark, so the logo gets a light plaque to sit on —
+            // without it a logo with its own white background reads as a stray box.
+            <span className="inline-flex rounded-sm bg-cream p-3">
+                <img
+                src={brand.footerLogo}
+                alt={brand.name}
+                style={{ height: brand.footerLogoHeight }}
+                className="w-auto max-w-[220px] object-contain" />
+
+              </span> :
 
             <p className="display text-[1.625rem] leading-none">{brand.name}</p>
             }

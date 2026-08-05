@@ -97,6 +97,19 @@ export function Contact({ data }: {data: ContactSection;}) {
 
           {hasDetails &&
           <div className="space-y-7">
+              {/* Shopfront sign. A full-colour boxed logo needs a white field to sit on,
+                  and this is the one place on the page that is about the real shop. */}
+              {content.brand.logo &&
+            <div className="inline-flex rounded-sm bg-white p-4 ring-1 ring-ink/10">
+                  <img
+                src={content.brand.logo}
+                alt={content.brand.name}
+                style={{ height: content.brand.logoHeight }}
+                className="w-auto max-w-full object-contain" />
+
+                </div>
+            }
+
               {data.address &&
             <DetailRow icon={MapPinIcon} label="Visit us">
                   <address className="not-italic">{data.address}</address>

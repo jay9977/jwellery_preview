@@ -53,10 +53,12 @@ export const defaultContent: SiteContent = {
     name: 'Maison girija',
     tagline: 'Fine jewellery, made to be remembered',
     phone: '+91 98200 11223',
+    headerLogo: '',
+    headerLogoHeight: 44,
     logo: '',
-    logoHeight: 44,
+    logoHeight: 120,
     footerLogo: '',
-    footerLogoHeight: 40
+    footerLogoHeight: 72
   },
   nav: [
   { id: 'nav-1', label: 'Engagement', href: '#categories' },

@@ -23,36 +23,55 @@ export function GlobalEditor() {
       <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
         <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Logo</h3>
         <p className="-mt-2 text-xs text-slate-500">
-          Leave a logo empty to show the store name as text instead. A transparent PNG works best — uploads
-          accept JPG, PNG, WebP, GIF and AVIF up to 8&nbsp;MB.
+          Your logo can appear in three places: at the start of the header, in the Contact section and in
+          the footer. Leave one empty to hide it there — the store name always stays as the centred header
+          wordmark. Uploads accept JPG, PNG, WebP, GIF and AVIF up to 8&nbsp;MB.
         </p>
 
-        <ImageField
-          label="Header logo"
-          value={content.brand.logo}
-          onChange={(v) => updateBrand({ logo: v })} />
+        <div className="space-y-4">
+          <ImageField
+            label="Logo (header, left side)"
+            value={content.brand.headerLogo}
+            onChange={(v) => updateBrand({ headerLogo: v })} />
 
-        <SliderField
-          label="Header logo height"
-          value={content.brand.logoHeight}
-          onChange={(v) => updateBrand({ logoHeight: v })}
-          min={24}
-          max={96}
-          hint="The header bar is 72px tall — keep the logo below that." />
+          <SliderField
+            label="Header logo height"
+            value={content.brand.headerLogoHeight}
+            onChange={(v) => updateBrand({ headerLogoHeight: v })}
+            min={24}
+            max={64}
+            hint="The header bar is 72px tall — keep the logo below that." />
+        </div>
 
-        <div className="border-t border-slate-100 pt-4">
+        <div className="space-y-4 border-t border-slate-100 pt-4">
+          <ImageField
+            label="Logo (Contact section)"
+            value={content.brand.logo}
+            onChange={(v) => updateBrand({ logo: v })} />
+
+          <SliderField
+            label="Contact logo height"
+            value={content.brand.logoHeight}
+            onChange={(v) => updateBrand({ logoHeight: v })}
+            min={40}
+            max={160}
+            hint="Shown on a white card beside your address and phone — 90–120px suits most logos." />
+        </div>
+
+        <div className="space-y-4 border-t border-slate-100 pt-4">
           <ImageField
             label="Footer logo"
             value={content.brand.footerLogo}
             onChange={(v) => updateBrand({ footerLogo: v })} />
+
+          <SliderField
+            label="Footer logo height"
+            value={content.brand.footerLogoHeight}
+            onChange={(v) => updateBrand({ footerLogoHeight: v })}
+            min={24}
+            max={120}
+            hint="The footer is dark, so the logo sits on a light plaque — any version works." />
         </div>
-        <SliderField
-          label="Footer logo height"
-          value={content.brand.footerLogoHeight}
-          onChange={(v) => updateBrand({ footerLogoHeight: v })}
-          min={24}
-          max={96}
-          hint="The footer is dark — use a light or white version of your logo here." />
       </div>
 
       <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">

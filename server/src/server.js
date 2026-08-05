@@ -51,7 +51,26 @@ const origins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
-app.use(cors({ origin: origins.length === 1 ? origins[0] : origins }));
+
+// In development Vite hops to 5174, 5175… whenever 5173 is taken, and an origin
+// the list does not know about turns every admin request into a CORS failure.
+// Outside production, trust any localhost port; production uses CORS_ORIGIN only.
+const isProduction = process.env.NODE_ENV === 'production';
+const LOCALHOST = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // No Origin header: curl, same-origin and server-to-server calls.
+      if (!origin) return callback(null, true);
+      if (origins.includes(origin)) return callback(null, true);
+      if (!isProduction && LOCALHOST.test(origin)) return callback(null, true);
+      const denied = new Error(`Origin ${origin} is not allowed by CORS.`);
+      denied.status = 403; // a rejected origin is a client error, not a server fault
+      callback(denied);
+    }
+  })
+);
 
 // Small default body limit; only the content document is allowed to be large,
 // so a public route can never be made to buffer megabytes of JSON.
@@ -382,7 +401,9 @@ const port = Number(process.env.PORT ?? 4000);
 const server = app.listen(port, () => {
   console.log(`✔ girija server running at http://localhost:${port}`);
   console.log(`  API base URL for the admin panel: http://localhost:${port}/api`);
-  console.log(`  Allowed origins: ${origins.join(', ')}`);
+  console.log(
+    `  Allowed origins: ${origins.join(', ')}${isProduction ? '' : ' (+ any localhost port in development)'}`
+  );
 });
 
 /* ---------- graceful shutdown ---------- */

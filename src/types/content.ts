@@ -85,9 +85,13 @@ export interface Brand {
   name: string;
   tagline: string;
   phone: string;
-  /** Header logo image. Empty falls back to the store name as text. */
+  /** Logo image shown at the start of the header, beside the nav. Empty hides it. */
+  headerLogo: string;
+  /** Rendered header logo height in px. The header bar is 72px tall. */
+  headerLogoHeight: number;
+  /** Logo image shown in the Contact section. Empty hides it. */
   logo: string;
-  /** Rendered header logo height in px — logos vary wildly in aspect ratio. */
+  /** Rendered Contact-section logo height in px — logos vary wildly in aspect ratio. */
   logoHeight: number;
   /** Footer logo image. Empty falls back to the store name as text. */
   footerLogo: string;

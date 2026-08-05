@@ -53,8 +53,24 @@ In `server/.env` set at minimum:
 # in the project root
 copy .env.example .env        # then set VITE_API_URL
 npm install
-npm run dev                   # http://localhost:5173
+npm run dev                   # starts the API *and* http://localhost:5173
 ```
+
+`npm run dev` in the root runs both halves: the API on port 4000 and Vite on 5173.
+Keep that one terminal open while you work — on Windows you can instead double-click
+**`start.bat`**, which does the same thing.
+
+The admin panel signs in against `http://localhost:4000/api`, so a frontend started on
+its own gives `ERR_CONNECTION_REFUSED` on `/api/auth/login` and login is impossible.
+If the API dies the launcher restarts it after 2 seconds; if port 4000 is already
+serving, it reuses it instead of starting a second copy.
+
+| Command | Runs |
+|---|---|
+| `npm run dev` | API + frontend (use this) |
+| `npm run dev:web` | frontend only |
+| `npm run dev:server` | API only, with reload-on-save for server code |
+| `npm run stop` | free port 4000 after a terminal was closed without Ctrl+C |
 
 **`VITE_API_URL` is required.** It is what makes the public landing page read from the
 database — without it visitors only ever see the bundled default content, no matter what
@@ -68,7 +84,8 @@ Vite inlines these values at build time, so **never put a secret in the root `.e
 
 ## 4. Sign in to the admin panel
 
-1. Open **`http://localhost:5173/admin-login`**
+1. Open **`http://localhost:5173/admin-login`** (use whatever port Vite printed — if 5173
+   was busy it will say 5174, 5175, … and any localhost port is accepted in development)
 2. Sign in with the `ADMIN_PASSWORD` from `server/.env` (email optional while there is one admin)
 3. The server verifies it and issues a JWT, held in that browser tab only
 4. You land on `/admin` — the editor. Every edit auto-publishes to MySQL (or use
@@ -81,6 +98,17 @@ reach them by typing the URL.
 To edit offline with no server at all, set `VITE_ADMIN_DEMO_PASSWORD` in the root `.env`
 and rebuild. Leave it empty in production — offline editing is disabled when it is unset,
 so no working password ever ships in the bundle.
+
+### Login troubleshooting
+
+| What the browser console shows | Cause | Fix |
+|---|---|---|
+| `:4000/api/auth/login … ERR_CONNECTION_REFUSED` | the API is not running | run `npm run dev` in the project root (or double-click `start.bat`) and keep that window open |
+| `blocked by CORS policy` | the page is on an origin the server does not allow | in development any localhost port is allowed; in production put your real domain in `CORS_ORIGIN` in `server/.env` |
+| `Invalid credentials` | password does not match the database | re-run `npm --prefix server run db:seed` after changing `ADMIN_PASSWORD` in `server/.env` |
+| `Too many attempts` | 10 failed logins in 15 minutes | wait 15 minutes, or restart the server to clear the counter |
+| API errors mentioning the database | MySQL is down or `DATABASE_URL` is wrong | start the MySQL service and check `DATABASE_URL` in `server/.env` |
+| `EADDRINUSE` / an old server answers on 4000 | a previous run was never stopped | `npm run stop`, then `npm run dev` |
 
 ## What the admin panel can do
 

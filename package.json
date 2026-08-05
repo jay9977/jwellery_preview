@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx vite",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "npx vite",
+    "dev:server": "npm --prefix server run dev",
+    "stop": "node scripts/stop.mjs",
     "build": "npm run typecheck && npx vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
