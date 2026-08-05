@@ -40,7 +40,7 @@ export function GlobalEditor() {
             onChange={(v) => updateBrand({ headerLogoHeight: v })}
             min={24}
             max={64}
-            hint="The header bar is 72px tall — keep the logo below that." />
+            hint="The bar grows to 92px for a logo, so 44–56px sits well with room to breathe." />
         </div>
 
         <div className="space-y-4 border-t border-slate-100 pt-4">

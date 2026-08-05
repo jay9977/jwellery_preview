@@ -379,11 +379,17 @@ export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () =
             onChange={(v) => updateSection('featured', { subtitle: v })} />
           
             <TextField
-            label="Bottom button"
-            value={content.sections.featured.ctaLabel}
-            onChange={(v) => updateSection('featured', { ctaLabel: v })}
-            hint="Leave empty to hide" />
-          
+            label="Enquiry button label"
+            value={content.sections.featured.enquiryLabel}
+            onChange={(v) => updateSection('featured', { enquiryLabel: v })}
+            hint="Shown on every product card. Prices are not displayed — customers enquire instead." />
+
+            <TextField
+            label="Trust badges"
+            value={content.sections.featured.trustBadges}
+            onChange={(v) => updateSection('featured', { trustBadges: v })}
+            hint="Comma separated, shown in the quick view — e.g. BIS Hallmarked, Certified" />
+
           </div>
           <ItemList
           title="Products"
@@ -395,31 +401,30 @@ export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () =
             id: uid('p'),
             name: 'New product',
             metal: '18K Gold',
-            price: '₹0',
+            price: '',
             compareAt: '',
             badge: '',
-            image: ''
+            image: '',
+            specs: 'Purity: 22K BIS Hallmarked\nGross weight: \nAvailable sizes: '
           })}
           emptyText="No products. Add one to fill the grid."
           renderItem={(item, update) =>
           <>
                 <TextField label="Name" value={item.name} onChange={(v) => update({ name: v })} />
                 <TextField label="Metal / details" value={item.metal} onChange={(v) => update({ metal: v })} />
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <TextField label="Price" value={item.price} onChange={(v) => update({ price: v })} />
-                  <TextField
-                label="Compare at"
-                value={item.compareAt}
-                onChange={(v) => update({ compareAt: v })}
-                hint="Optional" />
-              
-                  <TextField
-                label="Badge"
-                value={item.badge}
-                onChange={(v) => update({ badge: v })}
-                hint="Optional" />
-              
-                </div>
+                <TextField
+              label="Badge"
+              value={item.badge}
+              onChange={(v) => update({ badge: v })}
+              hint="Optional corner label, e.g. Bestseller" />
+
+                <TextAreaField
+              label="Specifications"
+              value={item.specs}
+              onChange={(v) => update({ specs: v })}
+              placeholder={'Purity: 22K BIS Hallmarked\nGross weight: 18.6 g\nAvailable sizes: 2.4 to 2.8'}
+              hint="One per line as “Label: Value”. Shown in the quick view. Leave empty to hide." />
+
                 <ImageField label="Product image" value={item.image} onChange={(v) => update({ image: v })} />
               </>
           } />

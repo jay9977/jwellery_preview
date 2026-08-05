@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CheckIcon, ClockIcon, Loader2Icon, MailIcon, MapPinIcon, MessageCircleIcon, PhoneIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
 import { SectionHeading } from './SectionHeading';
 import { socialIcon, usableSocialLinks } from '../../data/social';
+import { onEnquiry } from '../../utils/events';
 import type { ContactSection } from '../../types/content';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -37,8 +38,28 @@ export function Contact({ data }: {data: ContactSection;}) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [error, setError] = useState('');
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const whatsappDigits = data.whatsapp.replace(/[^\d]/g, '');
+
+  // An "Enquire now" button anywhere on the page lands here: the piece is filled in,
+  // the form is scrolled to and the cursor is waiting in the first empty box.
+  useEffect(
+    () =>
+    onEnquiry((productName) => {
+      setStatus('idle');
+      setForm((prev) => ({
+        ...prev,
+        subject: productName,
+        message: prev.message.trim() ? prev.message : `I would like to know more about the ${productName}.`
+      }));
+      window.setTimeout(() => {
+        document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        nameRef.current?.focus({ preventScroll: true });
+      }, 60);
+    }),
+    []
+  );
 
   function update(key: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -231,6 +252,7 @@ export function Contact({ data }: {data: ContactSection;}) {
                       <label className="block">
                         <span className="eyebrow text-ink/50">Your name</span>
                         <input
+                      ref={nameRef}
                       type="text"
                       value={form.name}
                       onChange={(e) => update('name', e.target.value)}

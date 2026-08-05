@@ -155,6 +155,11 @@ export interface Product {
   compareAt: string;
   badge: string;
   image: string;
+  /**
+   * Jewellery specifications for the quick view, one per line as `Label: Value`
+   * (e.g. `Purity: 22K BIS Hallmarked`). Empty hides the table.
+   */
+  specs: string;
 }
 
 export interface FeaturedSection {
@@ -164,7 +169,10 @@ export interface FeaturedSection {
   eyebrow: string;
   title: string;
   subtitle: string;
-  ctaLabel: string;
+  /** Label on the enquiry button under every product. */
+  enquiryLabel: string;
+  /** Trust badges shown in the quick view, comma separated (e.g. `BIS Hallmarked, Certified`). */
+  trustBadges: string;
   items: Product[];
 }
 

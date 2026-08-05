@@ -54,7 +54,7 @@ export const defaultContent: SiteContent = {
     tagline: 'Fine jewellery, made to be remembered',
     phone: '+91 98200 11223',
     headerLogo: '',
-    headerLogoHeight: 44,
+    headerLogoHeight: 52,
     logo: '',
     logoHeight: 120,
     footerLogo: '',
@@ -132,7 +132,8 @@ export const defaultContent: SiteContent = {
       eyebrow: 'Most loved',
       title: 'Pieces our clients return for',
       subtitle: 'Certified stones, transparent pricing, and a 30-day exchange promise.',
-      ctaLabel: 'View all jewellery',
+      enquiryLabel: 'Enquire now',
+      trustBadges: 'BIS Hallmarked, IGI Certified, Lifetime servicing',
       items: [
       {
         id: 'p-1',
@@ -141,7 +142,9 @@ export const defaultContent: SiteContent = {
         price: '₹1,24,900',
         compareAt: '₹1,49,000',
         badge: 'Bestseller',
-        image: IMAGES.prodRing
+        image: IMAGES.prodRing,
+        specs:
+        'Purity: 18K Rose Gold (BIS Hallmarked)\nDiamond: 0.75ct · VS clarity · IGI certified\nGross weight: 4.2 g\nAvailable sizes: 10 to 20'
       },
       {
         id: 'p-2',
@@ -150,7 +153,9 @@ export const defaultContent: SiteContent = {
         price: '₹2,18,500',
         compareAt: '',
         badge: 'New',
-        image: IMAGES.rings
+        image: IMAGES.rings,
+        specs:
+        'Purity: 18K White Gold (BIS Hallmarked)\nDiamond: 1.00ct solitaire · IGI certified\nGross weight: 3.6 g\nAvailable sizes: 10 to 20'
       },
       {
         id: 'p-3',
@@ -159,7 +164,9 @@ export const defaultContent: SiteContent = {
         price: '₹78,400',
         compareAt: '₹92,000',
         badge: '',
-        image: IMAGES.prodStuds
+        image: IMAGES.prodStuds,
+        specs:
+        'Purity: 18K White Gold (BIS Hallmarked)\nDiamond: 0.50ct pair · VS clarity\nGross weight: 2.4 g\nFitting: Screw back'
       },
       {
         id: 'p-4',
@@ -168,7 +175,9 @@ export const defaultContent: SiteContent = {
         price: '₹96,200',
         compareAt: '',
         badge: 'Handcrafted',
-        image: IMAGES.prodBangle
+        image: IMAGES.prodBangle,
+        specs:
+        'Purity: 22K Yellow Gold (BIS Hallmarked)\nGross weight: 18.6 g\nFinish: Hand engraved\nAvailable sizes: 2.4 to 2.8'
       }]
 
     },
