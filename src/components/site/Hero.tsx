@@ -45,16 +45,18 @@ export function Hero({ data }: {data: HeroSection;}) {
             <h1 className={`display display-1 text-ink ${active.eyebrow ? 'mt-5' : ''}`}>{active.title}</h1>
             <p className="body-base mt-5 max-w-[28rem] text-ink/70">{active.subtitle}</p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
+              {/* Links, not bare buttons: these used to be decorative and did nothing
+                  when clicked. The destination is editable per slide in the admin. */}
               {active.primaryLabel &&
-              <button type="button" className="btn btn-primary group">
+              <a href={active.primaryHref || '#featured'} className="btn btn-primary group">
                   {active.primaryLabel}
                   <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                </button>
+                </a>
               }
               {active.secondaryLabel &&
-              <button type="button" className="btn btn-outline">
+              <a href={active.secondaryHref || '#contact'} className="btn btn-outline">
                   {active.secondaryLabel}
-                </button>
+                </a>
               }
             </div>
           </motion.div>

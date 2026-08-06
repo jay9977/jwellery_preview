@@ -26,13 +26,14 @@ import { VersionHistory } from '../components/admin/VersionHistory';
 import { BackendEditor } from '../components/admin/BackendEditor';
 import { SyncBadge } from '../components/admin/SyncBadge';
 import { Subscribers } from '../components/admin/Subscribers';
+import { LeadsTable } from '../components/leads/LeadsTable';
 import { SocialLinks } from '../components/admin/SocialLinks';
 import { ContactMessages } from '../components/admin/ContactMessages';
 import { exportContent, importContent } from '../utils/contentIO';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import type { SectionId } from '../types/content';
 
-type Tab = 'global' | 'theme' | 'social' | 'versions' | 'subscribers' | 'messages' | 'backend' | SectionId;
+type Tab = 'global' | 'theme' | 'social' | 'versions' | 'leads' | 'subscribers' | 'messages' | 'backend' | SectionId;
 
 export function Admin() {
   const { content, backend, isDirty, toggleSection, moveSection, addSection, replaceContent, resetAll } =
@@ -49,7 +50,7 @@ export function Admin() {
 
   /* The selected tab can outlive its section — deleted here, or missing from content
      that was pulled, imported or reset. Fall back to the first section that exists. */
-  const NON_SECTION_TABS = ['global', 'theme', 'social', 'versions', 'subscribers', 'messages', 'backend'];
+  const NON_SECTION_TABS = ['global', 'theme', 'social', 'versions', 'leads', 'subscribers', 'messages', 'backend'];
   useEffect(() => {
     if (NON_SECTION_TABS.includes(tab) || content.sections[tab]) return;
     setTab(content.order.find((id) => content.sections[id]) ?? 'global');
@@ -321,6 +322,17 @@ export function Admin() {
               </button>
               <button
               type="button"
+              onClick={() => setTab('leads')}
+              className={`w-full rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
+              tab === 'leads' ?
+              'border-emerald bg-white text-emerald' :
+              'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`
+              }>
+
+                Leads
+              </button>
+              <button
+              type="button"
               onClick={() => setTab('subscribers')}
               className={`w-full rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
               tab === 'subscribers' ?
@@ -448,6 +460,8 @@ export function Admin() {
           <SocialLinks /> :
           tab === 'versions' ?
           <VersionHistory /> :
+          tab === 'leads' ?
+          <LeadsTable /> :
           tab === 'subscribers' ?
           <Subscribers /> :
           tab === 'messages' ?

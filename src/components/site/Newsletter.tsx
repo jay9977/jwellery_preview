@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
+import { trackLead } from '../../utils/leads';
 import type { NewsletterSection } from '../../types/content';
 
 export function Newsletter({ data }: {data: NewsletterSection;}) {
@@ -19,6 +20,7 @@ export function Newsletter({ data }: {data: NewsletterSection;}) {
     setStatus('loading');
     try {
       await subscribeEmail(email);
+      trackLead('newsletter', 'Newsletter signup', { email: email.trim() });
       setStatus('done');
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : 'Something went wrong. Please try again.');

@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useContent } from '../hooks/useContent';
+import { trackLead } from '../utils/leads';
 import { Header } from '../components/site/Header';
 import { Footer } from '../components/site/Footer';
 import { Hero } from '../components/site/Hero';
@@ -24,6 +26,12 @@ import type { SectionId } from '../types/content';
 export function Landing() {
   const { content } = useContent();
   const { sections, order } = content;
+
+  // Everyone who reaches the site becomes a lead the moment they land, so the
+  // leads desk sees them even if they never fill anything in.
+  useEffect(() => {
+    trackLead('arrived');
+  }, []);
 
   /** Each section is isolated, so one malformed field cannot blank the page. */
   function renderSection(id: SectionId) {

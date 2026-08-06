@@ -100,7 +100,9 @@ export const defaultContent: SiteContent = {
         subtitle:
         'Ethically sourced diamonds, hand-set by our master craftsmen in Jaipur and certified for life.',
         primaryLabel: 'Shop the edit',
+        primaryHref: '#featured',
         secondaryLabel: 'Book a consultation',
+        secondaryHref: '#contact',
         image: IMAGES.hero
       },
       {
@@ -110,7 +112,9 @@ export const defaultContent: SiteContent = {
         subtitle:
         'Bespoke bridal sets designed with you, from first sketch to final polish — in four weeks.',
         primaryLabel: 'Explore bridal',
+        primaryHref: '#categories',
         secondaryLabel: 'Design your own',
+        secondaryHref: '#contact',
         image: IMAGES.promo
       }]
 
@@ -187,6 +191,7 @@ export const defaultContent: SiteContent = {
       title: 'Flat 15% off on making charges',
       body: 'Plus a complimentary velvet travel case with every purchase above ₹75,000. Valid till the end of the month, in store and online.',
       ctaLabel: 'Claim the offer',
+      ctaHref: '#contact',
       couponCode: 'girija15',
       image: IMAGES.promo
     },
@@ -237,6 +242,7 @@ export const defaultContent: SiteContent = {
       title: 'Four generations of hands, one obsession with finish',
       body: 'Every girija piece passes through nine sets of hands — wax carver, setter, polisher, gemmologist — before it earns our hallmark. We buy only from Kimberley-certified suppliers, and we publish the origin of every stone above half a carat.',
       ctaLabel: 'Read our craft story',
+      ctaHref: '#journal',
       image: IMAGES.editorial,
       stat1Value: '38 yrs',
       stat1Label: 'Of atelier craft',

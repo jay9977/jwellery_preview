@@ -20,9 +20,9 @@ export function Promo({ data }: {data: PromoSection;}) {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               {data.ctaLabel &&
-              <button type="button" className="btn btn-light">
+              <a href={data.ctaHref || '#contact'} className="btn btn-light">
                   {data.ctaLabel}
-                </button>
+                </a>
               }
               {data.couponCode &&
               <span className="btn border border-dashed border-cream/40 text-cream/80">

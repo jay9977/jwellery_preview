@@ -153,6 +153,50 @@ so no working password ever ships in the bundle.
 | GET | `/versions` | JWT | version history |
 | GET | `/versions/:id` | JWT | one snapshot, including its content |
 
+
+## Leads panel
+
+Every visitor who reaches the site is recorded automatically against a first-party cookie
+the site sets itself (`girija_vid`, one year) — no third-party tracker. A row starts as an
+anonymous visitor and becomes contactable the moment they send an enquiry or sign up to the
+newsletter. What they viewed, the campaign they arrived from and their device are captured too.
+
+- **Leads desk:** `http://localhost:5173/leads-panel` — its own login (`LEADS_EMAIL` /
+  `LEADS_PASSWORD` in `server/.env`). This account can read and work leads and **cannot edit
+  the website** — the server refuses its writes and the editor UI will not open for it.
+- **Admin panel:** the same list appears under the **Leads** tab, so one person can do both.
+- Statuses (new → contacted → qualified → won/lost), per-lead notes, search, filters and CSV export.
+
+### Which platform each visitor came from
+
+The panel groups every lead by platform — Instagram, Facebook, WhatsApp, YouTube, Google,
+X/Twitter, LinkedIn, Pinterest, Telegram, another website, or direct — and you can click a
+platform to filter the list. Two signals are used:
+
+1. **`utm_source` on the link** — exact, because you chose it when you posted the link.
+2. **The browser referrer** — recognises the hosts social apps really send (`l.instagram.com`,
+   `lm.facebook.com`, `t.co`, …).
+
+Apps such as WhatsApp usually send no referrer at all, so the panel includes a **"Links to post
+   on each platform"** builder: copy the ready-tagged link for Instagram, Facebook, WhatsApp and
+the rest, put it in your bio or post, and every click is labelled exactly — campaign included.
+
+**Email and phone cannot come from the platform.** A browser never reveals who is behind a click.
+A visitor from Instagram appears immediately with their platform, device and what they viewed;
+they become contactable the moment they send the enquiry form, subscribe, or tap WhatsApp
+(which is logged as an enquiry so you know to expect their message).
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | `/leads/track` | – | record a visitor / event (called by the site itself) |
+| GET | `/leads` | JWT | the lead list |
+| PATCH | `/leads/:id` | JWT | status, notes or corrected details |
+| DELETE | `/leads/:id` | JWT | remove a junk lead |
+
+If you operate in a region with cookie-consent rules (EU GDPR, India DPDP), add a consent
+notice before going live — the cookie is first-party and functional, but it does identify a
+returning visitor.
+
 ## Security notes
 
 - The admin password lives only in `server/.env` and is bcrypt-hashed in the database.

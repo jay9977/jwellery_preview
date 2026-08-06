@@ -1,13 +1,42 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { MenuIcon, SearchIcon, XIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
+import type { NavItem } from '../../types/content';
 import { SearchOverlay } from './SearchOverlay';
+
+/**
+ * Where to cut the nav so the two sides of the centred logo weigh the same.
+ * Label length stands in for rendered width — same font, same size, so it tracks
+ * closely enough — and the search icon is counted on the right. A fixed 3/4 split
+ * leaves one side reaching much closer to the logo, which reads as "not centred"
+ * even when the logo is exactly in the middle.
+ */
+function balancedSplit(nav: NavItem[]): number {
+  const SEARCH_ICON = 5;
+  const weights = nav.map((item) => item.label.length + 3); // + the gap after it
+  const total = weights.reduce((sum, w) => sum + w, 0) + SEARCH_ICON;
+
+  let best = Math.ceil(nav.length / 2);
+  let bestDiff = Infinity;
+  let left = 0;
+  for (let i = 1; i < nav.length; i++) {
+    left += weights[i - 1];
+    const diff = Math.abs(left - (total - left));
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = i;
+    }
+  }
+  return best;
+}
 
 export function Header() {
   const { content } = useContent();
   const { brand, nav, announcement } = content;
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const split = useMemo(() => balancedSplit(nav), [nav]);
 
   return (
     <header className="sticky top-0 z-40 w-full">
@@ -46,8 +75,8 @@ export function Header() {
             </button>
           </div>
 
-          <nav aria-label="Main" className="hidden min-w-0 items-center gap-7 lg:flex">
-            {nav.slice(0, 3).map((item) =>
+          <nav aria-label="Main" className="hidden min-w-0 items-center gap-5 lg:flex xl:gap-7">
+            {nav.slice(0, split).map((item) =>
             <a key={item.id} href={item.href} className="eyebrow text-ink/65 transition-colors hover:text-emerald">
                 {item.label}
               </a>
@@ -78,8 +107,8 @@ export function Header() {
           </a>
 
           <div className="flex min-w-0 items-center justify-end gap-0.5 lg:gap-1">
-            <nav aria-label="Secondary" className="mr-3 hidden items-center gap-6 xl:flex xl:gap-7">
-              {nav.slice(3).map((item) =>
+            <nav aria-label="Secondary" className="mr-3 hidden items-center gap-5 lg:flex xl:gap-7">
+              {nav.slice(split).map((item) =>
               <a key={item.id} href={item.href} className="eyebrow text-ink/65 transition-colors hover:text-emerald">
                   {item.label}
                 </a>

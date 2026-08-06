@@ -96,7 +96,9 @@
           "subtitle": "Ethically sourced diamonds, hand-set by our master craftsmen in Jaipur and certified for life.",
           "primaryLabel": "Shop the edit",
           "secondaryLabel": "Book a consultation",
-          "image": "/42249ea0-d991-43cd-ab3a-09084d8b829f.jpg"
+          "image": "/42249ea0-d991-43cd-ab3a-09084d8b829f.jpg",
+          "primaryHref": "#featured",
+          "secondaryHref": "#contact"
         },
         {
           "id": "slide-2",
@@ -105,7 +107,9 @@
           "subtitle": "Bespoke bridal sets designed with you, from first sketch to final polish — in four weeks.",
           "primaryLabel": "Explore bridal",
           "secondaryLabel": "Design your own",
-          "image": "/78ca5a4c-1b01-4e4f-9196-50934d1ac47c.jpg"
+          "image": "/78ca5a4c-1b01-4e4f-9196-50934d1ac47c.jpg",
+          "primaryHref": "#categories",
+          "secondaryHref": "#contact"
         }
       ]
     },
@@ -198,7 +202,8 @@
       "body": "Plus a complimentary velvet travel case with every purchase above ₹75,000. Valid till the end of the month, in store and online.",
       "ctaLabel": "Claim the offer",
       "couponCode": "girija15",
-      "image": "/78ca5a4c-1b01-4e4f-9196-50934d1ac47c.jpg"
+      "image": "/78ca5a4c-1b01-4e4f-9196-50934d1ac47c.jpg",
+      "ctaHref": "#contact"
     },
     "trust": {
       "visible": true,
@@ -268,7 +273,8 @@
       "stat1Value": "38 yrs",
       "stat1Label": "Of atelier craft",
       "stat2Value": "100%",
-      "stat2Label": "Conflict-free stones"
+      "stat2Label": "Conflict-free stones",
+      "ctaHref": "#journal"
     },
     "gallery": {
       "visible": true,

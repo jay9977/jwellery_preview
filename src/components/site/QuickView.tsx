@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { BadgeCheckIcon, MessageCircleIcon, XIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
 import { startEnquiry } from '../../utils/events';
+import { trackLead } from '../../utils/leads';
 import type { Product } from '../../types/content';
 
 interface QuickViewProps {
@@ -132,6 +133,7 @@ export function QuickView({ product, trustBadges = '', onClose }: QuickViewProps
                 )}`}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackLead('enquiry', `WhatsApp · ${product.name}`, { interest: product.name })}
                 className="flex items-center justify-center gap-2 py-1 text-[12px] text-ink/55 transition-colors hover:text-emerald">
 
                     <MessageCircleIcon className="h-4 w-4" />

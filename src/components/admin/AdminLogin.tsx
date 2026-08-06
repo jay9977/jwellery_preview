@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { EyeIcon, EyeOffIcon, Loader2Icon, LockIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
 import { isConnected } from '../../utils/backend';
-import { loginAdmin } from '../../utils/api';
+import { loginAccount } from '../../utils/api';
 
 /**
  * Offline demo password. Read from the build environment and left unset by default,
@@ -12,7 +12,7 @@ import { loginAdmin } from '../../utils/api';
  */
 const DEMO_PASSWORD = (import.meta.env.VITE_ADMIN_DEMO_PASSWORD ?? '').trim();
 
-export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo') => void;}) {
+export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo', role?: string) => void;}) {
   const { backend, updateBackend } = useContent();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,9 +31,9 @@ export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo') 
       // Real login: the server verifies the bcrypt-hashed password and returns a JWT.
       setBusy(true);
       try {
-        const token = await loginAdmin(backend.baseUrl, password, email.trim() || undefined);
+        const { token, role } = await loginAccount(backend.baseUrl, password, email.trim() || undefined);
         updateBackend({ apiKey: token });
-        onSuccess('server');
+        onSuccess('server', role);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Login failed.');
       } finally {

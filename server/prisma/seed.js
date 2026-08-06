@@ -16,10 +16,25 @@ async function main() {
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.adminUser.upsert({
     where: { email },
-    create: { email, passwordHash },
-    update: { passwordHash }
+    create: { email, passwordHash, role: 'admin' },
+    update: { passwordHash, role: 'admin' }
   });
   console.log(`✔ Admin user ready: ${email}`);
+
+  /* ---- 1b. Leads user — sees /leads-panel only, never the site editor ---- */
+  const leadsEmail = process.env.LEADS_EMAIL ?? '';
+  const leadsPassword = process.env.LEADS_PASSWORD ?? '';
+  if (leadsEmail && leadsPassword) {
+    const leadsHash = await bcrypt.hash(leadsPassword, 10);
+    await prisma.adminUser.upsert({
+      where: { email: leadsEmail },
+      create: { email: leadsEmail, passwordHash: leadsHash, role: 'leads' },
+      update: { passwordHash: leadsHash, role: 'leads' }
+    });
+    console.log(`✔ Leads user ready: ${leadsEmail}`);
+  } else {
+    console.log('· LEADS_EMAIL / LEADS_PASSWORD not set — leads panel login not created.');
+  }
 
   /* ---- 2. Default landing-page content (only if DB is empty) ---- */
   const existing = await prisma.section.count();

@@ -295,7 +295,9 @@ export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () =
             title: 'Headline goes here',
             subtitle: 'Supporting line for this slide.',
             primaryLabel: 'Shop now',
+            primaryHref: '#featured',
             secondaryLabel: '',
+            secondaryHref: '#contact',
             image: ''
           })}
           renderItem={(item, update) =>
@@ -308,13 +310,26 @@ export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () =
                 label="Primary button"
                 value={item.primaryLabel}
                 onChange={(v) => update({ primaryLabel: v })} />
-              
+
+                  <TextField
+                label="Primary button link"
+                value={item.primaryHref}
+                onChange={(v) => update({ primaryHref: v })}
+                placeholder="#featured"
+                hint="A section such as #featured, #categories or #contact" />
+
                   <TextField
                 label="Secondary button"
                 value={item.secondaryLabel}
                 onChange={(v) => update({ secondaryLabel: v })}
                 hint="Leave empty to hide" />
-              
+
+                  <TextField
+                label="Secondary button link"
+                value={item.secondaryHref}
+                onChange={(v) => update({ secondaryHref: v })}
+                placeholder="#contact" />
+
                 </div>
                 <ImageField label="Slide image" value={item.image} onChange={(v) => update({ image: v })} />
               </>
@@ -454,7 +469,14 @@ export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () =
             label="Button label"
             value={content.sections.promo.ctaLabel}
             onChange={(v) => updateSection('promo', { ctaLabel: v })} />
-          
+
+            <TextField
+            label="Button link"
+            value={content.sections.promo.ctaHref}
+            onChange={(v) => updateSection('promo', { ctaHref: v })}
+            placeholder="#contact"
+            hint="Where the button goes — e.g. #contact" />
+
             <TextField
             label="Coupon code"
             value={content.sections.promo.couponCode}
@@ -588,11 +610,20 @@ export function SectionEditor({ id, onDeleted }: {id: SectionId;onDeleted?: () =
             onChange={(v) => updateSection('editorial', { stat2Label: v })} />
           
           </div>
-          <TextField
-          label="Link label"
-          value={content.sections.editorial.ctaLabel}
-          onChange={(v) => updateSection('editorial', { ctaLabel: v })} />
-        
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextField
+            label="Link label"
+            value={content.sections.editorial.ctaLabel}
+            onChange={(v) => updateSection('editorial', { ctaLabel: v })} />
+
+            <TextField
+            label="Link target"
+            value={content.sections.editorial.ctaHref}
+            onChange={(v) => updateSection('editorial', { ctaHref: v })}
+            placeholder="#journal"
+            hint="Where the link goes — e.g. #journal" />
+          </div>
+
           <ImageField
           label="Image"
           value={content.sections.editorial.image}

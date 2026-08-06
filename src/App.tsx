@@ -13,6 +13,7 @@ const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin
 const AdminLoginPage = lazy(() =>
 import('./pages/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage }))
 );
+const LeadsPanel = lazy(() => import('./pages/LeadsPanel').then((m) => ({ default: m.LeadsPanel })));
 
 function AdminLoading() {
   return (
@@ -63,6 +64,14 @@ export function App() {
                 element={
                 <Suspense fallback={<AdminLoading />}>
                     <Admin />
+                  </Suspense>
+                } />
+
+              <Route
+                path="/leads-panel"
+                element={
+                <Suspense fallback={<AdminLoading />}>
+                    <LeadsPanel />
                   </Suspense>
                 } />
 

@@ -118,7 +118,11 @@ export interface HeroSlide {
   title: string;
   subtitle: string;
   primaryLabel: string;
+  /** Where the primary button goes — a section anchor such as `#featured`, or a full URL. */
+  primaryHref: string;
   secondaryLabel: string;
+  /** Where the secondary button goes. */
+  secondaryHref: string;
   image: string;
 }
 
@@ -184,6 +188,8 @@ export interface PromoSection {
   title: string;
   body: string;
   ctaLabel: string;
+  /** Where the offer button goes — a section anchor or a full URL. */
+  ctaHref: string;
   couponCode: string;
   image: string;
 }
@@ -228,6 +234,8 @@ export interface EditorialSection {
   title: string;
   body: string;
   ctaLabel: string;
+  /** Where the story link goes — a section anchor or a full URL. */
+  ctaHref: string;
   image: string;
   stat1Value: string;
   stat1Label: string;

@@ -5,6 +5,7 @@ import type { FeaturedSection, Product } from '../../types/content';
 import { SectionHeading } from './SectionHeading';
 import { QuickView } from './QuickView';
 import { onQuickView, startEnquiry } from '../../utils/events';
+import { trackLead } from '../../utils/leads';
 
 export function Featured({ data }: {data: FeaturedSection;}) {
   const [quickView, setQuickView] = useState<Product | null>(null);
@@ -53,7 +54,10 @@ export function Featured({ data }: {data: FeaturedSection;}) {
               }
                   <button
                 type="button"
-                onClick={() => setQuickView(product)}
+                onClick={() => {
+                  setQuickView(product);
+                  trackLead('quick-view', product.name, { interest: product.name });
+                }}
                 className="meta absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-ink/70 py-3.5 text-cream opacity-0 transition-opacity group-hover:opacity-100">
 
                     <EyeIcon className="h-3.5 w-3.5" />
@@ -70,7 +74,10 @@ export function Featured({ data }: {data: FeaturedSection;}) {
                   <div className="mt-auto pt-5">
                     <button
                   type="button"
-                  onClick={() => startEnquiry(product.name)}
+                  onClick={() => {
+                    trackLead('enquiry', product.name, { interest: product.name });
+                    startEnquiry(product.name);
+                  }}
                   className="meta w-full border border-ink/20 py-2.5 text-[10px] text-ink/75 transition-colors hover:border-emerald hover:bg-emerald hover:text-cream">
 
                       {data.enquiryLabel || 'Enquire now'}

@@ -9,15 +9,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Admin users who can log in to the /admin panel
+/// Users who can log in to a panel.
+/// role "admin" -> the full editor at /admin (and everything a lead user can do)
+/// role "leads" -> the leads desk at /leads-panel only, never the site editor
 model AdminUser {
   id           Int      @id @default(autoincrement())
   email        String   @unique
   passwordHash String
+  role         String   @default("admin")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@map("admin_users")
+}
+
+/// One row per visitor, keyed by a first-party cookie. Created the moment
+/// somebody reaches the site, then filled in as they identify themselves
+/// (enquiry form, newsletter) and enriched with what they looked at.
+model Lead {
+  id          Int      @id @default(autoincrement())
+  /// Random id stored in the visitor's own cookie — no third-party tracking.
+  visitorId   String   @unique @db.VarChar(64)
+  name        String   @default("") @db.VarChar(120)
+  email       String   @default("") @db.VarChar(254)
+  phone       String   @default("") @db.VarChar(40)
+  /// "visitor" until they hand over details, then "enquiry" / "subscriber".
+  kind        String   @default("visitor") @db.VarChar(20)
+  /// Sales pipeline: new | contacted | qualified | won | lost
+  status      String   @default("new") @db.VarChar(20)
+  /// What they were looking at — product name, search term, section.
+  interest    String   @default("") @db.VarChar(200)
+  source      String   @default("") @db.VarChar(200)
+  landingPage String   @default("") @db.VarChar(300)
+  utmSource   String   @default("") @db.VarChar(120)
+  utmMedium   String   @default("") @db.VarChar(120)
+  utmCampaign String   @default("") @db.VarChar(120)
+  device      String   @default("") @db.VarChar(20)
+  visits      Int      @default(1)
+  pageViews   Int      @default(1)
+  /// Sales notes. VarChar rather than Text because MySQL forbids a default on Text.
+  notes       String   @default("") @db.VarChar(2000)
+  /// Recent actions, newest first: [{ at, type, detail }]
+  activity    Json?
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  @@index([lastSeenAt])
+  @@index([status])
+  @@map("leads")
 }
 
 /// One row per landing-page section (hero, categories, featured, ...)

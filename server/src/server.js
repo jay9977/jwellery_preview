@@ -12,7 +12,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { assembleContent, saveContent } from './lib/content.js';
-import { requireAuth } from './middleware/auth.js';
+import { requireAuth, requireRole } from './middleware/auth.js';
 
 /* ---------- fail fast on a weak or missing signing secret ---------- */
 const PLACEHOLDER_SECRETS = new Set([
@@ -143,6 +143,15 @@ const publicLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many requests. Please slow down.' }
 });
+// Visitor tracking fires on arrival and on each notable action, so it needs more
+// headroom than a form post — but still a ceiling, so one client cannot flood it.
+const trackLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 40,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please slow down.' }
+});
 
 /* ---------- routes ---------- */
 app.get('/api/health', (_req, res) => {
@@ -159,8 +168,14 @@ app.post('/api/auth/login', loginLimiter, async (req, res, next) => {
     if (email) {
       admin = await prisma.adminUser.findUnique({ where: { email: String(email) } });
     } else {
-      // Password-only login is only unambiguous while there is exactly one admin.
-      const admins = await prisma.adminUser.findMany({ take: 2, orderBy: { id: 'asc' } });
+      // Password-only login is only unambiguous while there is one editor account.
+      // The leads-desk account is excluded here — it always signs in with its email,
+      // so adding it never takes password-only login away from the admin.
+      const admins = await prisma.adminUser.findMany({
+        where: { role: 'admin' },
+        take: 2,
+        orderBy: { id: 'asc' }
+      });
       if (admins.length > 1) {
         return res.status(400).json({ error: 'Email is required — this server has more than one admin user.' });
       }
@@ -173,12 +188,13 @@ app.post('/api/auth/login', loginLimiter, async (req, res, next) => {
     if (!admin || !ok) {
       return res.status(401).json({ error: 'Invalid credentials.' });
     }
+    const role = admin.role ?? 'admin';
     const token = jwt.sign(
-      { sub: admin.id, email: admin.email },
+      { sub: admin.id, email: admin.email, role },
       JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN ?? '7d' }
     );
-    res.json({ token, email: admin.email });
+    res.json({ token, email: admin.email, role });
   } catch (err) {
     next(err);
   }
@@ -186,7 +202,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res, next) => {
 
 /** Admin: is the current token still valid? Used by the admin panel to gate the UI. */
 app.get('/api/auth/me', requireAuth, (req, res) => {
-  res.json({ email: req.admin.email, id: req.admin.sub });
+  res.json({ email: req.admin.email, id: req.admin.sub, role: req.admin.role ?? 'admin' });
 });
 
 /** Public: full content document for the landing page */
@@ -201,7 +217,7 @@ app.get('/api/content', publicLimiter, async (_req, res, next) => {
 });
 
 /** Admin: save the full content document (edit / update / delete / hide / unhide / reorder) */
-app.put('/api/content', writeLimiter, requireAuth, largeJson, async (req, res, next) => {
+app.put('/api/content', writeLimiter, requireAuth, requireRole('admin'), largeJson, async (req, res, next) => {
   try {
     const content = req.body?.content ?? req.body;
     // A save that would drop most of the site is almost always a bug, not an intent.
@@ -213,7 +229,7 @@ app.put('/api/content', writeLimiter, requireAuth, largeJson, async (req, res, n
 });
 
 /** Admin: version history */
-app.get('/api/versions', requireAuth, async (_req, res, next) => {
+app.get('/api/versions', requireAuth, requireRole('admin'), async (_req, res, next) => {
   try {
     const versions = await prisma.contentVersion.findMany({
       orderBy: { createdAt: 'desc' },
@@ -225,7 +241,7 @@ app.get('/api/versions', requireAuth, async (_req, res, next) => {
   }
 });
 
-app.get('/api/versions/:id', requireAuth, async (req, res, next) => {
+app.get('/api/versions/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id)) return res.status(400).json({ error: 'Version id must be a number.' });
@@ -283,6 +299,165 @@ app.post('/api/contact', publicLimiter, async (req, res, next) => {
     });
     res.status(201).json({ ok: true });
   } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- leads ---------- */
+
+/** Everything the tracker may send, clamped to what the columns can hold. */
+function leadStrings(body) {
+  const str = (v, max) => String(v ?? '').trim().slice(0, max);
+  return {
+    page: str(body.page, 300),
+    referrer: str(body.referrer, 200),
+    utmSource: str(body.utmSource, 120),
+    utmMedium: str(body.utmMedium, 120),
+    utmCampaign: str(body.utmCampaign, 120),
+    device: str(body.device, 20),
+    interest: str(body.interest, 200),
+    name: str(body.name, 120),
+    email: str(body.email, 254).toLowerCase(),
+    phone: str(body.phone, 40),
+    eventType: str(body.event, 40),
+    eventDetail: str(body.detail, 200)
+  };
+}
+
+const ACTIVITY_LIMIT = 25;
+
+/**
+ * Public: record a visitor. Called on arrival and whenever they do something
+ * worth knowing about. The visitor id comes from a first-party cookie the site
+ * sets itself — no third-party tracker is involved.
+ */
+app.post('/api/leads/track', trackLimiter, async (req, res, next) => {
+  try {
+    const body = req.body ?? {};
+    const visitorId = String(body.visitorId ?? '').trim();
+    // The id is generated by the browser; accept only the shape we issue.
+    if (!/^[A-Za-z0-9_-]{8,64}$/.test(visitorId)) {
+      return res.status(400).json({ error: 'A valid visitor id is required.' });
+    }
+
+    const v = leadStrings(body);
+    const isNewVisit = Boolean(body.newVisit);
+    const now = new Date();
+    const entry = v.eventType ? { at: now.toISOString(), type: v.eventType, detail: v.eventDetail } : null;
+
+    const existing = await prisma.lead.findUnique({ where: { visitorId } });
+
+    if (!existing) {
+      await prisma.lead.create({
+        data: {
+          visitorId,
+          name: v.name,
+          email: v.email,
+          phone: v.phone,
+          kind: v.email || v.phone ? 'enquiry' : 'visitor',
+          interest: v.interest,
+          source: v.referrer,
+          landingPage: v.page,
+          utmSource: v.utmSource,
+          utmMedium: v.utmMedium,
+          utmCampaign: v.utmCampaign,
+          device: v.device,
+          activity: entry ? [entry] : [],
+          firstSeenAt: now,
+          lastSeenAt: now
+        }
+      });
+      return res.status(201).json({ ok: true });
+    }
+
+    const activity = Array.isArray(existing.activity) ? existing.activity : [];
+    await prisma.lead.update({
+      where: { visitorId },
+      data: {
+        // Details already given are never wiped by a later anonymous page view.
+        name: v.name || existing.name,
+        email: v.email || existing.email,
+        phone: v.phone || existing.phone,
+        kind: v.email || v.phone ? 'enquiry' : existing.kind,
+        interest: v.interest || existing.interest,
+        utmSource: v.utmSource || existing.utmSource,
+        utmMedium: v.utmMedium || existing.utmMedium,
+        utmCampaign: v.utmCampaign || existing.utmCampaign,
+        device: v.device || existing.device,
+        visits: existing.visits + (isNewVisit ? 1 : 0),
+        pageViews: existing.pageViews + 1,
+        activity: entry ? [entry, ...activity].slice(0, ACTIVITY_LIMIT) : activity,
+        lastSeenAt: now
+      }
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Admin or leads desk: the lead list */
+app.get('/api/leads', requireAuth, async (req, res, next) => {
+  try {
+    const LIMIT = 1000;
+    const status = String(req.query.status ?? '').trim();
+    const kind = String(req.query.kind ?? '').trim();
+    const where = {
+      ...(status && status !== 'all' ? { status } : {}),
+      ...(kind && kind !== 'all' ? { kind } : {})
+    };
+    const [leads, total, identified] = await Promise.all([
+      prisma.lead.findMany({ where, orderBy: { lastSeenAt: 'desc' }, take: LIMIT }),
+      prisma.lead.count(),
+      prisma.lead.count({ where: { NOT: { email: '' } } })
+    ]);
+    res.json({ leads, total, identified, truncated: leads.length === LIMIT });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Admin or leads desk: work a lead — status, notes, or corrected details */
+app.patch('/api/leads/:id', writeLimiter, requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid lead id.' });
+
+    const body = req.body ?? {};
+    const str = (v, max) => String(v ?? '').trim().slice(0, max);
+    const ALLOWED_STATUS = ['new', 'contacted', 'qualified', 'won', 'lost'];
+
+    const data = {};
+    if (body.status !== undefined) {
+      if (!ALLOWED_STATUS.includes(String(body.status))) {
+        return res.status(400).json({ error: `Status must be one of: ${ALLOWED_STATUS.join(', ')}.` });
+      }
+      data.status = String(body.status);
+    }
+    if (body.notes !== undefined) data.notes = str(body.notes, 2000);
+    if (body.name !== undefined) data.name = str(body.name, 120);
+    if (body.email !== undefined) data.email = str(body.email, 254).toLowerCase();
+    if (body.phone !== undefined) data.phone = str(body.phone, 40);
+    if (body.interest !== undefined) data.interest = str(body.interest, 200);
+    if (Object.keys(data).length === 0) return res.status(400).json({ error: 'Nothing to update.' });
+
+    const lead = await prisma.lead.update({ where: { id }, data });
+    res.json({ lead });
+  } catch (err) {
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'That lead no longer exists.' });
+    next(err);
+  }
+});
+
+/** Admin or leads desk: drop a junk lead */
+app.delete('/api/leads/:id', writeLimiter, requireAuth, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid lead id.' });
+    await prisma.lead.delete({ where: { id } });
+    res.status(204).end();
+  } catch (err) {
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'That lead no longer exists.' });
     next(err);
   }
 });
@@ -346,7 +521,7 @@ app.get('/api/subscribers', requireAuth, async (_req, res, next) => {
 });
 
 /** Admin: upload an image, returns a public URL */
-app.post('/api/upload', writeLimiter, requireAuth, upload.single('image'), (req, res) => {
+app.post('/api/upload', writeLimiter, requireAuth, requireRole('admin'), upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No image file received (field name: "image").' });
   const base = process.env.PUBLIC_URL?.replace(/\/$/, '') || `${req.protocol}://${req.get('host')}`;
   res.status(201).json({ url: `${base}/uploads/${req.file.filename}` });
@@ -357,7 +532,7 @@ app.post('/api/upload', writeLimiter, requireAuth, upload.single('image'), (req,
  * A file is kept if it is named in the live content OR in any stored version, so
  * restoring an old snapshot never lands on broken images.
  */
-app.post('/api/uploads/prune', writeLimiter, requireAuth, async (req, res, next) => {
+app.post('/api/uploads/prune', writeLimiter, requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
     const dryRun = req.query.dryRun === '1';
     const [content, versions] = await Promise.all([

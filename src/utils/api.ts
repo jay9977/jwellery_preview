@@ -179,6 +179,68 @@ export async function fetchVersion(config: BackendConfig, id: number): Promise<R
   return payload.version;
 }
 
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'won' | 'lost';
+
+export interface LeadActivityEntry {
+  at: string;
+  type: string;
+  detail: string;
+}
+
+export interface Lead {
+  id: number;
+  visitorId: string;
+  name: string;
+  email: string;
+  phone: string;
+  kind: string;
+  status: LeadStatus;
+  interest: string;
+  source: string;
+  landingPage: string;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  device: string;
+  visits: number;
+  pageViews: number;
+  notes: string;
+  activity: LeadActivityEntry[] | null;
+  firstSeenAt: string;
+  lastSeenAt: string;
+}
+
+/** GET /leads → everyone who has reached the site (admin or leads desk) */
+export async function fetchLeads(
+config: BackendConfig)
+: Promise<{leads: Lead[];total: number;identified: number;truncated: boolean;}> {
+  const payload = await request<{leads?: Lead[];total?: number;identified?: number;truncated?: boolean;}>(
+    config,
+    '/leads'
+  );
+  const leads = payload?.leads ?? [];
+  return {
+    leads,
+    total: payload?.total ?? leads.length,
+    identified: payload?.identified ?? 0,
+    truncated: payload?.truncated ?? false
+  };
+}
+
+/** PATCH /leads/:id → work a lead: status, notes or corrected details */
+export async function updateLead(
+config: BackendConfig,
+id: number,
+patch: Partial<Pick<Lead, 'status' | 'notes' | 'name' | 'email' | 'phone' | 'interest'>>)
+: Promise<void> {
+  await request<void>(config, `/leads/${id}`, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+
+/** DELETE /leads/:id */
+export async function deleteLead(config: BackendConfig, id: number): Promise<void> {
+  await request<void>(config, `/leads/${id}`, { method: 'DELETE' });
+}
+
 /** GET /auth/me → confirms the stored token is still accepted by the server */
 export async function verifyToken(config: BackendConfig): Promise<boolean> {
   if (!config.apiKey.trim()) return false;
@@ -190,8 +252,23 @@ export async function verifyToken(config: BackendConfig): Promise<boolean> {
   }
 }
 
-/** POST /auth/login { email?, password } → { token } */
-export async function loginAdmin(baseUrl: string, password: string, email?: string): Promise<string> {
+/** GET /auth/me → the signed-in account, including which panel it may open */
+export async function fetchAccount(config: BackendConfig): Promise<{email: string;role: string;} | null> {
+  if (!config.apiKey.trim()) return null;
+  try {
+    const payload = await request<{email?: string;role?: string;}>(config, '/auth/me');
+    return { email: payload?.email ?? '', role: payload?.role ?? 'admin' };
+  } catch {
+    return null;
+  }
+}
+
+/** POST /auth/login { email?, password } → { token, role } */
+export async function loginAccount(
+baseUrl: string,
+password: string,
+email?: string)
+: Promise<{token: string;role: string;}> {
   let response: Response;
   try {
     response = await fetch(`${baseUrl.trim().replace(/\/$/, '')}/auth/login`, {
@@ -205,9 +282,10 @@ export async function loginAdmin(baseUrl: string, password: string, email?: stri
   if (!response.ok) {
     throw new Error(await messageFrom(response, `Login failed (${response.status}).`));
   }
-  const data = (await response.json()) as {token?: string;};
+  const data = (await response.json()) as {token?: string;role?: string;};
   if (!data.token) throw new Error('The server did not return a token.');
-  return data.token;
+  // Servers from before roles existed only ever had admin accounts.
+  return { token: data.token, role: data.role ?? 'admin' };
 }
 
 /** POST /upload (multipart) → { url } */

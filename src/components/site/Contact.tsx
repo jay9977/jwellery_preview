@@ -4,6 +4,7 @@ import { useContent } from '../../hooks/useContent';
 import { SectionHeading } from './SectionHeading';
 import { socialIcon, usableSocialLinks } from '../../data/social';
 import { onEnquiry } from '../../utils/events';
+import { trackLead } from '../../utils/leads';
 import type { ContactSection } from '../../types/content';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -96,6 +97,13 @@ export function Contact({ data }: {data: ContactSection;}) {
         message: form.message.trim(),
         website: form.website
       });
+      // The anonymous visitor row now gets a name and a way to reach them.
+      trackLead('contact', form.subject.trim() || 'Contact form', {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        interest: form.subject.trim()
+      });
       setStatus('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send your message. Please try again.');
@@ -166,6 +174,7 @@ export function Contact({ data }: {data: ContactSection;}) {
               )}`}
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackLead('enquiry', 'WhatsApp chat', { interest: 'WhatsApp enquiry' })}
               className="btn btn-outline btn-sm">
 
                   <MessageCircleIcon className="h-4 w-4" />
