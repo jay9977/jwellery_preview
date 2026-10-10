@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { useContent } from '../hooks/useContent';
 import { trackLead } from '../utils/leads';
 import { Header } from '../components/site/Header';
@@ -21,17 +21,114 @@ import { isCustomSection, sectionLabel } from '../data/sections';
 import { CartDrawer } from '../components/site/CartDrawer';
 import { FloatingContact } from '../components/site/FloatingContact';
 import { SeoHead } from '../components/site/SeoHead';
-import type { SectionId } from '../types/content';
+import {
+  RoyalCategories,
+  RoyalEditorial,
+  RoyalFeatured,
+  RoyalGallery,
+  RoyalHero,
+  RoyalPromo,
+  RoyalTestimonials,
+  RoyalTrust } from
+'../components/site/royal/RoyalSections';
+import {
+  BandPromo,
+  CardsTrust,
+  CircleCategories,
+  CollageHero,
+  MinimalFeatured,
+  OverlapEditorial,
+  ScrollCategories,
+  SplitHero,
+  SpotlightFeatured,
+  StripGallery } from
+'../components/site/templates/Variants';
+import { TemplateContext } from '../components/site/templates/engine';
+import { templateById, type TemplateDef } from '../data/templates';
+import { hexToRgbTriple, mixHex } from '../utils/color';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import type { Sections, SectionId, ThemeColors } from '../types/content';
+
+type Vars = React.CSSProperties & Record<`--${string}`, string>;
+
+/**
+ * A dark template is the light theme turned inside out: page background takes the ink
+ * colour and text takes the cream, so every shared section turns dark without being
+ * rewritten. The footer flips back so it stays a dark band at the bottom.
+ */
+function darkVars(c: ThemeColors): Vars {
+  return {
+    '--c-cream': hexToRgbTriple(c.ink),
+    '--c-ink': hexToRgbTriple(c.cream),
+    '--c-sand': hexToRgbTriple(mixHex(c.ink, c.gold, 0.08))
+  };
+}
+function lightVars(c: ThemeColors): Vars {
+  return {
+    '--c-cream': hexToRgbTriple(c.cream),
+    '--c-ink': hexToRgbTriple(c.ink),
+    '--c-sand': hexToRgbTriple(c.sand)
+  };
+}
+
+/* Which component draws each section in each layout the templates can ask for. */
+type Layouts = TemplateDef['layout'];
+type LayoutSection = keyof Layouts & keyof Sections;
+const LAYOUTS: {[K in LayoutSection]: Record<Layouts[K], React.ComponentType<{data: Sections[K];}>>} = {
+  hero: { card: Hero, center: RoyalHero, split: SplitHero, collage: CollageHero },
+  categories: { grid: Categories, arch: RoyalCategories, circle: CircleCategories, scroll: ScrollCategories },
+  featured: { cards: Featured, framed: RoyalFeatured, minimal: MinimalFeatured, spotlight: SpotlightFeatured },
+  promo: { split: Promo, parallax: RoyalPromo, band: BandPromo },
+  trust: { row: Trust, diamond: RoyalTrust, cards: CardsTrust },
+  testimonials: { grid: Testimonials, carousel: RoyalTestimonials },
+  editorial: { side: Editorial, arch: RoyalEditorial, overlap: OverlapEditorial },
+  gallery: { grid: Gallery, mosaic: RoyalGallery, strip: StripGallery }
+};
+
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
+  return <motion.div aria-hidden style={{ scaleX }} className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-gold" />;
+}
+
+/** Soft light under the pointer. The position is written straight onto the overlay element. */
+function CursorGlow() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const move = (e: PointerEvent) => {
+      ref.current?.style.setProperty('--mx', `${e.clientX}px`);
+      ref.current?.style.setProperty('--my', `${e.clientY}px`);
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    return () => window.removeEventListener('pointermove', move);
+  }, []);
+  return <div ref={ref} aria-hidden className="tpl-cursor-glow" />;
+}
+
+const PlatformHome = lazy(() => import('./PlatformHome').then((m) => ({ default: m.PlatformHome })));
 
 export function Landing() {
-  const { content } = useContent();
+  const { content, loaded, suspended, noSite } = useContent();
   const { sections, order } = content;
+  const tpl = templateById(content.theme.templateId);
+  const dark = tpl.mode === 'dark';
 
   // Everyone who reaches the site becomes a lead the moment they land, so the
   // leads desk sees them even if they never fill anything in.
   useEffect(() => {
     trackLead('arrived');
   }, []);
+
+  if (noSite) {
+    return (
+      <Suspense fallback={<div className="min-h-screen w-full bg-[#16120e]" />}>
+        <PlatformHome />
+      </Suspense>);
+
+  }
+  if (suspended) return <SiteUnavailable />;
+  // Blank page until the site content arrives — never the template under a client domain.
+  if (!loaded) return <div className="min-h-screen w-full bg-white" />;
 
   /** Each section is isolated, so one malformed field cannot blank the page. */
   function renderSection(id: SectionId) {
@@ -44,25 +141,16 @@ export function Landing() {
 
   }
 
+  function layout<K extends LayoutSection>(id: K) {
+    const variants = LAYOUTS[id] as Record<string, React.ComponentType<{data: Sections[K];}>>;
+    const Component = variants[tpl.layout[id]];
+    return <Component key={id} data={sections[id]} />;
+  }
+
   function renderSectionBody(id: SectionId) {
     if (!sections[id]?.visible) return null;
+    if (id in LAYOUTS) return layout(id as LayoutSection);
     switch (id) {
-      case 'hero':
-        return <Hero key={id} data={sections.hero} />;
-      case 'categories':
-        return <Categories key={id} data={sections.categories} />;
-      case 'featured':
-        return <Featured key={id} data={sections.featured} />;
-      case 'promo':
-        return <Promo key={id} data={sections.promo} />;
-      case 'trust':
-        return <Trust key={id} data={sections.trust} />;
-      case 'testimonials':
-        return <Testimonials key={id} data={sections.testimonials} />;
-      case 'editorial':
-        return <Editorial key={id} data={sections.editorial} />;
-      case 'gallery':
-        return <Gallery key={id} data={sections.gallery} />;
       case 'journal':
         return <Journal key={id} data={sections.journal} />;
       case 'faq':
@@ -82,33 +170,71 @@ export function Landing() {
   const visibleCount = order.filter((id) => sections[id]?.visible).length;
 
   return (
-    <div id="top" className="min-h-screen w-full bg-cream">
-      <SeoHead seo={content.seo} siteName={content.brand.name} />
-      <ErrorBoundary label="Header" fallback={null}>
-        <Header />
-      </ErrorBoundary>
-      <main>
-        {visibleCount === 0 ?
-        <div className="shell max-w-xl py-32 text-center">
-            <h1 className="display display-2 text-ink">Every section is hidden</h1>
-            <p className="body-sm mt-4 text-ink/55">
-              Turn sections back on from the admin panel to bring the page to life.
-            </p>
-          </div> :
+    <TemplateContext.Provider value={{ motion: tpl.motion, shape: tpl.shape }}>
+      <div
+        id="top"
+        data-template={tpl.id}
+        data-mode={tpl.mode}
+        data-shape={tpl.shape}
+        data-hover={tpl.hover}
+        data-scroll={tpl.scroll}
+        style={dark ? darkVars(content.theme.colors) : undefined}
+        className="min-h-screen w-full bg-cream text-ink">
 
-        order.map(renderSection)
-        }
-      </main>
-      <ErrorBoundary label="Footer" fallback={null}>
-        <Footer />
-      </ErrorBoundary>
-      {/* Overlays are non-essential chrome — if they break, the page still reads. */}
-      <ErrorBoundary label="Cart drawer" fallback={null}>
-        <CartDrawer />
-      </ErrorBoundary>
-      <ErrorBoundary label="Floating contact" fallback={null}>
-        <FloatingContact />
-      </ErrorBoundary>
+        {tpl.scroll === 'progress' && <ScrollProgress />}
+        {tpl.cursorGlow && <CursorGlow />}
+        <SeoHead seo={content.seo} siteName={content.brand.name} />
+        <ErrorBoundary label="Header" fallback={null}>
+          <Header />
+        </ErrorBoundary>
+        <main>
+          {visibleCount === 0 ?
+          <div className="shell max-w-xl py-32 text-center">
+              <h1 className="display display-2 text-ink">Every section is hidden</h1>
+              <p className="body-sm mt-4 text-ink/55">
+                Turn sections back on from the admin panel to bring the page to life.
+              </p>
+            </div> :
+
+          order.map(renderSection)
+          }
+        </main>
+        <ErrorBoundary label="Footer" fallback={null}>
+          {dark ?
+          <div style={lightVars(content.theme.colors)}>
+              <Footer />
+            </div> :
+
+          <Footer />
+          }
+        </ErrorBoundary>
+        {/* Overlays are non-essential chrome — if they break, the page still reads. */}
+        <ErrorBoundary label="Cart drawer" fallback={null}>
+          <CartDrawer />
+        </ErrorBoundary>
+        <ErrorBoundary label="Floating contact" fallback={null}>
+          <FloatingContact />
+        </ErrorBoundary>
+      </div>
+    </TemplateContext.Provider>);
+
+}
+/** Shown when the site's plan has expired or the platform has switched it off. */
+function SiteUnavailable() {
+  return (
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#16120e] px-6 font-['Inter',system-ui,sans-serif]">
+      <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-[#c9a45c]/15 blur-3xl" />
+      <div className="relative max-w-md text-center">
+        <span className="mx-auto block h-px w-16 bg-gradient-to-r from-transparent via-[#c9a45c] to-transparent" />
+        <h1 className="mt-8 font-['Cormorant_Garamond',Georgia,serif] text-4xl font-medium text-[#f3e6c8] sm:text-5xl">
+          We’ll be back soon
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-[#f3e6c8]/60">
+          This website is temporarily offline. If you own this business, please contact support to renew your plan —
+          everything will be restored exactly as it was.
+        </p>
+        <span className="mx-auto mt-8 block h-px w-16 bg-gradient-to-r from-transparent via-[#c9a45c] to-transparent" />
+      </div>
     </div>);
 
 }

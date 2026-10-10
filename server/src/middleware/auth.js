@@ -29,3 +29,21 @@ export function requireRole(...roles) {
     return next();
   };
 }
+
+/**
+ * Like requireAuth, but lets anonymous requests through. Used on public reads the
+ * editor also makes, so a signed-in client always loads its own site — never the
+ * one the host name or a header points at.
+ */
+export function optionalAuth(req, _res, next) {
+  const header = req.headers.authorization ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  if (token) {
+    try {
+      req.admin = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      /* expired or foreign token: treat as a visitor */
+    }
+  }
+  next();
+}

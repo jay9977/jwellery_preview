@@ -4,7 +4,7 @@ import { useContent } from '../../hooks/useContent';
 import { SectionHeading } from './SectionHeading';
 import { socialIcon, usableSocialLinks } from '../../data/social';
 import { onEnquiry } from '../../utils/events';
-import { trackLead } from '../../utils/leads';
+import { trackLead, visitorId } from '../../utils/leads';
 import type { ContactSection } from '../../types/content';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -95,7 +95,9 @@ export function Contact({ data }: {data: ContactSection;}) {
         phone: form.phone.trim(),
         subject: form.subject.trim(),
         message: form.message.trim(),
-        website: form.website
+        website: form.website,
+        // Files the message under this visitor's row in the leads panel.
+        visitorId: visitorId()
       });
       // The anonymous visitor row now gets a name and a way to reach them.
       trackLead('contact', form.subject.trim() || 'Contact form', {

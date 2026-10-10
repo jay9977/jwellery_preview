@@ -9,11 +9,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// One row per client website. Every other table is scoped to a tenant.
+/// A site serves only while status is "active" and expiresAt is in the future.
+model Tenant {
+  id        Int      @id @default(autoincrement())
+  /// Used for the free subdomain (<slug>.PLATFORM_DOMAIN) and ?site=<slug> in dev.
+  slug      String   @unique @db.VarChar(60)
+  name      String   @db.VarChar(120)
+  /// Custom domain without "www." — the www variant resolves to the same site.
+  domain    String?  @unique @db.VarChar(190)
+  /// 1m | 6m | 12m
+  plan      String   @default("12m") @db.VarChar(10)
+  /// active | suspended
+  status    String   @default("active") @db.VarChar(20)
+  expiresAt DateTime @default(now())
+  ownerName String   @default("") @db.VarChar(120)
+  phone     String   @default("") @db.VarChar(40)
+  email     String   @default("") @db.VarChar(254)
+  notes     String   @default("") @db.VarChar(2000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users           AdminUser[]
+  leads           Lead[]
+  sections        Section[]
+  globalSettings  GlobalSetting[]
+  subscribers     Subscriber[]
+  contactMessages ContactMessage[]
+  versions        ContentVersion[]
+
+  @@map("tenants")
+}
+
 /// Users who can log in to a panel.
 /// role "admin" -> the full editor at /admin (and everything a lead user can do)
 /// role "leads" -> the leads desk at /leads-panel only, never the site editor
+/// role "superadmin" -> the platform owner at /super-admin; has no tenant
 model AdminUser {
   id           Int      @id @default(autoincrement())
+  tenantId     Int?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   email        String   @unique
   passwordHash String
   role         String   @default("admin")
@@ -28,8 +63,10 @@ model AdminUser {
 /// (enquiry form, newsletter) and enriched with what they looked at.
 model Lead {
   id          Int      @id @default(autoincrement())
+  tenantId    Int
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   /// Random id stored in the visitor's own cookie — no third-party tracking.
-  visitorId   String   @unique @db.VarChar(64)
+  visitorId   String   @db.VarChar(64)
   name        String   @default("") @db.VarChar(120)
   email       String   @default("") @db.VarChar(254)
   phone       String   @default("") @db.VarChar(40)
@@ -54,7 +91,8 @@ model Lead {
   firstSeenAt DateTime @default(now())
   lastSeenAt  DateTime @default(now())
 
-  @@index([lastSeenAt])
+  @@unique([tenantId, visitorId])
+  @@index([tenantId, lastSeenAt])
   @@index([status])
   @@map("leads")
 }
@@ -64,37 +102,52 @@ model Lead {
 /// position -> ordering of sections on the landing page
 /// data     -> the section's full content (slides, items, titles, ...)
 model Section {
-  id        String   @id
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id        String
   visible   Boolean  @default(true)
   position  Int
   data      Json
   updatedAt DateTime @updatedAt
 
+  @@id([tenantId, id])
   @@map("sections")
 }
 
 /// Global site settings stored one row per key:
 /// theme, seo, brand, nav, announcement, footer
 model GlobalSetting {
-  key       String   @id
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key       String
   data      Json
   updatedAt DateTime @updatedAt
 
+  @@id([tenantId, key])
   @@map("global_settings")
 }
 
 /// Newsletter signups from the landing page
 model Subscriber {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email     String
   createdAt DateTime @default(now())
 
+  @@unique([tenantId, email])
   @@map("subscribers")
 }
 
 /// Enquiries sent from the Contact Us form on the landing page
 model ContactMessage {
   id        Int      @id @default(autoincrement())
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  /// The sender's lead cookie, so the leads panel can show the message body
+  /// beside the rest of that visitor's history. Empty when cookies are blocked —
+  /// the panel then falls back to matching on email.
+  visitorId String   @default("") @db.VarChar(64)
   name      String   @db.VarChar(120)
   email     String   @db.VarChar(254)
   phone     String   @default("") @db.VarChar(40)
@@ -103,18 +156,22 @@ model ContactMessage {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  @@index([createdAt])
+  @@index([tenantId, createdAt])
+  @@index([visitorId])
+  @@index([email])
   @@map("contact_messages")
 }
 
 /// Automatic snapshots of the full content document (version history)
 model ContentVersion {
   id        Int      @id @default(autoincrement())
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   label     String   @default("autosave")
   content   Json
   createdAt DateTime @default(now())
 
   // Both the history list and the retention sweep sort by this.
-  @@index([createdAt])
+  @@index([tenantId, createdAt])
   @@map("content_versions")
 }

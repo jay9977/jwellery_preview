@@ -14,6 +14,12 @@ export type SyncStatus = 'offline' | 'loading' | 'synced' | 'saving' | 'error';
 
 export interface ContentContextValue {
   content: SiteContent;
+  /** False until the site's own content has been loaded (or a cached copy shown). */
+  loaded: boolean;
+  /** The site's plan expired or it was switched off — show the unavailable page. */
+  suspended: boolean;
+  /** No client website at this address — the platform homepage is shown instead. */
+  noSite: boolean;
   isDirty: boolean;
   backend: BackendConfig;
   syncStatus: SyncStatus;

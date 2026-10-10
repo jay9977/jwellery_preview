@@ -162,3 +162,403 @@ body {
   color: rgb(var(--c-accent));
   border-color: rgb(var(--c-accent));
 }
+
+/* ---------- KIT platform homepage motion ---------- */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Scroll reveal: fires once per element (see useReveal). */
+.kit-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms var(--ease-out),
+    transform 700ms var(--ease-out);
+}
+.kit-reveal[data-visible] {
+  opacity: 1;
+  transform: none;
+}
+/* Images unveil top-to-bottom instead of sliding. */
+.kit-unveil {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 900ms var(--ease-in-out);
+}
+.kit-unveil[data-visible] {
+  clip-path: inset(0 0 0 0);
+}
+
+.kit-marquee {
+  animation: kit-marquee 40s linear infinite;
+}
+@keyframes kit-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.kit-float {
+  animation: kit-float 6s ease-in-out infinite;
+}
+@keyframes kit-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.kit-lift,
+.kit-zoom img,
+.kit-cta {
+  transition:
+    transform 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out),
+    border-color 300ms ease;
+}
+.kit-zoom img {
+  transition-duration: 700ms;
+}
+.kit-cta:active {
+  transform: scale(0.97);
+  transition-duration: 120ms;
+}
+
+/* Touch screens fire hover on tap, so hover motion is for real pointers only. */
+@media (hover: hover) and (pointer: fine) {
+  .kit-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px -20px rgb(28 23 18 / 0.35);
+    border-color: rgb(201 164 92 / 0.6);
+  }
+  .kit-zoom:hover img {
+    transform: scale(1.06);
+  }
+  .kit-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px -12px rgb(168 130 58 / 0.6);
+  }
+  .kit-marquee-wrap:hover .kit-marquee {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-reveal {
+    transform: none;
+    transition: opacity 400ms ease;
+  }
+  .kit-unveil {
+    clip-path: none;
+  }
+  .kit-marquee,
+  .kit-float {
+    animation: none;
+  }
+  .kit-lift:hover,
+  .kit-zoom:hover img,
+  .kit-cta:hover {
+    transform: none;
+  }
+}
+
+/* =====================================================================
+   Template: Royal Heritage
+   The wrapper swaps --c-cream and --c-ink (see Landing), so every shared
+   component turns dark-on-light into light-on-dark. The rules below fix
+   the few places that paint text-cream on the accent colour.
+   ===================================================================== */
+[data-mode='dark'] .bg-emerald,
+[data-mode='dark'] .bg-emerald-deep,
+[data-mode='dark'] .hover\:bg-emerald-deep:hover,
+[data-mode='dark'] .hover\:bg-emerald:hover {
+  background-color: rgb(var(--c-gold));
+}
+[data-mode='dark'] .text-emerald,
+[data-mode='dark'] .hover\:text-emerald:hover,
+[data-mode='dark'] .group:hover .group-hover\:text-emerald {
+  color: rgb(var(--c-gold));
+}
+[data-mode='dark'] .hover\:border-emerald:hover,
+[data-mode='dark'] .focus\:border-emerald:focus {
+  border-color: rgb(var(--c-gold));
+}
+[data-mode='dark'] .bg-emerald\/10 {
+  background-color: rgb(var(--c-gold) / 0.12);
+}
+[data-mode='dark'] .bg-ink\/50,
+[data-mode='dark'] .bg-ink\/55 {
+  background-color: rgb(0 0 0 / 0.65);
+}
+[data-mode='dark'] .btn-primary {
+  background-color: rgb(var(--c-gold));
+  color: rgb(var(--c-cream));
+}
+[data-mode='dark'] .btn-primary:hover {
+  background-color: rgb(var(--c-ink));
+}
+[data-mode='dark'] .btn-light {
+  background-color: rgb(var(--c-gold));
+  color: rgb(var(--c-cream));
+}
+[data-mode='dark'] .eyebrow {
+  letter-spacing: 0.32em;
+}
+[data-mode='dark'] :focus-visible {
+  outline-color: rgb(var(--c-gold));
+}
+
+/* Arch frame — the signature shape of the template. */
+.royal-arch {
+  border-radius: 999px 999px 0 0;
+}
+
+/* Gold button with a light sweep on hover. */
+.royal-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 2rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition:
+    transform 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out),
+    background-color 200ms ease,
+    color 200ms ease;
+}
+/* Text on gold is the palette's ink colour in both modes (in dark mode that colour
+   lives in --c-cream, because the dark canvas swaps the two). */
+.royal-btn-gold {
+  background-color: rgb(var(--c-gold));
+  color: rgb(var(--c-ink));
+}
+[data-mode='dark'] .royal-btn-gold {
+  color: rgb(var(--c-cream));
+}
+.royal-btn-line {
+  border: 1px solid rgb(var(--c-gold) / 0.7);
+  color: rgb(var(--c-gold));
+}
+.royal-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.royal-btn:active {
+  transform: scale(0.97);
+  transition-duration: 120ms;
+}
+
+/* Frames that light up in gold. */
+.royal-frame {
+  outline: 1px solid rgb(var(--c-gold) / 0.35);
+  outline-offset: -10px;
+  transition:
+    outline-offset 500ms var(--ease-out),
+    outline-color 300ms ease,
+    box-shadow 500ms var(--ease-out),
+    transform 500ms var(--ease-out);
+}
+.royal-zoom img {
+  transition: transform 1200ms var(--ease-out);
+}
+
+/* Slow push-in on the active hero slide. */
+.royal-kenburns {
+  animation: royal-kenburns 9s var(--ease-out) both;
+}
+@keyframes royal-kenburns {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+
+.royal-shimmer-text {
+  background: linear-gradient(100deg, rgb(var(--c-gold)) 20%, rgb(255 236 190) 40%, rgb(var(--c-gold)) 60%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: royal-shimmer 6s linear infinite;
+}
+@keyframes royal-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -150% 0; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .royal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px -14px rgb(var(--c-gold) / 0.65);
+  }
+  .royal-btn:hover::after {
+    transform: translateX(120%);
+    transition: transform 900ms var(--ease-out);
+  }
+  .royal-btn-line:hover {
+    background-color: rgb(var(--c-gold));
+    color: rgb(var(--c-ink));
+  }
+  [data-mode='dark'] .royal-btn-line:hover {
+    color: rgb(var(--c-cream));
+  }
+  .royal-frame:hover {
+    outline-color: rgb(var(--c-gold) / 0.9);
+    outline-offset: -16px;
+    box-shadow: 0 30px 60px -30px rgb(var(--c-gold) / 0.45);
+    transform: translateY(-6px);
+  }
+  .royal-zoom:hover img {
+    transform: scale(1.07);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .royal-kenburns,
+  .royal-shimmer-text {
+    animation: none;
+  }
+  .royal-btn:hover,
+  .royal-frame:hover,
+  .royal-zoom:hover img {
+    transform: none;
+  }
+  .royal-btn::after {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   Template engine — shape language (data-shape on the site wrapper)
+   ===================================================================== */
+[data-shape='soft'] .btn,
+[data-shape='soft'] .royal-btn { border-radius: 0.6rem; }
+[data-shape='round'] .btn,
+[data-shape='round'] .royal-btn { border-radius: 999px; }
+[data-shape='arch'] .btn,
+[data-shape='arch'] .royal-btn { border-radius: 2px; }
+
+.tpl-media { overflow: hidden; }
+[data-shape='soft'] .tpl-media,
+[data-shape='soft'] .tpl-card { border-radius: 1rem; }
+[data-shape='round'] .tpl-media,
+[data-shape='round'] .tpl-card { border-radius: 1.75rem; }
+[data-shape='arch'] .tpl-media { border-radius: 999px 999px 0 0; }
+
+/* Shared sections pick up the shape too. */
+[data-shape='soft'] :is(#journal, #featured, #categories, #gallery) img { border-radius: 0.85rem; }
+[data-shape='round'] :is(#journal, #featured, #categories, #gallery) img { border-radius: 1.5rem; }
+[data-shape='soft'] :is(#contact, #newsletter) :is(input, textarea) { border-radius: 0.6rem; }
+[data-shape='round'] :is(#contact, #newsletter) :is(input, textarea) { border-radius: 1.25rem; }
+
+/* Gallery strip: two rows drifting in opposite directions. */
+.tpl-strip { animation: tpl-strip 55s linear infinite; }
+.tpl-strip-reverse { animation-direction: reverse; }
+@keyframes tpl-strip {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Collage hero: photos breathe gently. */
+.tpl-drift { animation: tpl-drift 7s ease-in-out infinite; }
+@keyframes tpl-drift {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--tilt, 0deg)); }
+}
+
+/* Hover vocabulary shared by the new layouts. */
+.tpl-lift { transition: transform 400ms var(--ease-out), box-shadow 400ms var(--ease-out); }
+.tpl-zoom img { transition: transform 1100ms var(--ease-out); }
+.tpl-ring { transition: box-shadow 500ms var(--ease-out), transform 500ms var(--ease-out); }
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-strip-wrap:hover .tpl-strip { animation-play-state: paused; }
+  .tpl-lift:hover { transform: translateY(-8px); box-shadow: 0 30px 60px -28px rgb(var(--c-ink) / 0.35); }
+  .tpl-zoom:hover img { transform: scale(1.07); }
+  .group:hover .tpl-ring { box-shadow: 0 0 0 3px rgb(var(--c-cream)), 0 0 0 5px rgb(var(--c-gold)); transform: scale(1.03); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tpl-strip, .tpl-drift { animation: none; }
+  .tpl-lift:hover, .tpl-zoom:hover img, .group:hover .tpl-ring { transform: none; }
+}
+
+/* =====================================================================
+   Template engine — hover vocabulary (data-hover on the site wrapper)
+   Applies to photos in every content section, classic or new.
+   ===================================================================== */
+:is([data-hover]) :is(#categories, #featured, #gallery, #journal, #editorial) img {
+  transition:
+    transform 1000ms var(--ease-out),
+    filter 600ms ease;
+}
+[data-hover='mono'] :is(#categories, #featured, #gallery, #journal, #editorial) img {
+  filter: grayscale(0.9) contrast(1.05);
+}
+[data-hover='glow'] :is(#featured article, #categories a, .tpl-card) {
+  transition: box-shadow 500ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-hover='mono'] :is(#categories, #featured, #gallery, #journal, #editorial) .group:hover img,
+  [data-hover='mono'] :is(#categories, #featured, #gallery, #journal, #editorial) img:hover {
+    filter: grayscale(0) contrast(1);
+    transform: scale(1.04);
+  }
+  [data-hover='bright'] :is(#categories, #featured, #gallery, #journal, #editorial) .group:hover img {
+    filter: brightness(1.08) saturate(1.2);
+    transform: scale(1.05);
+  }
+  [data-hover='tilt'] :is(#categories, #featured, #gallery, #journal, #editorial) .group:hover img {
+    transform: scale(1.08) rotate(-1.5deg);
+  }
+  [data-hover='glow'] :is(#featured article, #categories a, .tpl-card):hover {
+    box-shadow: 0 0 0 1px rgb(var(--c-gold) / 0.6), 0 24px 60px -18px rgb(var(--c-gold) / 0.45);
+  }
+}
+
+/* =====================================================================
+   Template engine — scroll effects (data-scroll), progressive enhancement:
+   browsers without scroll-driven animations simply show the photos still.
+   ===================================================================== */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-scroll='parallax'] :is(#categories, #editorial, #journal) .tpl-media img,
+    [data-scroll='parallax'] :is(#editorial, #journal) img {
+      animation: tpl-parallax linear both;
+      animation-timeline: view();
+      scale: 1.15;
+    }
+    [data-scroll='scale'] main section:not(#hero) :is(figure, article, .tpl-media) img {
+      animation: tpl-scale linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+  }
+}
+@keyframes tpl-parallax {
+  from { translate: 0 -7%; }
+  to { translate: 0 7%; }
+}
+@keyframes tpl-scale {
+  from { scale: 1.25; }
+  to { scale: 1; }
+}
+
+/* Soft light that follows the pointer on dark templates. */
+.tpl-cursor-glow {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 30%), rgb(var(--c-gold) / 0.09), transparent 60%);
+}
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .tpl-cursor-glow { display: none; }
+}

@@ -6,8 +6,8 @@ export interface BackendConfig {
   autoPublish: boolean;
 }
 
-const KEY = 'girija.backend.config.v1';
-const TOKEN_KEY = 'girija.admin.token';
+const KEY = 'giriraj.backend.config.v1';
+const TOKEN_KEY = 'giriraj.admin.token';
 
 /**
  * Build-time API URL. This is what makes the *public* site read from the server:
@@ -52,7 +52,9 @@ export function loadBackendConfig(): BackendConfig {
     /* unreadable config — fall back to the build-time defaults */
   }
 
-  const baseUrl = stored.baseUrl?.trim() || ENV_API_URL;
+  // The build-time URL wins: a URL saved in this browser outlives port and server
+  // moves, and a stale one makes every login fail with "Could not reach the server".
+  const baseUrl = ENV_API_URL || stored.baseUrl?.trim() || '';
   return {
     baseUrl,
     // An explicitly saved choice wins; otherwise connect whenever a URL is known.
@@ -75,4 +77,40 @@ export function persistBackendConfig(config: BackendConfig) {
 
 export function isConnected(config: BackendConfig): boolean {
   return config.enabled && config.baseUrl.trim().length > 0;
+}
+
+const SITE_KEY = 'giriraj.site.slug';
+
+/**
+ * Which client's website this tab is working on, when the host name alone cannot say:
+ * `?site=<slug>` on localhost, or the client a super admin opened in support mode.
+ * Remembered for the tab so it survives navigation inside the app.
+ */
+export function currentSite(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get('site')?.trim().toLowerCase();
+    if (fromUrl) window.sessionStorage.setItem(SITE_KEY, fromUrl);
+    return fromUrl || window.sessionStorage.getItem(SITE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+export function setCurrentSite(slug: string) {
+  try {
+    if (slug) window.sessionStorage.setItem(SITE_KEY, slug);
+    else window.sessionStorage.removeItem(SITE_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+/** Sent with every API call so the server knows which client's site is asking. */
+export function siteHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (typeof window !== 'undefined') headers['X-Site-Host'] = window.location.hostname;
+  const site = currentSite();
+  if (site) headers['X-Tenant'] = site;
+  return headers;
 }

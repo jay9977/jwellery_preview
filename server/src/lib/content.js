@@ -6,10 +6,10 @@ export const GLOBAL_KEYS = ['theme', 'seo', 'brand', 'nav', 'announcement', 'foo
  * Build the full SiteContent document from DB rows.
  * Returns null when the database has not been seeded yet.
  */
-export async function assembleContent(prisma) {
+export async function assembleContent(prisma, tenantId) {
   const [sections, globals] = await Promise.all([
-    prisma.section.findMany({ orderBy: { position: 'asc' } }),
-    prisma.globalSetting.findMany()
+    prisma.section.findMany({ where: { tenantId }, orderBy: { position: 'asc' } }),
+    prisma.globalSetting.findMany({ where: { tenantId } })
   ]);
   if (sections.length === 0) return null;
 
@@ -29,7 +29,7 @@ export async function assembleContent(prisma) {
  * Decompose a SiteContent document into Section + GlobalSetting rows.
  * Runs inside a transaction so a failed save never leaves half a document.
  */
-export async function saveContent(prisma, content, { force = false } = {}) {
+export async function saveContent(prisma, tenantId, content, { force = false, label = 'autosave' } = {}) {
   if (!content || typeof content !== 'object' || !content.sections) {
     throw Object.assign(new Error('Body must contain a "content" object with "sections".'), { status: 400 });
   }
@@ -46,8 +46,8 @@ export async function saveContent(prisma, content, { force = false } = {}) {
     if (content[key] !== undefined) {
       ops.push(
         prisma.globalSetting.upsert({
-          where: { key },
-          create: { key, data: content[key] },
+          where: { tenantId_key: { tenantId, key } },
+          create: { tenantId, key, data: content[key] },
           update: { data: content[key] }
         })
       );
@@ -59,7 +59,7 @@ export async function saveContent(prisma, content, { force = false } = {}) {
   // Guard: auto-publish fires ~1s after every keystroke, so a truncated or
   // half-built document must not be able to wipe the site. Removing most of the
   // sections at once needs an explicit ?force=1.
-  const existing = await prisma.section.findMany({ select: { id: true } });
+  const existing = await prisma.section.findMany({ where: { tenantId }, select: { id: true } });
   const dropped = existing.filter((s) => !ids.includes(s.id));
   if (!force && existing.length > 1 && dropped.length * 2 >= existing.length) {
     throw Object.assign(
@@ -77,22 +77,23 @@ export async function saveContent(prisma, content, { force = false } = {}) {
     const position = order.indexOf(id) === -1 ? order.length : order.indexOf(id);
     ops.push(
       prisma.section.upsert({
-        where: { id },
-        create: { id, visible: Boolean(visible), position, data },
+        where: { tenantId_id: { tenantId, id } },
+        create: { tenantId, id, visible: Boolean(visible), position, data },
         update: { visible: Boolean(visible), position, data }
       })
     );
   }
 
   // Delete sections that are no longer part of the document
-  ops.push(prisma.section.deleteMany({ where: { id: { notIn: ids } } }));
+  ops.push(prisma.section.deleteMany({ where: { tenantId, id: { notIn: ids } } }));
 
   // Version snapshot + keep only the newest 20
-  ops.push(prisma.contentVersion.create({ data: { content, label: 'autosave' } }));
+  ops.push(prisma.contentVersion.create({ data: { tenantId, content, label } }));
 
   await prisma.$transaction(ops);
 
   const old = await prisma.contentVersion.findMany({
+    where: { tenantId },
     orderBy: { createdAt: 'desc' },
     skip: 20,
     select: { id: true }

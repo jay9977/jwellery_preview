@@ -23,3 +23,10 @@ export function hexToRgbTriple(value: string): string {
   const b = int & 255;
   return `${r} ${g} ${b}`;
 }
+/** `a` blended toward `b` by `t` (0..1), as "#rrggbb". */
+export function mixHex(a: string, b: string, t: number): string {
+  const [ra, ga, ba] = hexToRgbTriple(a).split(' ').map(Number);
+  const [rb, gb, bb] = hexToRgbTriple(b).split(' ').map(Number);
+  const ch = (x: number, y: number) => Math.round(x + (y - x) * t).toString(16).padStart(2, '0');
+  return `#${ch(ra, rb)}${ch(ga, gb)}${ch(ba, bb)}`;
+}

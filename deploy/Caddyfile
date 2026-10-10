@@ -1,0 +1,41 @@
+# Caddy in front of the platform on the VPS. Every client domain and free subdomain
+# is served by this one block, with an HTTPS certificate issued automatically on the
+# first visit — but only after the API confirms the domain belongs to a client.
+#
+#   1. Build the frontend with VITE_API_URL=/api   (same origin on every domain)
+#   2. Copy dist/ to /var/www/jewellery/dist and run the API on :4001 (pm2 / systemd)
+#   3. Replace kothariit.com below with your PLATFORM_DOMAIN, then: caddy run --config Caddyfile
+
+{
+	on_demand_tls {
+		ask http://localhost:4001/api/domain-check
+	}
+}
+
+(app) {
+	handle /api/* {
+		reverse_proxy localhost:4001
+	}
+	handle /uploads/* {
+		reverse_proxy localhost:4001
+	}
+	handle {
+		root * /var/www/jewellery/dist
+		try_files {path} /index.html
+		file_server
+	}
+	encode gzip
+}
+
+# Your own domain: the super admin panel lives at https://kothariit.com/super-admin
+kothariit.com, www.kothariit.com {
+	import app
+}
+
+# Every client: custom domains and <slug>.kothariit.com subdomains.
+https:// {
+	tls {
+		on_demand
+	}
+	import app
+}
