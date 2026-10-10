@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpIcon, MessageCircleIcon, PhoneIcon, XIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
+import { useTemplate } from './templates/engine';
 
 /**
  * Candere-style floating contact launcher: WhatsApp chat + phone call,
@@ -12,6 +13,7 @@ export function FloatingContact() {
   const phone = content.brand.phone?.trim() ?? '';
   const digits = phone.replace(/[^\d]/g, '');
   const [open, setOpen] = useState(false);
+  const { premium } = useTemplate();
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
@@ -29,7 +31,11 @@ export function FloatingContact() {
         type="button"
         aria-label="Back to top"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/10 bg-cream/60 text-ink/70 shadow-lg backdrop-blur-xl backdrop-saturate-150 transition-[color,border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-gold hover:text-gold">
+        className={
+        premium ?
+        'flex h-11 w-11 items-center justify-center rounded-full border border-ink/10 bg-cream/60 text-ink/70 shadow-lg backdrop-blur-xl backdrop-saturate-150 transition-[color,border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-gold hover:text-gold' :
+        'flex h-10 w-10 items-center justify-center rounded-full border border-ink/15 bg-cream/95 text-ink/60 shadow-md backdrop-blur transition-colors hover:border-emerald hover:text-emerald'
+        }>
 
           <ArrowUpIcon className="h-4 w-4" />
         </button>
@@ -63,7 +69,11 @@ export function FloatingContact() {
         aria-label={open ? 'Close contact options' : 'Contact us'}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-emerald text-cream shadow-xl shadow-black/25 ring-4 ring-cream/40 backdrop-blur transition-transform duration-300 hover:scale-105 active:scale-95">
+        className={
+        premium ?
+        'flex h-[56px] w-[56px] items-center justify-center rounded-full bg-emerald text-cream shadow-xl shadow-black/25 ring-4 ring-cream/40 backdrop-blur transition-transform duration-300 hover:scale-105 active:scale-95' :
+        'flex h-[52px] w-[52px] items-center justify-center rounded-full bg-emerald text-cream shadow-xl transition-transform hover:scale-105'
+        }>
 
         {open ? <XIcon className="h-5 w-5" /> : <MessageCircleIcon className="h-5 w-5" />}
       </button>

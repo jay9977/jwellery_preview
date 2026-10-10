@@ -12,7 +12,7 @@ import { ArrowRightIcon, ChevronDownIcon } from 'lucide-react';
 import { useContent } from '../../../hooks/useContent';
 import type { HeroSection } from '../../../types/content';
 import type { Intro } from '../../../data/templates';
-import { EASE_OUT, useTemplate } from './engine';
+import { EASE_OUT } from './engine';
 import { Magnetic } from './Magnetic';
 
 /*
@@ -115,9 +115,12 @@ function Piece({
 
 }
 
-export function StoryHero({ data }: {data: HeroSection;}) {
+export const StoryOrbit = ({ data }: {data: HeroSection;}) => <StoryHero data={data} intro="orbit" />;
+export const StoryFan = ({ data }: {data: HeroSection;}) => <StoryHero data={data} intro="fan" />;
+export const StoryRail = ({ data }: {data: HeroSection;}) => <StoryHero data={data} intro="rail" />;
+
+function StoryHero({ data, intro }: {data: HeroSection;intro: Intro;}) {
   const { content } = useContent();
-  const { intro } = useTemplate();
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });

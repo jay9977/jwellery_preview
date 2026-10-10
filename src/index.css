@@ -1,5 +1,6 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&family=Marcellus&family=Karla:wght@300;400;500;600&family=Lora:wght@400;500;600&family=Work+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=Manrope:wght@300;400;500;600&family=Gilda+Display&family=Nunito+Sans:wght@300;400;600&family=Cinzel:wght@400;500;600&family=Lato:wght@300;400;700&family=Bodoni+Moda:wght@400;500;600&family=Yeseva+One&family=Josefin+Sans:wght@300;400;600&family=Tenor+Sans&family=EB+Garamond:wght@400;500;600&family=Fraunces:wght@300;400;600&family=Outfit:wght@300;400;500&family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=Prata&family=Hind:wght@300;400;500&display=swap');
 
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import 'tailwindcss/base';
@@ -77,6 +78,11 @@ body {
   line-height: 1.06;
 }
 .display-2 {
+  font-size: clamp(1.75rem, 3vw, 2.375rem);
+  line-height: 1.14;
+}
+/* Newer templates set display type larger; the original design keeps its own scale. */
+[data-premium] .display-2 {
   font-size: clamp(2rem, 3.8vw, 3.125rem);
   line-height: 1.08;
   letter-spacing: -0.015em;
@@ -659,3 +665,26 @@ body {
   will-change: transform;
 }
 .tpl-magnetic[data-active] { transition-duration: 120ms; }
+
+/* Columns hero: tall columns of jewellery gliding up (and one gliding down). */
+.tpl-column { animation: tpl-column 40s linear infinite; }
+.tpl-column-reverse { animation-direction: reverse; }
+@keyframes tpl-column {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+/* Coverflow hero: a ring of jewellery turning slowly in 3D. */
+.tpl-carousel { animation: tpl-carousel 40s linear infinite; }
+@keyframes tpl-carousel {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(-360deg); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-strip-wrap:hover .tpl-column,
+  .tpl-carousel:hover { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpl-column, .tpl-carousel { animation: none; }
+}

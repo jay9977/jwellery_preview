@@ -26,7 +26,7 @@ import type {
   TrustSection } from
 '../../../types/content';
 import { QuickView } from '../QuickView';
-import { EASE_OUT, useEnter, useMedia, useProducts } from './engine';
+import { EASE_OUT, useEnter, useHeroMedia, useMedia, useProducts } from './engine';
 
 /* Layouts added by the template engine. Each one takes the same data as the classic
    section it replaces, and enters in whatever motion style the template sets. */
@@ -91,7 +91,9 @@ function useSlides(data: HeroSection, ms = 6500) {
 
 export function SplitHero({ data }: {data: HeroSection;}) {
   const { index, setIndex, active, count } = useSlides(data, 7000);
+  const { products } = useHeroMedia(data);
   if (!active) return null;
+  const piece = products[index % products.length];
   return (
     <section id="hero" aria-label="Featured collection" className="relative w-full overflow-hidden bg-cream">
       <div className="shell grid min-h-[calc(100svh-72px)] grid-cols-1 items-center gap-10 py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
@@ -170,9 +172,9 @@ export function SplitHero({ data }: {data: HeroSection;}) {
           <div className="tpl-media relative aspect-[4/5] w-full bg-sand sm:aspect-[5/5] lg:aspect-[4/5]">
             <AnimatePresence mode="sync">
               <motion.img
-                key={active.id + active.image}
-                src={active.image}
-                alt={active.title}
+                key={piece}
+                src={piece}
+                alt="" 
                 initial={{ opacity: 0, transform: 'scale(1.08)' }}
                 animate={{ opacity: 1, transform: 'scale(1)' }}
                 exit={{ opacity: 0 }}
@@ -181,8 +183,17 @@ export function SplitHero({ data }: {data: HeroSection;}) {
 
             </AnimatePresence>
           </div>
-          <span aria-hidden className="absolute -bottom-5 -left-5 hidden h-28 w-28 border border-gold/60 lg:block" />
           <span aria-hidden className="absolute -right-4 -top-4 hidden h-20 w-20 bg-gold/15 lg:block" />
+          {/* The piece leads; the model wearing it is a small inset, never the headline image. */}
+          <motion.div
+            initial={{ opacity: 0, transform: 'scale(0.8)' }}
+            animate={{ opacity: 1, transform: 'scale(1)' }}
+            transition={{ duration: 0.9, ease: EASE_OUT, delay: 0.8 }}
+            className="absolute -bottom-6 -left-6 h-32 w-32 overflow-hidden rounded-full border-4 border-cream shadow-xl sm:h-40 sm:w-40">
+
+            <img src={active.image} alt={active.title} className="h-full w-full object-cover" style={{ borderRadius: 0 }} />
+            <span className="meta absolute inset-x-0 bottom-3 text-center text-[9px] text-white drop-shadow">As worn</span>
+          </motion.div>
         </div>
       </div>
     </section>);
@@ -194,9 +205,9 @@ export function SplitHero({ data }: {data: HeroSection;}) {
 export function CollageHero({ data }: {data: HeroSection;}) {
   const { active } = useSlides(data, 6000);
   const reduce = useReducedMotion();
+  const { products } = useHeroMedia(data);
   if (!active) return null;
-  const images = [...new Set(data.slides.map((s) => s.image))];
-  const pics = [images[0], images[1] ?? images[0], images[2] ?? images[0]];
+  const pics = [products[0], products[1] ?? products[0], products[2] ?? products[0]];
   const tiles = [
   { src: pics[0], cls: 'left-[2%] top-[8%] w-[30%] aspect-[3/4]', tilt: '-6deg', delay: 0.1 },
   { src: pics[1], cls: 'right-[3%] top-[4%] w-[26%] aspect-[4/5]', tilt: '5deg', delay: 0.25 },

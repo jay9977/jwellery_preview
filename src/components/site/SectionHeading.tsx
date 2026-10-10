@@ -7,6 +7,8 @@ interface SectionHeadingProps {
   tone?: 'dark' | 'light';
 }
 
+import { useTemplate } from './templates/engine';
+
 export function SectionHeading({
   eyebrow,
   title,
@@ -15,9 +17,11 @@ export function SectionHeading({
   tone = 'dark'
 }: SectionHeadingProps) {
   const isLight = tone === 'light';
+  const { premium } = useTemplate();
   return (
     <div className={align === 'center' ? 'mx-auto max-w-[36rem] text-center' : 'max-w-[36rem]'}>
-      {eyebrow &&
+      {eyebrow && !premium && <p className="eyebrow text-gold">{eyebrow}</p>}
+      {eyebrow && premium &&
       <p className={`eyebrow flex items-center gap-3 text-gold ${align === 'center' ? 'justify-center' : ''}`}>
           <span aria-hidden className="h-px w-8 bg-gradient-to-r from-transparent to-gold/70" />
           {eyebrow}

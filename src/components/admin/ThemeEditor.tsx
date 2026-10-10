@@ -23,6 +23,7 @@ import { checkContrast, contrastFailures } from '../../utils/contrast';
 import { assignRoles, parseHexList } from '../../utils/palette';
 import type { Palette, ThemeColors } from '../../types/content';
 import { TemplatePicker } from './TemplatePicker';
+import { TEMPLATES } from '../../data/templates';
 
 function PaletteCard({
   palette,
@@ -206,9 +207,19 @@ export function ThemeEditor() {
           Layout, shapes and animation of the whole site. Your content, colours and fonts stay as they are.
         </p>
         <TemplatePicker
-          value={theme.templateId ?? 'classic'}
+          value={theme.templateId ?? 'original'}
           colors={theme.colors}
-          onChange={(templateId) => updateTheme({ templateId })} />
+          onChange={(templateId) => {
+            // A template is a whole look: its colours and fonts come with it. The original
+            // design keeps whatever colours the site already has.
+            const def = TEMPLATES.find((t) => t.id === templateId);
+            const palette = PALETTES.find((p) => p.id === def?.palette);
+            updateTheme(
+              def && templateId !== 'original' && palette ?
+              { templateId, paletteId: palette.id, colors: { ...palette.colors }, fontId: def.font } :
+              { templateId }
+            );
+          }} />
 
       </section>
 

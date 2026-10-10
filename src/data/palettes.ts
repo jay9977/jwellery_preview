@@ -612,6 +612,66 @@ export const FONT_PAIRS: FontPair[] = [
   name: 'Warm Contemporary',
   display: 'Lora, Georgia, serif',
   body: '"Work Sans", ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'syne',
+  name: 'Bold Modern',
+  display: 'Syne, ui-sans-serif, system-ui, sans-serif',
+  body: 'Manrope, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'gilda',
+  name: 'Romantic',
+  display: '"Gilda Display", Georgia, serif',
+  body: '"Nunito Sans", ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'cinzel',
+  name: 'Temple Carved',
+  display: 'Cinzel, Georgia, serif',
+  body: 'Lato, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'bodoni',
+  name: 'Couture',
+  display: '"Bodoni Moda", Georgia, serif',
+  body: 'Jost, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'yeseva',
+  name: 'Grand Palace',
+  display: '"Yeseva One", Georgia, serif',
+  body: '"Josefin Sans", ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'tenor',
+  name: 'Airy Elegance',
+  display: '"Tenor Sans", ui-sans-serif, system-ui, sans-serif',
+  body: 'Inter, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'garamond',
+  name: 'Old-World Atelier',
+  display: '"EB Garamond", Georgia, serif',
+  body: 'Inter, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'fraunces',
+  name: 'Velvet Serif',
+  display: 'Fraunces, Georgia, serif',
+  body: 'Outfit, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'dmserif',
+  name: 'Festive Display',
+  display: '"DM Serif Display", Georgia, serif',
+  body: '"DM Sans", ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'prata',
+  name: 'Heirloom',
+  display: 'Prata, Georgia, serif',
+  body: 'Hind, ui-sans-serif, system-ui, sans-serif'
 }];
 
 

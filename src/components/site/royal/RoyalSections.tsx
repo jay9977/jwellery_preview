@@ -27,7 +27,7 @@ import type {
 import { QuickView } from '../QuickView';
 import { onQuickView, startEnquiry } from '../../../utils/events';
 import { trackLead } from '../../../utils/leads';
-import { EASE_OUT, useEnter, useMedia } from '../templates/engine';
+import { EASE_OUT, useEnter, useHeroMedia, useMedia } from '../templates/engine';
 
 /*
  * Royal Heritage: dark and gold, arch frames, parallax and "curtain" reveals.
@@ -83,6 +83,9 @@ export function RoyalHero({ data }: {data: HeroSection;}) {
 
   const slides = data.slides;
   const active = slides[Math.min(index, slides.length - 1)];
+  // Close-ups of the jewellery fill the frame — the campaign text rides on top of them.
+  const { products } = useHeroMedia(data);
+  const piece = products[index % products.length];
 
   useEffect(() => {
     if (!data.autoplay || slides.length < 2) return;
@@ -97,14 +100,14 @@ export function RoyalHero({ data }: {data: HeroSection;}) {
       <motion.div style={{ y: imageY }} className="absolute inset-0">
         <AnimatePresence mode="sync">
           <motion.div
-            key={active.id + active.image}
+            key={active.id + piece}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.4, ease: 'easeInOut' }}
             className="absolute inset-0 overflow-hidden">
 
-            <img src={active.image} alt={active.title} className="royal-kenburns h-full w-full object-cover" />
+            <img src={piece} alt="" className="royal-kenburns h-full w-full object-cover" />
           </motion.div>
         </AnimatePresence>
       </motion.div>

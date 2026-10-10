@@ -44,7 +44,16 @@ import {
   StripGallery } from
 '../components/site/templates/Variants';
 import { TemplateContext } from '../components/site/templates/engine';
-import { StoryHero } from '../components/site/templates/StoryHero';
+import { StoryFan, StoryOrbit, StoryRail } from '../components/site/templates/StoryHero';
+import {
+  BentoHero,
+  ColumnsHero,
+  CoverflowHero,
+  MarqueeHero,
+  SpotlightHero,
+  ZoomHero } from
+'../components/site/templates/Heroes';
+import { GlassHeader } from '../components/site/GlassHeader';
 import { templateById, type TemplateDef } from '../data/templates';
 import { hexToRgbTriple, mixHex } from '../utils/color';
 import { motion, useScroll, useSpring } from 'framer-motion';
@@ -76,7 +85,21 @@ function lightVars(c: ThemeColors): Vars {
 type Layouts = TemplateDef['layout'];
 type LayoutSection = keyof Layouts & keyof Sections;
 const LAYOUTS: {[K in LayoutSection]: Record<Layouts[K], React.ComponentType<{data: Sections[K];}>>} = {
-  hero: { story: StoryHero, card: Hero, center: RoyalHero, split: SplitHero, collage: CollageHero },
+  hero: {
+    card: Hero,
+    center: RoyalHero,
+    split: SplitHero,
+    collage: CollageHero,
+    'story-orbit': StoryOrbit,
+    'story-fan': StoryFan,
+    'story-rail': StoryRail,
+    marquee: MarqueeHero,
+    spotlight: SpotlightHero,
+    bento: BentoHero,
+    zoom: ZoomHero,
+    columns: ColumnsHero,
+    coverflow: CoverflowHero
+  },
   categories: { grid: Categories, arch: RoyalCategories, circle: CircleCategories, scroll: ScrollCategories },
   featured: { cards: Featured, framed: RoyalFeatured, minimal: MinimalFeatured, spotlight: SpotlightFeatured },
   promo: { split: Promo, parallax: RoyalPromo, band: BandPromo },
@@ -113,6 +136,8 @@ export function Landing() {
   const { sections, order } = content;
   const tpl = templateById(content.theme.templateId);
   const dark = tpl.mode === 'dark';
+  // The original design renders exactly as it was built: no engine attributes, no extras.
+  const premium = tpl.id !== 'original';
 
   // Everyone who reaches the site becomes a lead the moment they land, so the
   // leads desk sees them even if they never fill anything in.
@@ -171,23 +196,28 @@ export function Landing() {
   const visibleCount = order.filter((id) => sections[id]?.visible).length;
 
   return (
-    <TemplateContext.Provider value={{ motion: tpl.motion, shape: tpl.shape, intro: tpl.intro }}>
+    <TemplateContext.Provider value={{ motion: tpl.motion, shape: tpl.shape, premium }}>
       <div
         id="top"
-        data-template={tpl.id}
-        data-mode={tpl.mode}
-        data-shape={tpl.shape}
-        data-hover={tpl.hover}
-        data-scroll={tpl.scroll}
+        {...premium ?
+        {
+          'data-template': tpl.id,
+          'data-premium': '',
+          'data-mode': tpl.mode,
+          'data-shape': tpl.shape,
+          'data-hover': tpl.hover,
+          'data-scroll': tpl.scroll
+        } :
+        {}}
         style={dark ? darkVars(content.theme.colors) : undefined}
-        className="min-h-screen w-full bg-cream text-ink">
+        className={premium ? 'min-h-screen w-full bg-cream text-ink' : 'min-h-screen w-full bg-cream'}>
 
-        {tpl.scroll === 'progress' && <ScrollProgress />}
-        {tpl.cursorGlow && <CursorGlow />}
-        <div aria-hidden className="tpl-grain" />
+        {premium && tpl.scroll === 'progress' && <ScrollProgress />}
+        {premium && tpl.cursorGlow && <CursorGlow />}
+        {premium && <div aria-hidden className="tpl-grain" />}
         <SeoHead seo={content.seo} siteName={content.brand.name} />
         <ErrorBoundary label="Header" fallback={null}>
-          <Header />
+          {tpl.header === 'original' ? <Header /> : <GlassHeader variant={tpl.header} />}
         </ErrorBoundary>
         <main>
           {visibleCount === 0 ?
@@ -204,10 +234,10 @@ export function Landing() {
         <ErrorBoundary label="Footer" fallback={null}>
           {dark ?
           <div style={lightVars(content.theme.colors)}>
-              <Footer />
+              <Footer wordmark />
             </div> :
 
-          <Footer />
+          <Footer wordmark={premium} />
           }
         </ErrorBoundary>
         {/* Overlays are non-essential chrome — if they break, the page still reads. */}

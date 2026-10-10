@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import type { Intro, Motion, Shape } from '../../../data/templates';
-import type { FeaturedSection, Product } from '../../../types/content';
+import type { Motion, Shape } from '../../../data/templates';
+import type { FeaturedSection, HeroSection, Product } from '../../../types/content';
+import { useContent } from '../../../hooks/useContent';
 import { onQuickView, startEnquiry } from '../../../utils/events';
 import { trackLead } from '../../../utils/leads';
 
@@ -9,10 +10,11 @@ export const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 export const EASE_IN_OUT = [0.77, 0, 0.175, 1] as const;
 const VIEW = { once: true, margin: '-80px' } as const;
 
-export const TemplateContext = createContext<{motion: Motion;shape: Shape;intro: Intro;}>({
+/** `premium` is false for the original design, which must render exactly as it always has. */
+export const TemplateContext = createContext<{motion: Motion;shape: Shape;premium: boolean;}>({
   motion: 'fade',
   shape: 'sharp',
-  intro: 'orbit'
+  premium: false
 });
 export const useTemplate = () => useContext(TemplateContext);
 
@@ -79,5 +81,26 @@ export function useProducts(data: FeaturedSection) {
       trackLead('enquiry', product.name, { interest: product.name });
       startEnquiry(product.name);
     }
+  };
+}
+
+/**
+ * What a product-first hero shows: the pieces (from the products and categories on the
+ * site) first, and the campaign photo — usually a model wearing them — only after.
+ */
+export function useHeroMedia(data: HeroSection) {
+  const { content } = useContent();
+  const products = [
+  ...(content.sections.featured?.items.map((p) => p.image) ?? []),
+  ...(content.sections.categories?.items.map((c) => c.image) ?? [])].
+  filter(Boolean);
+  const unique = [...new Set(products)];
+  const slide = data.slides[0];
+  return {
+    slide,
+    slides: data.slides,
+    products: unique.length ? unique : data.slides.map((s) => s.image),
+    model: slide?.image ?? '',
+    brand: content.brand
   };
 }
