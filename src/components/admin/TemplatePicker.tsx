@@ -20,6 +20,28 @@ function Sketch({ t, c }: {t: TemplateDef;c: ThemeColors;}) {
   <span className="block rounded-full" style={{ width: w, height: h, background: color, opacity: color === fg ? 0.85 : 1 }} />;
 
   const hero = {
+    story:
+    <div className="relative flex h-full items-center justify-center" style={{ background: `radial-gradient(circle, ${tile}, ${bg} 70%)` }}>
+        <span className="absolute h-16 w-16 rounded-full border border-dashed" style={{ borderColor: c.gold }} />
+        <span className="h-9 w-7 shadow" style={{ background: c.gold, opacity: 0.85, borderRadius: r === RADIUS.arch ? r : r === '0px' ? 0 : 6 }} />
+        {t.intro === 'rail' ?
+      <>
+            <span className="absolute left-3 h-4 w-4" style={{ background: tile, borderRadius: r === RADIUS.arch ? 2 : r }} />
+            <span className="absolute right-3 h-4 w-4" style={{ background: tile, borderRadius: r === RADIUS.arch ? 2 : r }} />
+          </> :
+      t.intro === 'fan' ?
+      <>
+            <span className="absolute h-8 w-6 -translate-x-5 -rotate-12" style={{ background: tile, borderRadius: 3 }} />
+            <span className="absolute h-8 w-6 translate-x-5 rotate-12" style={{ background: tile, borderRadius: 3 }} />
+          </> :
+      [0, 90, 180, 270].map((deg) =>
+      <span
+        key={deg}
+        className="absolute h-3 w-3 rounded-full"
+        style={{ background: tile, transform: `rotate(${deg}deg) translateY(-26px)` }} />
+
+      )}
+      </div>,
     card:
     <div className="relative h-full" style={{ background: tile }}>
         <div className="absolute bottom-2 left-2 flex w-16 flex-col gap-1 p-1.5" style={{ background: bg, borderRadius: r === RADIUS.arch ? 2 : r }}>
@@ -108,7 +130,7 @@ export function TemplatePicker({
               </p>
               <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500">{t.description}</p>
               <p className="mt-1.5 flex flex-wrap gap-1">
-                {[t.mode, t.motion, t.hover, t.scroll !== 'none' && t.scroll].filter(Boolean).map((tag) =>
+                {[t.mode, t.intro, t.motion, t.hover, t.scroll !== 'none' && t.scroll].filter(Boolean).map((tag) =>
                 <span key={String(tag)} className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-slate-500">
                     {tag}
                   </span>

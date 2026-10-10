@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import type { Motion, Shape } from '../../../data/templates';
+import type { Intro, Motion, Shape } from '../../../data/templates';
 import type { FeaturedSection, Product } from '../../../types/content';
 import { onQuickView, startEnquiry } from '../../../utils/events';
 import { trackLead } from '../../../utils/leads';
@@ -9,7 +9,11 @@ export const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 export const EASE_IN_OUT = [0.77, 0, 0.175, 1] as const;
 const VIEW = { once: true, margin: '-80px' } as const;
 
-export const TemplateContext = createContext<{motion: Motion;shape: Shape;}>({ motion: 'fade', shape: 'sharp' });
+export const TemplateContext = createContext<{motion: Motion;shape: Shape;intro: Intro;}>({
+  motion: 'fade',
+  shape: 'sharp',
+  intro: 'orbit'
+});
 export const useTemplate = () => useContext(TemplateContext);
 
 const HIDDEN: Record<Motion, Record<string, string | number>> = {

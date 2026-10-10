@@ -562,3 +562,16 @@ body {
 @media (hover: none), (prefers-reduced-motion: reduce) {
   .tpl-cursor-glow { display: none; }
 }
+
+/* Story hero: little gold diamonds that catch the light. */
+.tpl-sparkle {
+  animation: tpl-sparkle 3.2s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes tpl-sparkle {
+  0%, 100% { opacity: 0; transform: rotate(45deg) scale(0.4); }
+  50% { opacity: 0.9; transform: rotate(45deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tpl-sparkle { animation: none; opacity: 0.5; }
+}

@@ -44,6 +44,7 @@ import {
   StripGallery } from
 '../components/site/templates/Variants';
 import { TemplateContext } from '../components/site/templates/engine';
+import { StoryHero } from '../components/site/templates/StoryHero';
 import { templateById, type TemplateDef } from '../data/templates';
 import { hexToRgbTriple, mixHex } from '../utils/color';
 import { motion, useScroll, useSpring } from 'framer-motion';
@@ -75,7 +76,7 @@ function lightVars(c: ThemeColors): Vars {
 type Layouts = TemplateDef['layout'];
 type LayoutSection = keyof Layouts & keyof Sections;
 const LAYOUTS: {[K in LayoutSection]: Record<Layouts[K], React.ComponentType<{data: Sections[K];}>>} = {
-  hero: { card: Hero, center: RoyalHero, split: SplitHero, collage: CollageHero },
+  hero: { story: StoryHero, card: Hero, center: RoyalHero, split: SplitHero, collage: CollageHero },
   categories: { grid: Categories, arch: RoyalCategories, circle: CircleCategories, scroll: ScrollCategories },
   featured: { cards: Featured, framed: RoyalFeatured, minimal: MinimalFeatured, spotlight: SpotlightFeatured },
   promo: { split: Promo, parallax: RoyalPromo, band: BandPromo },
@@ -170,7 +171,7 @@ export function Landing() {
   const visibleCount = order.filter((id) => sections[id]?.visible).length;
 
   return (
-    <TemplateContext.Provider value={{ motion: tpl.motion, shape: tpl.shape }}>
+    <TemplateContext.Provider value={{ motion: tpl.motion, shape: tpl.shape, intro: tpl.intro }}>
       <div
         id="top"
         data-template={tpl.id}
