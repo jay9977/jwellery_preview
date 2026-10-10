@@ -5,8 +5,8 @@
  * other — no shared state, no prop drilling through the page.
  */
 
-const QUICK_VIEW = 'girija:quickview';
-const ENQUIRY = 'girija:enquiry';
+const QUICK_VIEW = 'giriraj:quickview';
+const ENQUIRY = 'giriraj:enquiry';
 
 /** Ask the Featured section to open the quick view for a product id. */
 export function openQuickView(productId: string) {

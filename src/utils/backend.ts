@@ -6,8 +6,8 @@ export interface BackendConfig {
   autoPublish: boolean;
 }
 
-const KEY = 'girija.backend.config.v1';
-const TOKEN_KEY = 'girija.admin.token';
+const KEY = 'giriraj.backend.config.v1';
+const TOKEN_KEY = 'giriraj.admin.token';
 
 /**
  * Build-time API URL. This is what makes the *public* site read from the server:

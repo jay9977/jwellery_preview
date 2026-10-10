@@ -1,4 +1,4 @@
-# Maison girija — Jewellery Landing Page + Admin CMS
+# Maison giriraj — Jewellery Landing Page + Admin CMS
 
 Full-stack jewellery landing page: React (Vite) frontend + Node.js/Express backend with **Prisma ORM** and **MySQL**. Every section of the landing page can be edited, updated, hidden/unhidden, reordered and its items added/deleted from the `/admin` panel.
 
@@ -22,7 +22,7 @@ jwellarypreview/
 Open MySQL Workbench and run:
 
 ```sql
-CREATE DATABASE girija_db;
+CREATE DATABASE giriraj_db;
 ```
 
 ## 2. Server setup
@@ -37,7 +37,7 @@ npm run dev                   # starts http://localhost:4000
 
 In `server/.env` set at minimum:
 
-- `DATABASE_URL` — `mysql://root:YOUR_MYSQL_PASSWORD@localhost:3306/girija_db`
+- `DATABASE_URL` — `mysql://root:YOUR_MYSQL_PASSWORD@localhost:3306/giriraj_db`
 - `ADMIN_PASSWORD` — your admin panel password (stored as a bcrypt hash)
 - `JWT_SECRET` — a unique random string of **at least 32 characters**. The server
   refuses to start with a short, missing or placeholder secret. Generate one with:
@@ -157,7 +157,7 @@ so no working password ever ships in the bundle.
 ## Leads panel
 
 Every visitor who reaches the site is recorded automatically against a first-party cookie
-the site sets itself (`girija_vid`, one year) — no third-party tracker. A row starts as an
+the site sets itself (`giriraj_vid`, one year) — no third-party tracker. A row starts as an
 anonymous visitor and becomes contactable the moment they send an enquiry or sign up to the
 newsletter. What they viewed, the campaign they arrived from and their device are captured too.
 

@@ -95,6 +95,10 @@ model Subscriber {
 /// Enquiries sent from the Contact Us form on the landing page
 model ContactMessage {
   id        Int      @id @default(autoincrement())
+  /// The sender's lead cookie, so the leads panel can show the message body
+  /// beside the rest of that visitor's history. Empty when cookies are blocked —
+  /// the panel then falls back to matching on email.
+  visitorId String   @default("") @db.VarChar(64)
   name      String   @db.VarChar(120)
   email     String   @db.VarChar(254)
   phone     String   @default("") @db.VarChar(40)
@@ -104,6 +108,8 @@ model ContactMessage {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+  @@index([visitorId])
+  @@index([email])
   @@map("contact_messages")
 }
 

@@ -155,7 +155,7 @@ const trackLimiter = rateLimit({
 
 /* ---------- routes ---------- */
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'girija-server', time: new Date().toISOString() });
+  res.json({ ok: true, service: 'giriraj-server', time: new Date().toISOString() });
 });
 
 /** Admin login -> JWT */
@@ -294,8 +294,14 @@ app.post('/api/contact', publicLimiter, async (req, res, next) => {
       return res.status(429).json({ error: 'You have already sent several messages. We will reply shortly.' });
     }
 
+    // Sent by the site alongside the enquiry so the leads panel can show this
+    // message under the visitor who wrote it. Same shape the tracker issues;
+    // anything else is dropped rather than rejected — the enquiry still matters.
+    const rawVisitor = str(body.visitorId, 64);
+    const visitorId = /^[A-Za-z0-9_-]{8,64}$/.test(rawVisitor) ? rawVisitor : '';
+
     await prisma.contactMessage.create({
-      data: { name, email, message, phone: str(body.phone, 40), subject: str(body.subject, 160) }
+      data: { visitorId, name, email, message, phone: str(body.phone, 40), subject: str(body.subject, 160) }
     });
     res.status(201).json({ ok: true });
   } catch (err) {
@@ -411,7 +417,51 @@ app.get('/api/leads', requireAuth, async (req, res, next) => {
       prisma.lead.count(),
       prisma.lead.count({ where: { NOT: { email: '' } } })
     ]);
-    res.json({ leads, total, identified, truncated: leads.length === LIMIT });
+
+    // The enquiry text lives in contact_messages, not on the lead row, so pull the
+    // messages these leads sent and hand them over together. Matching on the cookie
+    // *or* the email covers a visitor who wrote in from a second device, and messages
+    // sent before enquiries carried a visitor id at all.
+    const visitorIds = leads.map((lead) => lead.visitorId).filter(Boolean);
+    const emails = [...new Set(leads.map((lead) => lead.email).filter(Boolean))];
+    const messages =
+      visitorIds.length || emails.length ?
+        await prisma.contactMessage.findMany({
+          where: {
+            OR: [
+              ...(visitorIds.length ? [{ visitorId: { in: visitorIds } }] : []),
+              ...(emails.length ? [{ email: { in: emails } }] : [])
+            ]
+          },
+          orderBy: { createdAt: 'desc' }
+        }) :
+        [];
+
+    const byVisitor = new Map();
+    const byEmail = new Map();
+    for (const message of messages) {
+      if (message.visitorId) {
+        if (!byVisitor.has(message.visitorId)) byVisitor.set(message.visitorId, []);
+        byVisitor.get(message.visitorId).push(message);
+      }
+      if (message.email) {
+        if (!byEmail.has(message.email)) byEmail.set(message.email, []);
+        byEmail.get(message.email).push(message);
+      }
+    }
+
+    const withMessages = leads.map((lead) => {
+      // A message matching on both keys would otherwise be listed twice.
+      const mine = new Map();
+      for (const message of byVisitor.get(lead.visitorId) ?? []) mine.set(message.id, message);
+      for (const message of byEmail.get(lead.email) ?? []) mine.set(message.id, message);
+      return {
+        ...lead,
+        messages: [...mine.values()].sort((a, b) => b.createdAt - a.createdAt)
+      };
+    });
+
+    res.json({ leads: withMessages, total, identified, truncated: leads.length === LIMIT });
   } catch (err) {
     next(err);
   }
@@ -574,7 +624,7 @@ app.use((err, req, res, _next) => {
 /* ---------- start ---------- */
 const port = Number(process.env.PORT ?? 4000);
 const server = app.listen(port, () => {
-  console.log(`✔ girija server running at http://localhost:${port}`);
+  console.log(`✔ giriraj server running at http://localhost:${port}`);
   console.log(`  API base URL for the admin panel: http://localhost:${port}/api`);
   console.log(
     `  Allowed origins: ${origins.join(', ')}${isProduction ? '' : ' (+ any localhost port in development)'}`

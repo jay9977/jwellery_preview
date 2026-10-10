@@ -25,6 +25,8 @@ export interface ContactEnquiry {
   message: string;
   /** Honeypot. Always empty for a real person; the server drops anything with a value. */
   website?: string;
+  /** The sender's lead cookie, so the leads panel can file the message under them. */
+  visitorId?: string;
 }
 
 export interface RemoteContactMessage extends Required<ContactEnquiry> {
@@ -187,6 +189,15 @@ export interface LeadActivityEntry {
   detail: string;
 }
 
+/** An enquiry this lead sent through the Contact Us form, message body included. */
+export interface LeadMessage {
+  id: number;
+  subject: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export interface Lead {
   id: number;
   visitorId: string;
@@ -206,6 +217,8 @@ export interface Lead {
   pageViews: number;
   notes: string;
   activity: LeadActivityEntry[] | null;
+  /** What they actually wrote — served alongside the lead by GET /leads. */
+  messages: LeadMessage[];
   firstSeenAt: string;
   lastSeenAt: string;
 }
@@ -218,7 +231,9 @@ config: BackendConfig)
     config,
     '/leads'
   );
-  const leads = payload?.leads ?? [];
+  // `messages` is normalised here so every consumer can read it without a guard,
+  // including against a server that predates enquiry bodies being served.
+  const leads = (payload?.leads ?? []).map((lead) => ({ ...lead, messages: lead.messages ?? [] }));
   return {
     leads,
     total: payload?.total ?? leads.length,

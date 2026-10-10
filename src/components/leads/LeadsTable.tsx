@@ -41,14 +41,16 @@ function sourceLabel(lead: Lead): string {
 function toCsv(leads: Lead[]): string {
   const head = [
     'Name', 'Email', 'Phone', 'Status', 'Interest', 'Came from', 'Campaign', 'Referrer',
-    'Device', 'Visits', 'Page views', 'First seen', 'Last seen', 'Notes'
+    'Device', 'Visits', 'Page views', 'First seen', 'Last seen', 'Notes',
+    'Enquiries', 'Latest message'
   ];
   const cell = (value: string | number) => `"${String(value ?? '').replace(/"/g, '""')}"`;
   const rows = leads.map((lead) =>
   [
     lead.name, lead.email, lead.phone, lead.status, lead.interest, detectPlatform(lead).label,
     lead.utmCampaign, lead.source, lead.device, lead.visits, lead.pageViews,
-    new Date(lead.firstSeenAt).toLocaleString(), new Date(lead.lastSeenAt).toLocaleString(), lead.notes
+    new Date(lead.firstSeenAt).toLocaleString(), new Date(lead.lastSeenAt).toLocaleString(), lead.notes,
+    lead.messages.length, lead.messages[0]?.message ?? ''
   ].map(cell).join(',')
   );
   return [head.map(cell).join(','), ...rows].join('\n');
@@ -91,7 +93,8 @@ export function LeadsTable() {
       if (platformFilter !== 'all' && detectPlatform(lead).key !== platformFilter) return false;
       if (onlyIdentified && !lead.email && !lead.phone) return false;
       if (!needle) return true;
-      return `${lead.name} ${lead.email} ${lead.phone} ${lead.interest} ${sourceLabel(lead)}`.
+      const enquiries = lead.messages.map((m) => `${m.subject} ${m.message}`).join(' ');
+      return `${lead.name} ${lead.email} ${lead.phone} ${lead.interest} ${sourceLabel(lead)} ${enquiries}`.
       toLowerCase().
       includes(needle);
     });
@@ -407,7 +410,36 @@ export function LeadsTable() {
                               </p>
                             </div>
                             <div>
-                              <label className="text-[11px] uppercase tracking-widest text-slate-500">
+                              <p className="text-[11px] uppercase tracking-widest text-slate-500">
+                                What they wrote
+                                {lead.messages.length > 0 && ` (${lead.messages.length})`}
+                              </p>
+                              <div className="mt-2 space-y-2">
+                                {lead.messages.length === 0 ?
+                          <p className="text-xs text-slate-400">
+                                    No enquiry yet — they have not sent the contact form.
+                                  </p> :
+
+                          lead.messages.map((message) =>
+                          <article
+                            key={message.id}
+                            className="rounded-md border border-slate-200 bg-white p-3">
+
+                                      <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
+                                        <span className="font-medium text-slate-700">
+                                          {message.subject || 'Contact form'}
+                                        </span>
+                                        <span className="text-slate-400">{when(message.createdAt)}</span>
+                                      </p>
+                                      <p className="mt-1.5 whitespace-pre-wrap text-sm text-slate-700">
+                                        {message.message}
+                                      </p>
+                                    </article>
+                          )
+                          }
+                              </div>
+
+                              <label className="mt-4 block text-[11px] uppercase tracking-widest text-slate-500">
                                 Notes
                                 <textarea
                             defaultValue={lead.notes}

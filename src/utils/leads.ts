@@ -8,8 +8,8 @@
  */
 import { ENV_API_URL, loadBackendConfig } from './backend';
 
-const COOKIE = 'girija_vid';
-const SESSION_FLAG = 'girija.session';
+const COOKIE = 'giriraj_vid';
+const SESSION_FLAG = 'giriraj.session';
 const COOKIE_DAYS = 365;
 
 export type LeadEvent =
