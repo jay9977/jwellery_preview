@@ -13,12 +13,14 @@
     "db:migrate": "prisma migrate dev --name init",
     "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
-    "setup": "prisma generate && prisma db push && node prisma/seed.js"
+    "db:upgrade-tenants": "node prisma/upgrade-tenants.js",
+    "setup": "prisma generate && node prisma/upgrade-tenants.js && prisma db push && node prisma/seed.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

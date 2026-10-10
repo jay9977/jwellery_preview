@@ -4,67 +4,65 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
-import { GLOBAL_KEYS } from '../src/lib/content.js';
+import { saveContent } from '../src/lib/content.js';
 
 const prisma = new PrismaClient();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-async function main() {
-  /* ---- 1. Admin user ---- */
-  const email = process.env.ADMIN_EMAIL ?? 'admin@giriraj.com';
-  const password = process.env.ADMIN_PASSWORD ?? 'ChangeMe@123';
+async function upsertUser(email, password, role, tenantId) {
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.adminUser.upsert({
     where: { email },
-    create: { email, passwordHash, role: 'admin' },
-    update: { passwordHash, role: 'admin' }
+    create: { email, passwordHash, role, tenantId },
+    update: { passwordHash, role, tenantId }
   });
+}
+
+async function main() {
+  /* ---- 0. Super admin — the platform owner, no tenant ---- */
+  const superEmail = (process.env.SUPERADMIN_EMAIL ?? '').trim().toLowerCase();
+  const superPassword = process.env.SUPERADMIN_PASSWORD ?? '';
+  if (superEmail && superPassword) {
+    await upsertUser(superEmail, superPassword, 'superadmin', null);
+    console.log(`✔ Super admin ready: ${superEmail}`);
+  } else {
+    console.log('· SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD not set — super admin login not created.');
+  }
+
+  /* ---- 1. The first client site (Giriraj). Existing databases get it from upgrade-tenants.js ---- */
+  const slug = process.env.FIRST_TENANT_SLUG ?? 'giriraj';
+  let tenant = await prisma.tenant.findUnique({ where: { slug } });
+  if (!tenant) {
+    const expiresAt = new Date();
+    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+    tenant = await prisma.tenant.create({
+      data: { slug, name: process.env.FIRST_TENANT_NAME ?? 'Giriraj Jewellers', plan: '12m', expiresAt }
+    });
+    console.log(`✔ Client created: ${tenant.name} (${slug})`);
+  }
+
+  /* ---- 2. That client's editor + leads logins ---- */
+  const email = (process.env.ADMIN_EMAIL ?? 'admin@giriraj.com').toLowerCase();
+  const password = process.env.ADMIN_PASSWORD ?? 'ChangeMe@123';
+  await upsertUser(email, password, 'admin', tenant.id);
   console.log(`✔ Admin user ready: ${email}`);
 
-  /* ---- 1b. Leads user — sees /leads-panel only, never the site editor ---- */
-  const leadsEmail = process.env.LEADS_EMAIL ?? '';
+  const leadsEmail = (process.env.LEADS_EMAIL ?? '').toLowerCase();
   const leadsPassword = process.env.LEADS_PASSWORD ?? '';
   if (leadsEmail && leadsPassword) {
-    const leadsHash = await bcrypt.hash(leadsPassword, 10);
-    await prisma.adminUser.upsert({
-      where: { email: leadsEmail },
-      create: { email: leadsEmail, passwordHash: leadsHash, role: 'leads' },
-      update: { passwordHash: leadsHash, role: 'leads' }
-    });
+    await upsertUser(leadsEmail, leadsPassword, 'leads', tenant.id);
     console.log(`✔ Leads user ready: ${leadsEmail}`);
   } else {
     console.log('· LEADS_EMAIL / LEADS_PASSWORD not set — leads panel login not created.');
   }
 
-  /* ---- 2. Default landing-page content (only if DB is empty) ---- */
-  const existing = await prisma.section.count();
-  if (existing > 0) {
+  /* ---- 3. Default landing-page content (only if that client has none) ---- */
+  if ((await prisma.section.count({ where: { tenantId: tenant.id } })) > 0) {
     console.log('✔ Sections already present — content seed skipped.');
     return;
   }
-
-  const raw = fs.readFileSync(path.join(__dirname, 'defaultContent.json'), 'utf8');
-  const content = JSON.parse(raw);
-
-  for (const key of GLOBAL_KEYS) {
-    if (content[key] !== undefined) {
-      await prisma.globalSetting.upsert({
-        where: { key },
-        create: { key, data: content[key] },
-        update: { data: content[key] }
-      });
-    }
-  }
-
-  const order = content.order ?? Object.keys(content.sections);
-  for (const id of Object.keys(content.sections)) {
-    const { visible = true, ...data } = content.sections[id];
-    await prisma.section.create({
-      data: { id, visible, position: order.indexOf(id), data }
-    });
-  }
-
-  await prisma.contentVersion.create({ data: { content, label: 'seed' } });
+  const content = JSON.parse(fs.readFileSync(path.join(__dirname, 'defaultContent.json'), 'utf8'));
+  await saveContent(prisma, tenant.id, content, { label: 'seed' });
   console.log(`✔ Seeded ${Object.keys(content.sections).length} sections + global settings.`);
 }
 

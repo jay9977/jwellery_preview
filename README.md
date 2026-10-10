@@ -197,6 +197,47 @@ If you operate in a region with cookie-consent rules (EU GDPR, India DPDP), add 
 notice before going live — the cookie is first-party and functional, but it does identify a
 returning visitor.
 
+## Multi-tenant platform (Super Admin)
+
+One server and one codebase run every client's website. Each client (tenant) has its own
+content, theme, images, logins, leads, enquiries and newsletter list — none of it is visible
+to any other client.
+
+**Super admin panel:** `/super-admin` — sign in at `/admin-login` with `SUPERADMIN_EMAIL` /
+`SUPERADMIN_PASSWORD` from `server/.env` (created by `node prisma/seed.js`). From there:
+
+- **Add client** — business name, city, style, colour palette, fonts, plan and the client's
+  login. A complete website is generated: Claude writes fresh headlines and copy when
+  `ANTHROPIC_API_KEY` is set (otherwise the template copy with the name swapped), and the
+  template photos are re-dealt so every client starts with a different look.
+- **Edit website** — opens the normal editor on that client's site (support mode).
+- **Renew** (1M / 6M / 1Y) — extends from the current expiry, or from today if already
+  expired, and switches the site back on. **Suspend / Activate** takes it offline instantly.
+- **Details** — owner info, client login reset, manual expiry date, custom domain with a
+  **Verify DNS** check, and delete (type the slug to confirm).
+
+**Expiry:** once `expiresAt` passes (or the site is suspended) the public site shows a
+"We'll be back soon" page and the client's login stops working. Nothing is deleted; renewing
+brings everything back immediately. No cron job is involved.
+
+**Which site a request belongs to:** the client's custom domain → their free subdomain
+`<slug>.PLATFORM_DOMAIN` → in development, `?site=<slug>` (e.g. `http://localhost:5173/?site=giriraj`)
+→ otherwise `DEFAULT_TENANT`. A signed-in client always works on their own site only.
+
+**Custom domains in production:** see [deploy/Caddyfile](deploy/Caddyfile). The client adds
+two A records (`@` and `www`) pointing at `SERVER_IP`; Caddy issues HTTPS automatically on
+the first visit, after `/api/domain-check` confirms the domain belongs to a client.
+
+**Upgrading an existing single-site database** (done once; Giriraj became client #1):
+
+```bash
+cd server
+node prisma/upgrade-tenants.js        # stamps existing rows with tenant #1
+npx prisma db push --accept-data-loss # adds keys; the warnings are about new unique keys
+node prisma/seed.js                   # creates the super admin login
+node test-tenants.mjs                 # end-to-end isolation / expiry / renewal check (API must be running)
+```
+
 ## Security notes
 
 - The admin password lives only in `server/.env` and is bcrypt-hashed in the database.

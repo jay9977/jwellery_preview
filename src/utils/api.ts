@@ -1,5 +1,5 @@
 import type { SiteContent } from '../types/content';
-import type { BackendConfig } from './backend';
+import { siteHeaders, type BackendConfig } from './backend';
 
 export interface RemoteVersion {
   id: number;
@@ -40,7 +40,7 @@ function endpoint(config: BackendConfig, path: string): string {
 }
 
 function headers(config: BackendConfig): HeadersInit {
-  const base: Record<string, string> = { 'Content-Type': 'application/json' };
+  const base: Record<string, string> = { 'Content-Type': 'application/json', ...siteHeaders() };
   if (config.apiKey.trim()) base.Authorization = `Bearer ${config.apiKey.trim()}`;
   return base;
 }
@@ -57,7 +57,24 @@ async function messageFrom(response: Response, fallback: string): Promise<string
   }
 }
 
-async function request<T>(config: BackendConfig, path: string, init?: RequestInit): Promise<T> {
+/** Carries the HTTP status, so callers can tell "site switched off" (402) from other failures. */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
+/** True when the server says this website's plan has expired or it was switched off. */
+export function isSuspended(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 402;
+}
+
+/** True when no client website is set up for this address — the platform's own homepage belongs here. */
+export function isNoSite(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404;
+}
+
+export async function request<T>(config: BackendConfig, path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
     response = await fetch(endpoint(config, path), { ...init, headers: headers(config) });
@@ -65,10 +82,13 @@ async function request<T>(config: BackendConfig, path: string, init?: RequestIni
     throw new Error('Could not reach the server. Check the base URL and CORS settings.');
   }
   if (response.status === 401 || response.status === 403) {
-    throw new Error(await messageFrom(response, 'The server rejected your session. Please sign in again.'));
+    throw new ApiError(await messageFrom(response, 'The server rejected your session. Please sign in again.'), response.status);
   }
   if (!response.ok) {
-    throw new Error(await messageFrom(response, `Server responded with ${response.status} ${response.statusText}.`));
+    throw new ApiError(
+      await messageFrom(response, `Server responded with ${response.status} ${response.statusText}.`),
+      response.status
+    );
   }
   if (response.status === 204) return undefined as T;
   const text = await response.text();
@@ -288,7 +308,7 @@ email?: string)
   try {
     response = await fetch(`${baseUrl.trim().replace(/\/$/, '')}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...siteHeaders() },
       body: JSON.stringify(email ? { email, password } : { password })
     });
   } catch {
@@ -311,7 +331,10 @@ export async function uploadImage(config: BackendConfig, file: File): Promise<st
   try {
     response = await fetch(endpoint(config, '/upload'), {
       method: 'POST',
-      headers: config.apiKey.trim() ? { Authorization: `Bearer ${config.apiKey.trim()}` } : undefined,
+      headers: {
+        ...siteHeaders(),
+        ...(config.apiKey.trim() ? { Authorization: `Bearer ${config.apiKey.trim()}` } : {})
+      },
       body: form
     });
   } catch {
@@ -323,4 +346,100 @@ export async function uploadImage(config: BackendConfig, file: File): Promise<st
   const data = (await response.json()) as {url?: string;};
   if (!data.url) throw new Error('The server did not return an image URL.');
   return data.url;
+}
+
+/* ---------- super admin: clients ---------- */
+
+export type TenantPlan = '1m' | '6m' | '12m';
+
+export interface Tenant {
+  id: number;
+  slug: string;
+  name: string;
+  domain: string | null;
+  plan: TenantPlan;
+  status: 'active' | 'suspended';
+  expiresAt: string;
+  ownerName: string;
+  phone: string;
+  email: string;
+  notes: string;
+  adminEmail: string;
+  createdAt: string;
+}
+
+export interface NewTenant {
+  name: string;
+  slug: string;
+  domain?: string;
+  plan: TenantPlan;
+  ownerName?: string;
+  phone?: string;
+  email?: string;
+  notes?: string;
+  city?: string;
+  style?: string;
+  adminEmail: string;
+  adminPassword: string;
+  theme?: { paletteId: string; fontId: string; templateId?: string; colors: Record<string, string> };
+}
+
+export async function fetchTenants(
+config: BackendConfig)
+: Promise<{tenants: Tenant[];platformDomain: string;serverIp: string;}> {
+  const payload = await request<{tenants?: Tenant[];platformDomain?: string;serverIp?: string;}>(config, '/super/tenants');
+  return { tenants: payload?.tenants ?? [], platformDomain: payload?.platformDomain ?? '', serverIp: payload?.serverIp ?? '' };
+}
+
+export async function createTenant(
+config: BackendConfig,
+data: NewTenant)
+: Promise<{tenant: Tenant;ai: boolean;aiError?: string;photos: number;photosError?: string;}> {
+  return request(config, '/super/tenants', { method: 'POST', body: JSON.stringify(data) });
+}
+
+/** Replace every photo on a client's site with new ones (Unsplash). */
+export async function refreshTenantPhotos(config: BackendConfig, id: number, style = ''): Promise<number> {
+  const payload = await request<{photos: number;}>(config, `/super/tenants/${id}/photos`, {
+    method: 'POST',
+    body: JSON.stringify({ style })
+  });
+  return payload.photos;
+}
+
+export async function updateTenant(
+config: BackendConfig,
+id: number,
+patch: Partial<Omit<Tenant, 'id' | 'slug' | 'plan' | 'createdAt'>> & {adminPassword?: string;})
+: Promise<Tenant> {
+  const payload = await request<{tenant: Tenant;}>(config, `/super/tenants/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch)
+  });
+  return payload.tenant;
+}
+
+export async function renewTenant(config: BackendConfig, id: number, plan: TenantPlan): Promise<Tenant> {
+  const payload = await request<{tenant: Tenant;}>(config, `/super/tenants/${id}/renew`, {
+    method: 'POST',
+    body: JSON.stringify({ plan })
+  });
+  return payload.tenant;
+}
+
+export async function deleteTenant(config: BackendConfig, id: number, confirmSlug: string): Promise<void> {
+  await request<void>(config, `/super/tenants/${id}?confirm=${encodeURIComponent(confirmSlug)}`, { method: 'DELETE' });
+}
+
+export interface DnsStatus {
+  domain: string;
+  expected: string;
+  root: string[];
+  www: string[];
+  connected: boolean;
+  wwwConnected: boolean;
+}
+
+export async function checkTenantDns(config: BackendConfig, id: number): Promise<DnsStatus> {
+  return request(config, `/super/tenants/${id}/dns`);
 }

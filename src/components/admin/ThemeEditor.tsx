@@ -22,6 +22,7 @@ import { isValidHex, normalizeHex } from '../../utils/color';
 import { checkContrast, contrastFailures } from '../../utils/contrast';
 import { assignRoles, parseHexList } from '../../utils/palette';
 import type { Palette, ThemeColors } from '../../types/content';
+import { TemplatePicker } from './TemplatePicker';
 
 function PaletteCard({
   palette,
@@ -197,6 +198,19 @@ export function ThemeEditor() {
           {notice.text}
         </p>
       }
+
+      {/* ---------- Template ---------- */}
+      <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Website template</h3>
+        <p className="mt-1 text-xs text-slate-400">
+          Layout, shapes and animation of the whole site. Your content, colours and fonts stay as they are.
+        </p>
+        <TemplatePicker
+          value={theme.templateId ?? 'classic'}
+          colors={theme.colors}
+          onChange={(templateId) => updateTheme({ templateId })} />
+
+      </section>
 
       {/* ---------- Your palettes ---------- */}
       <section className="rounded-lg border border-slate-200 bg-white p-4">

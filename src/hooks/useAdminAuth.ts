@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useContent } from './/useContent';
-import { isConnected } from '../utils/backend';
+import { currentSite, isConnected } from '../utils/backend';
 import { fetchAccount } from '../utils/api';
 
 /** Only ever gates the offline demo editor — a real session is gated by the server. */
@@ -23,6 +23,10 @@ export function useAdminAuth() {
   const [state, setState] = useState<AdminAuthState>('checking');
   /** Set when a valid session exists but belongs to the leads desk, not the editor. */
   const [wrongPanel, setWrongPanel] = useState(false);
+  /** A super admin session with no client picked — belongs in /super-admin. */
+  const [superAdmin, setSuperAdmin] = useState(false);
+  /** The super admin is editing a client's site on their behalf. */
+  const [supportMode, setSupportMode] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,8 +34,12 @@ export function useAdminAuth() {
       if (connected) {
         const account = await fetchAccount(backend);
         if (cancelled) return;
-        const isAdmin = account?.role === 'admin';
-        setWrongPanel(Boolean(account) && !isAdmin);
+        // A super admin edits a client's site in support mode (a client picked for this tab).
+        const isSuper = account?.role === 'superadmin';
+        const isAdmin = account?.role === 'admin' || (isSuper && Boolean(currentSite()));
+        setSuperAdmin(isSuper && !isAdmin);
+        setSupportMode(isSuper && isAdmin);
+        setWrongPanel(Boolean(account) && !isAdmin && !isSuper);
         setState(isAdmin ? 'in' : 'out');
         return;
       }
@@ -53,8 +61,9 @@ export function useAdminAuth() {
     window.sessionStorage.removeItem(DEMO_AUTH_KEY);
     updateBackend({ apiKey: '' });
     setWrongPanel(false);
+    setSuperAdmin(false);
     setState('out');
   }, [updateBackend]);
 
-  return { state, wrongPanel, signedIn, signOut };
+  return { state, wrongPanel, superAdmin, supportMode, signedIn, signOut };
 }

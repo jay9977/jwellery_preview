@@ -12,13 +12,16 @@
  */
 import { spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
-import { existsSync, copyFileSync } from 'node:fs';
+import { existsSync, copyFileSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const serverDir = resolve(root, 'server');
-const API_PORT = Number(process.env.PORT || 4000);
+// Same PORT the server itself reads from server/.env, so the check below probes the right port.
+const envPath = resolve(serverDir, '.env');
+const envPort = existsSync(envPath) && readFileSync(envPath, 'utf8').match(/^PORT=(\d+)/m)?.[1];
+const API_PORT = Number(process.env.PORT || envPort || 4000);
 
 const children = [];
 let shuttingDown = false;

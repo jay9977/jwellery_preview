@@ -3,12 +3,15 @@ import { defaultContent } from '../data/defaultContent';
 import { FONT_PAIRS } from '../data/palettes';
 import { hexToRgbTriple } from '../utils/color';
 import {
+  currentSite,
   isConnected,
   loadBackendConfig,
   persistBackendConfig,
   type BackendConfig } from
 '../utils/backend';
 import {
+  isNoSite,
+  isSuspended,
   fetchRemoteContent,
   pushRemoteContent,
   submitContact,
@@ -26,7 +29,14 @@ import type {
   Theme } from
 '../types/content';
 
-const STORAGE_KEY = 'giriraj.site.content.v1';
+/**
+ * The offline cache is per site: on localhost every client shares one origin, and a
+ * cached copy of another client's site must never flash up first.
+ */
+function storageKey(): string {
+  const site = currentSite() || (typeof window === 'undefined' ? '' : window.location.hostname);
+  return `giriraj.site.content.v1:${site}`;
+}
 
 /**
  * Merge each saved section over its default *individually*. Replacing the whole
@@ -79,20 +89,28 @@ function normalize(parsed: Partial<SiteContent> | null | undefined): SiteContent
   };
 }
 
-function loadLocalContent(): SiteContent {
-  if (typeof window === 'undefined') return defaultContent;
+/** The cached copy of this site, or null when this browser has never loaded it. */
+function loadLocalContent(): SiteContent | null {
+  if (typeof window === 'undefined') return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? normalize(JSON.parse(raw) as SiteContent) : defaultContent;
+    const raw = window.localStorage.getItem(storageKey());
+    return raw ? normalize(JSON.parse(raw) as SiteContent) : null;
   } catch {
-    return defaultContent;
+    return null;
   }
 }
 
 export function ContentProvider({ children }: {children: React.ReactNode;}) {
-  const [content, setContent] = useState<SiteContent>(loadLocalContent);
+  const [cached] = useState(loadLocalContent);
+  const [content, setContent] = useState<SiteContent>(cached ?? defaultContent);
   const [isDirty, setIsDirty] = useState(false);
   const [backend, setBackend] = useState<BackendConfig>(loadBackendConfig);
+  /** False until this site's real content is on screen — the template must never pose as a client's site. */
+  const [loaded, setLoaded] = useState(() => Boolean(cached) || !isConnected(loadBackendConfig()));
+  /** The plan expired or the site was switched off by the platform. */
+  const [suspended, setSuspended] = useState(false);
+  /** No client site lives at this address: show the platform homepage instead. */
+  const [noSite, setNoSite] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('offline');
   const [syncError, setSyncError] = useState('');
   const [lastSyncedAt, setLastSyncedAt] = useState('');
@@ -102,7 +120,7 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
   /* ---------- local cache (offline draft) ---------- */
   useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+      window.localStorage.setItem(storageKey(), JSON.stringify(content));
     } catch {
 
       /* storage unavailable — in-memory edits still work */}
@@ -135,9 +153,15 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
       setIsDirty(false);
       setLastSyncedAt(new Date().toISOString());
       setSyncStatus('synced');
+      setSuspended(false);
+      setNoSite(false);
     } catch (error) {
+      if (isSuspended(error)) setSuspended(true);
+      if (isNoSite(error)) setNoSite(true);
       setSyncError(error instanceof Error ? error.message : 'Could not load content.');
       setSyncStatus('error');
+    } finally {
+      setLoaded(true);
     }
   }, [backend]);
 
@@ -355,6 +379,9 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
   const value = useMemo<ContentContextValue>(
     () => ({
       content,
+      loaded,
+      suspended,
+      noSite,
       isDirty,
       backend,
       syncStatus,
@@ -383,6 +410,9 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     }),
     [
     content,
+    loaded,
+    suspended,
+    noSite,
     isDirty,
     backend,
     syncStatus,

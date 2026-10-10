@@ -9,7 +9,7 @@ import { useAdminAuth } from '../hooks/useAdminAuth';
  * bookmarked without exposing the editor itself.
  */
 export function AdminLoginPage() {
-  const { state, wrongPanel, signedIn, signOut } = useAdminAuth();
+  const { state, wrongPanel, superAdmin, signedIn, signOut } = useAdminAuth();
   const navigate = useNavigate();
 
   if (state === 'checking') {
@@ -23,6 +23,7 @@ export function AdminLoginPage() {
 
   // Already signed in — no reason to show the form again.
   if (state === 'in') return <Navigate to="/admin" replace />;
+  if (superAdmin) return <Navigate to="/super-admin" replace />;
 
   // A leads-desk session is valid, just not for this door.
   if (wrongPanel) {
@@ -57,6 +58,10 @@ export function AdminLoginPage() {
   return (
     <AdminLogin
       onSuccess={(mode, role) => {
+        if (mode === 'server' && role === 'superadmin') {
+          navigate('/super-admin', { replace: true });
+          return;
+        }
         // A leads account can sign in here, but belongs in the other panel.
         if (mode === 'server' && role && role !== 'admin') {
           navigate('/leads-panel', { replace: true });

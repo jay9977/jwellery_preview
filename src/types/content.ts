@@ -73,9 +73,16 @@ export interface FontPair {
   body: string;
 }
 
+/** Layout + motion family of the whole site. Colours and fonts are chosen separately. */
+export type TemplateId =
+'classic' | 'royal' | 'modern' | 'blush' | 'temple' | 'midnight' |
+'polki' | 'pearl' | 'emerald' | 'velvet' | 'sunlit' | 'heirloom';
+
 export interface Theme {
   paletteId: string;
   fontId: string;
+  /** Missing on content saved before templates existed — that content is 'classic'. */
+  templateId?: TemplateId;
   colors: ThemeColors;
   /** Palettes the admin saved themselves. Stored with the content, so they sync to the server. */
   customPalettes?: Palette[];

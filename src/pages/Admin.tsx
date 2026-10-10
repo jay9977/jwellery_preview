@@ -31,6 +31,7 @@ import { SocialLinks } from '../components/admin/SocialLinks';
 import { ContactMessages } from '../components/admin/ContactMessages';
 import { exportContent, importContent } from '../utils/contentIO';
 import { useAdminAuth } from '../hooks/useAdminAuth';
+import { currentSite } from '../utils/backend';
 import type { SectionId } from '../types/content';
 
 type Tab = 'global' | 'theme' | 'social' | 'versions' | 'leads' | 'subscribers' | 'messages' | 'backend' | SectionId;
@@ -38,7 +39,7 @@ type Tab = 'global' | 'theme' | 'social' | 'versions' | 'leads' | 'subscribers' 
 export function Admin() {
   const { content, backend, isDirty, toggleSection, moveSection, addSection, replaceContent, resetAll } =
   useContent();
-  const { state: authState, signOut } = useAdminAuth();
+  const { state: authState, supportMode, signOut } = useAdminAuth();
   const [tab, setTab] = useState<Tab>('hero');
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
@@ -91,6 +92,16 @@ export function Admin() {
 
   return (
     <div className="min-h-screen w-full bg-slate-100">
+      {supportMode &&
+      <div className="flex flex-wrap items-center justify-center gap-3 bg-[#16120e] px-4 py-2 text-xs text-[#f3e6c8]">
+          <span>
+            Support mode: you are editing <strong>{content.brand.name}</strong> ({currentSite()}) as super admin.
+          </span>
+          <a href="/super-admin" className="rounded-md bg-gradient-to-r from-[#d0ac63] to-[#a8823a] px-2.5 py-1 font-semibold text-white hover:brightness-110">
+            Back to all clients
+          </a>
+        </div>
+      }
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div>

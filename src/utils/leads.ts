@@ -6,7 +6,7 @@
  * with anyone. The row starts anonymous ("visitor") and fills itself in the
  * moment the person hands over details in the enquiry or newsletter form.
  */
-import { ENV_API_URL, loadBackendConfig } from './backend';
+import { ENV_API_URL, loadBackendConfig, siteHeaders } from './backend';
 
 const COOKIE = 'giriraj_vid';
 const SESSION_FLAG = 'giriraj.session';
@@ -115,7 +115,7 @@ export function trackLead(event: LeadEvent, detail = '', identity: LeadIdentity 
     // without it. `keepalive` gives the same survives-the-page-closing behaviour.
     void fetch(`${base}/leads/track`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...siteHeaders() },
       body,
       keepalive: true
     }).catch(() => {
