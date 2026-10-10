@@ -77,8 +77,9 @@ body {
   line-height: 1.06;
 }
 .display-2 {
-  font-size: clamp(1.75rem, 3vw, 2.375rem);
-  line-height: 1.14;
+  font-size: clamp(2rem, 3.8vw, 3.125rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
 }
 .display-3 {
   font-size: clamp(1.5rem, 2.2vw, 1.75rem);
@@ -575,3 +576,86 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tpl-sparkle { animation: none; opacity: 0.5; }
 }
+
+/* =====================================================================
+   Premium layer — glass, grain, nav, magnetic
+   ===================================================================== */
+
+/* Header: clear at the top, frosted glass once the page moves under it. */
+.tpl-header {
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 500ms var(--ease-out),
+    border-color 500ms ease,
+    box-shadow 500ms var(--ease-out),
+    backdrop-filter 500ms ease;
+}
+.tpl-header-glass {
+  background-color: rgb(var(--c-cream) / 0.62);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border-bottom-color: rgb(var(--c-ink) / 0.08);
+  box-shadow: 0 12px 40px -24px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+/* Browsers without backdrop-filter get a solid bar, so text never sits on clutter. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .tpl-header-glass { background-color: rgb(var(--c-cream) / 0.97); }
+}
+
+.tpl-glass-sheet {
+  background-color: rgb(var(--c-cream) / 0.82);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* Glass panel for text over photographs. */
+.tpl-glass-panel {
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.04));
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.22);
+  box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+[data-shape='soft'] .tpl-glass-panel { border-radius: 1.25rem; }
+[data-shape='round'] .tpl-glass-panel { border-radius: 2rem; }
+
+/* Nav links: a gold line that grows out from the centre. */
+.tpl-nav-link {
+  position: relative;
+  padding-block: 0.5rem;
+  transition: color 200ms ease;
+}
+.tpl-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.15rem;
+  height: 1px;
+  background: rgb(var(--c-gold));
+  transform: scaleX(0);
+  transition: transform 350ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .tpl-nav-link:hover::after { transform: scaleX(1); }
+}
+
+/* Film grain: a whisper of texture, like a printed lookbook. */
+.tpl-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-mode='dark'] .tpl-grain { mix-blend-mode: overlay; opacity: 0.08; }
+
+/* Magnetic: the element follows the pointer a little; it eases home when left. */
+.tpl-magnetic {
+  display: inline-flex;
+  transition: transform 450ms var(--ease-out);
+  will-change: transform;
+}
+.tpl-magnetic[data-active] { transition-duration: 120ms; }

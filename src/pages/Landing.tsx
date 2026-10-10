@@ -184,6 +184,7 @@ export function Landing() {
 
         {tpl.scroll === 'progress' && <ScrollProgress />}
         {tpl.cursorGlow && <CursorGlow />}
+        <div aria-hidden className="tpl-grain" />
         <SeoHead seo={content.seo} siteName={content.brand.name} />
         <ErrorBoundary label="Header" fallback={null}>
           <Header />

@@ -17,7 +17,13 @@ export function SectionHeading({
   const isLight = tone === 'light';
   return (
     <div className={align === 'center' ? 'mx-auto max-w-[36rem] text-center' : 'max-w-[36rem]'}>
-      {eyebrow && <p className="eyebrow text-gold">{eyebrow}</p>}
+      {eyebrow &&
+      <p className={`eyebrow flex items-center gap-3 text-gold ${align === 'center' ? 'justify-center' : ''}`}>
+          <span aria-hidden className="h-px w-8 bg-gradient-to-r from-transparent to-gold/70" />
+          {eyebrow}
+          {align === 'center' && <span aria-hidden className="h-px w-8 bg-gradient-to-l from-transparent to-gold/70" />}
+        </p>
+      }
       <h2 className={`display display-2 ${eyebrow ? 'mt-4' : ''} ${isLight ? 'text-cream' : 'text-ink'}`}>
         {title}
       </h2>

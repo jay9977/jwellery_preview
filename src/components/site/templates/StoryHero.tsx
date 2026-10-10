@@ -13,6 +13,7 @@ import { useContent } from '../../../hooks/useContent';
 import type { HeroSection } from '../../../types/content';
 import type { Intro } from '../../../data/templates';
 import { EASE_OUT, useTemplate } from './engine';
+import { Magnetic } from './Magnetic';
 
 /*
  * Product-first hero. A jewellery site has to read as jewellery before it shows anyone
@@ -154,15 +155,19 @@ export function StoryHero({ data }: {data: HeroSection;}) {
       <p className="body-base mx-auto mt-5 max-w-[32rem] text-white/80 sm:text-base">{slide.subtitle}</p>
       <div className="mt-9 flex flex-wrap justify-center gap-3">
         {slide.primaryLabel &&
-      <a href={slide.primaryHref || '#featured'} className="royal-btn royal-btn-gold">
-            {slide.primaryLabel}
-            <ArrowRightIcon className="h-3.5 w-3.5" />
-          </a>
+      <Magnetic>
+            <a href={slide.primaryHref || '#featured'} className="royal-btn royal-btn-gold">
+              {slide.primaryLabel}
+              <ArrowRightIcon className="h-3.5 w-3.5" />
+            </a>
+          </Magnetic>
       }
         {slide.secondaryLabel &&
-      <a href={slide.secondaryHref || '#contact'} className="royal-btn border border-white/60 text-white hover:bg-white/10">
-            {slide.secondaryLabel}
-          </a>
+      <Magnetic>
+            <a href={slide.secondaryHref || '#contact'} className="royal-btn tpl-glass-panel text-white">
+              {slide.secondaryLabel}
+            </a>
+          </Magnetic>
       }
       </div>
     </>;
@@ -276,8 +281,8 @@ export function StoryHero({ data }: {data: HeroSection;}) {
             className="absolute inset-0 h-full w-full object-cover" />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20" />
-          <motion.div style={{ opacity: finalOpacity, y: finalY }} className="shell relative flex h-full flex-col items-center justify-center text-center">
-            {headline}
+          <motion.div style={{ opacity: finalOpacity, y: finalY }} className="shell relative flex h-full flex-col items-center justify-center">
+            <div className="tpl-glass-panel max-w-[46rem] px-6 py-10 text-center sm:px-14 sm:py-14">{headline}</div>
           </motion.div>
         </motion.div>
       </div>
