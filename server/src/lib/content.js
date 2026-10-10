@@ -90,7 +90,9 @@ export async function saveContent(prisma, tenantId, content, { force = false, la
   // Version snapshot + keep only the newest 20
   ops.push(prisma.contentVersion.create({ data: { tenantId, content, label } }));
 
-  await prisma.$transaction(ops);
+  const done = await prisma.$transaction(ops);
+  // The snapshot is the last write; its id is the version the editor builds on next.
+  const version = done[done.length - 1].id;
 
   const old = await prisma.contentVersion.findMany({
     where: { tenantId },
@@ -101,4 +103,15 @@ export async function saveContent(prisma, tenantId, content, { force = false, la
   if (old.length > 0) {
     await prisma.contentVersion.deleteMany({ where: { id: { in: old.map((v) => v.id) } } });
   }
+  return version;
+}
+
+/** Id of the newest saved version of a tenant's content (undefined before the first save). */
+export async function latestVersion(prisma, tenantId) {
+  const row = await prisma.contentVersion.findFirst({
+    where: { tenantId },
+    orderBy: { id: 'desc' },
+    select: { id: true }
+  });
+  return row?.id;
 }

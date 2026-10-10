@@ -55,6 +55,7 @@ import {
 '../components/site/templates/Heroes';
 import { GlassHeader } from '../components/site/GlassHeader';
 import { CurtainHero, HorizontalHero, StackHero, TextMaskHero } from '../components/site/templates/Heroes2';
+import { VitrineHero } from '../components/site/templates/VitrineHero';
 import {
   AccordionCategories,
   BannerNewsletter,
@@ -120,7 +121,8 @@ const LAYOUTS: {[K in LayoutSection]: Record<Layouts[K], React.ComponentType<{da
     textmask: TextMaskHero,
     horizontal: HorizontalHero,
     curtain: CurtainHero,
-    stack: StackHero
+    stack: StackHero,
+    vitrine: VitrineHero
   },
   categories: {
     grid: Categories,

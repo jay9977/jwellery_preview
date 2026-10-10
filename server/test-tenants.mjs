@@ -63,6 +63,13 @@ try {
   assert.equal(leads.json.total, 0, 'client must not see Giriraj leads');
   assert.equal((await call('GET', '/super/tenants', { token: client.json.token })).status, 403);
 
+  // A save built on an old version is refused, so nobody silently overwrites newer work.
+  const loaded = await call('GET', '/content', { token: client.json.token });
+  const first = await call('PUT', '/content', { token: client.json.token, body: { content: loaded.json.content, baseVersion: loaded.json.version } });
+  assert.equal(first.status, 200, JSON.stringify(first.json));
+  const stale = await call('PUT', '/content', { token: client.json.token, body: { content: loaded.json.content, baseVersion: loaded.json.version } });
+  assert.equal(stale.status, 409, 'a save over a newer version must be refused');
+
   // Expired -> site and client login both stop; super admin can still support it.
   await call('PATCH', `/super/tenants/${id}`, { token: superToken, body: { expiresAt: '2020-01-01' } });
   assert.equal((await call('GET', '/content', { site: slug })).status, 402);

@@ -29,6 +29,7 @@ import {
   fetchAccount,
   fetchTenants,
   refreshTenantPhotos,
+  rewriteTenantCopy,
   renewTenant,
   updateTenant,
   type DnsStatus,
@@ -801,6 +802,21 @@ function EditClient({
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoNote, setPhotoNote] = useState('');
 
+  const [copyBusy, setCopyBusy] = useState(false);
+  const [copyNote, setCopyNote] = useState('');
+  async function newCopy() {
+    setCopyBusy(true);
+    setCopyNote('');
+    try {
+      const { ai, aiError } = await rewriteTenantCopy(backend, tenant.id);
+      setCopyNote(ai ? 'New copy written by AI.' : `New copy mix applied${aiError ? ` (AI failed: ${aiError})` : ''}.`);
+    } catch (err) {
+      setCopyNote(err instanceof Error ? err.message : 'Could not rewrite the text.');
+    } finally {
+      setCopyBusy(false);
+    }
+  }
+
   async function newPhotos() {
     setPhotoBusy(true);
     setPhotoNote('');
@@ -960,7 +976,18 @@ function EditClient({
         </div>
 
         <section className="rounded-xl border border-stone-200 bg-white p-4">
-          <h3 className="text-sm font-medium text-stone-900">Photos</h3>
+          <h3 className="text-sm font-medium text-stone-900">Text &amp; photos</h3>
+          <p className="mt-1 text-xs text-stone-500">
+            Rewrite every headline, product name, article and FAQ with a fresh mix for this business. Text the client
+            edited is replaced too; photos and design stay.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button type="button" disabled={copyBusy} onClick={() => void newCopy()} className={btnGhost}>
+              {copyBusy ? <Loader2Icon className="h-3.5 w-3.5 animate-spin" /> : <SparklesIcon className="h-3.5 w-3.5" />}
+              Rewrite text
+            </button>
+            {copyNote && <span className="text-xs text-stone-600">{copyNote}</span>}
+          </div>
           <p className="mt-1 text-xs text-stone-500">
             Replace every photo on this website with new ones that no other client uses. Photos the client uploaded are
             replaced too.

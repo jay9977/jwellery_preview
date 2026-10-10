@@ -12,7 +12,7 @@ import type { TemplateId } from '../types/content';
 export type HeroLayout =
 'card' | 'center' | 'split' | 'collage' | 'story-orbit' | 'story-fan' | 'story-rail' |
 'marquee' | 'spotlight' | 'bento' | 'zoom' | 'columns' | 'coverflow' |
-'textmask' | 'horizontal' | 'curtain' | 'stack';
+'textmask' | 'horizontal' | 'curtain' | 'stack' | 'vitrine';
 export type HeaderStyle = 'original' | 'center' | 'left' | 'minimal' | 'pill';
 export type CategoriesLayout = 'grid' | 'arch' | 'circle' | 'scroll' | 'accordion' | 'list';
 export type FeaturedLayout = 'cards' | 'framed' | 'minimal' | 'spotlight' | 'carousel';
@@ -184,10 +184,10 @@ ORIGINAL,
 {
   id: 'celeste',
   name: 'Celeste',
-  description: 'Light and airy. Scrolling turns sideways and the collection glides past like a gallery walk.',
-  mode: 'light', header: 'pill', shape: 'round', motion: 'slide', hover: 'bright', scroll: 'progress',
-  palette: 'sky-linen', font: 'warm',
-  layout: { hero: 'horizontal', categories: 'list', featured: 'spotlight', promo: 'band', trust: 'diamond', testimonials: 'carousel', editorial: 'sticky', gallery: 'grid', journal: 'feature', faq: 'cards', newsletter: 'centered' }
+  description: 'Iridescent glass. Jewels float in a glass vitrine with light sweeping across it, and a word reel spins through your collections.',
+  mode: 'light', header: 'pill', shape: 'round', motion: 'blur', hover: 'bright', scroll: 'progress',
+  palette: 'opal-iridescent', font: 'warm',
+  layout: { hero: 'vitrine', categories: 'list', featured: 'spotlight', promo: 'band', trust: 'diamond', testimonials: 'carousel', editorial: 'sticky', gallery: 'grid', journal: 'feature', faq: 'cards', newsletter: 'centered' }
 },
 {
   id: 'rani',

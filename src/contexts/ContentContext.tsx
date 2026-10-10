@@ -115,6 +115,8 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
   const [syncError, setSyncError] = useState('');
   const [lastSyncedAt, setLastSyncedAt] = useState('');
   const skipPublish = useRef(true);
+  /** The saved version this editor is building on; sent with every save. */
+  const version = useRef<number | undefined>(undefined);
   const publishTimer = useRef<number | null>(null);
 
   /* ---------- local cache (offline draft) ---------- */
@@ -148,8 +150,9 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     setSyncError('');
     try {
       const remote = await fetchRemoteContent(backend);
+      version.current = remote.version;
       skipPublish.current = true;
-      setContent(normalize(remote));
+      setContent(normalize(remote.content));
       setIsDirty(false);
       setLastSyncedAt(new Date().toISOString());
       setSyncStatus('synced');
@@ -170,7 +173,7 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
     setSyncStatus('saving');
     setSyncError('');
     try {
-      await pushRemoteContent(backend, content);
+      version.current = (await pushRemoteContent(backend, content, version.current)) ?? version.current;
       setIsDirty(false);
       setLastSyncedAt(new Date().toISOString());
       setSyncStatus('synced');

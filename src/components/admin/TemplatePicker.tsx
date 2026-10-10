@@ -127,6 +127,15 @@ function Sketch({ t, c }: {t: TemplateDef;c: ThemeColors;}) {
         <div className="absolute left-2 top-1/2 flex w-[38%] -translate-y-1/2 flex-col gap-1">{bar('40%', 2, c.gold)}{bar('95%', 5)}</div>
         {[2, 1, 0].map((i) => box({ right: 14 + i * 4, top: 12 + i * 4, width: 38, height: 52, transform: `rotate(${(i % 2 ? 1 : -1) * i * 4}deg)`, background: i === 0 ? c.gold : tile, opacity: i === 0 ? 0.7 : 1 }, i))}
       </>,
+    vitrine:
+    <>
+        <span className="absolute inset-0" style={{ background: `radial-gradient(circle at 20% 25%, ${c.gold}55, transparent 55%), radial-gradient(circle at 85% 70%, ${c.accent}33, transparent 55%)` }} />
+        <div className="absolute left-2 top-1/2 flex w-[40%] -translate-y-1/2 flex-col gap-1">{bar('40%', 2, c.gold)}{bar('95%', 5)}{bar('55%', 4, c.accent)}</div>
+        <span className="absolute right-4 top-2 h-[70%] w-[34%] rounded-xl border border-white/70" style={{ background: 'rgba(255,255,255,0.45)' }}>
+          <span className="absolute inset-2 rounded-lg" style={{ background: tile }} />
+        </span>
+        <span className="absolute bottom-2 right-[12%] flex gap-0.5 rounded-full bg-white/70 p-0.5">{[0, 1, 2].map((i) => <span key={i} className="h-2.5 w-2.5 rounded-full" style={{ background: i === 0 ? c.gold : tile }} />)}</span>
+      </>,
     coverflow:
     <>
         <div className="absolute inset-x-0 top-2">{bar('45%', 4, fg, { margin: '0 auto' })}</div>

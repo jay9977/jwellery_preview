@@ -109,9 +109,12 @@ async function rewriteCopy(texts, brief) {
  * @param brief     { name, city, style, phone, email, notes, theme? }
  * @returns { content, ai: boolean, aiError?: string }
  */
-export async function buildSiteContent(template, brief) {
-  const content = applyVariants(structuredClone(template), brief);
-  const oldName = template.brand?.name ?? '';
+/**
+ * Write every piece of copy for the client: Claude when a key is set, and in every case
+ * no trace of the business the text was first written for (its name, or the
+ * distinctive last word of it, such as "giriraj").
+ */
+async function writeCopy(content, brief, oldName) {
   const texts = copyStrings(content);
 
   let ai = false;
@@ -130,14 +133,19 @@ export async function buildSiteContent(template, brief) {
     }
   }
 
-  // Without AI (or if it failed) at least the old brand name must not show up.
-  if (!ai && oldName) {
-    const re = new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-    for (const [key, text] of Object.entries(texts)) {
-      const next = text.replace(re, brief.name);
-      if (next !== text) setAt(content, key.split('.').map((p) => (/^\d+$/.test(p) ? Number(p) : p)), next);
-    }
+  const escape = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const lastWord = oldName.trim().split(/\s+/).pop() ?? '';
+  const patterns = [oldName, lastWord.length > 3 ? lastWord : ''].filter(Boolean).map((v) => new RegExp(`\\b${escape(v)}\\b`, 'gi'));
+  for (const [key, original] of Object.entries(copyStrings(content))) {
+    const next = patterns.reduce((text, re) => text.replace(re, brief.name), original);
+    if (next !== original) setAt(content, key.split('.').map((p) => (/^\d+$/.test(p) ? Number(p) : p)), next);
   }
+  return { ai, aiError, texts };
+}
+
+export async function buildSiteContent(template, brief) {
+  const content = applyVariants(structuredClone(template), brief);
+  const { ai, aiError } = await writeCopy(content, brief, template.brand?.name ?? '');
 
   content.brand = {
     ...content.brand,
@@ -149,5 +157,16 @@ export async function buildSiteContent(template, brief) {
   };
   if (brief.theme) content.theme = { ...content.theme, ...brief.theme, colors: { ...content.theme?.colors, ...brief.theme.colors } };
   shuffleImages(content);
+  return { content, ai, aiError };
+}
+
+/**
+ * Fresh copy for an existing site: a new mix of headlines, products, articles and FAQs
+ * (rewritten by Claude when a key is set). Photos, theme, logos and layout stay as they are.
+ */
+export async function rewriteSiteCopy(current, brief, templateName) {
+  const content = applyVariants(structuredClone(current), brief);
+  const { ai, aiError } = await writeCopy(content, brief, templateName);
+  content.brand = { ...content.brand, name: brief.name, phone: brief.phone || content.brand?.phone || '' };
   return { content, ai, aiError };
 }

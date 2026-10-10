@@ -12,8 +12,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import dns from 'node:dns/promises';
-import { assembleContent, saveContent } from './lib/content.js';
-import { buildSiteContent } from './lib/generate.js';
+import { assembleContent, latestVersion, saveContent } from './lib/content.js';
+import { buildSiteContent, rewriteSiteCopy } from './lib/generate.js';
 import { freshPhotos } from './lib/images.js';
 import {
   PLAN_MONTHS,
@@ -307,9 +307,12 @@ app.get('/api/auth/me', requireAuth, async (req, res, next) => {
 /** Public: full content document for the landing page */
 app.get('/api/content', publicLimiter, optionalAuth, withTenant, async (req, res, next) => {
   try {
-    const content = await assembleContent(prisma, req.tenant.id);
+    const [content, version] = await Promise.all([
+    assembleContent(prisma, req.tenant.id),
+    latestVersion(prisma, req.tenant.id)]
+    );
     if (!content) return res.status(404).json({ error: 'No content yet. Run: npm run db:seed' });
-    res.json({ content });
+    res.json({ content, version });
   } catch (err) {
     next(err);
   }
@@ -319,9 +322,24 @@ app.get('/api/content', publicLimiter, optionalAuth, withTenant, async (req, res
 app.put('/api/content', writeLimiter, requireAuth, requireRole('admin', 'superadmin'), withTenant, largeJson, async (req, res, next) => {
   try {
     const content = req.body?.content ?? req.body;
+    const force = req.query.force === '1';
+    // An editor that loaded version N may only save over version N. Anything newer means
+    // the site changed elsewhere (another tab, or the super admin rewriting text or photos)
+    // and saving would silently wipe that work.
+    // ponytail: check-then-save is not atomic; two saves in the same millisecond can still race.
+    const base = req.body?.baseVersion;
+    if (base !== undefined && !force) {
+      const latest = await latestVersion(prisma, req.tenant.id);
+      if (latest !== undefined && latest !== base) {
+        return res.status(409).json({
+          error: 'This website was changed somewhere else since you opened it. Reload the editor to get the latest version before editing.',
+          conflict: true
+        });
+      }
+    }
     // A save that would drop most of the site is almost always a bug, not an intent.
-    await saveContent(prisma, req.tenant.id, content, { force: req.query.force === '1' });
-    res.status(204).end();
+    const version = await saveContent(prisma, req.tenant.id, content, { force });
+    res.json({ version });
   } catch (err) {
     next(err);
   }
@@ -911,6 +929,27 @@ app.post('/api/super/tenants/:id/photos', writeLimiter, ...superOnly, async (req
     res.json({ photos });
   } catch (err) {
     if (err instanceof Error && /Unsplash/.test(err.message)) return res.status(502).json({ error: err.message });
+    next(err);
+  }
+});
+
+/** Replace every piece of copy on a client's site with a fresh mix (photos and design untouched). */
+app.post('/api/super/tenants/:id/rewrite', writeLimiter, ...superOnly, async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const tenant = Number.isInteger(id) ? await prisma.tenant.findUnique({ where: { id } }) : null;
+    if (!tenant) return res.status(404).json({ error: 'Client not found.' });
+    const current = await assembleContent(prisma, id);
+    if (!current) return res.status(404).json({ error: 'This client has no website content yet.' });
+    const template = JSON.parse(fs.readFileSync(TEMPLATE_PATH, 'utf8'));
+    const { content, ai, aiError } = await rewriteSiteCopy(
+      current,
+      { name: tenant.name, slug: tenant.slug, phone: tenant.phone, email: tenant.email, notes: tenant.notes, city: String(req.body?.city ?? '') },
+      template.brand?.name ?? ''
+    );
+    await saveContent(prisma, id, content, { label: 'rewritten' });
+    res.json({ ai, aiError });
+  } catch (err) {
     next(err);
   }
 });

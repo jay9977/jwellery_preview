@@ -100,19 +100,31 @@ export async function request<T>(config: BackendConfig, path: string, init?: Req
   }
 }
 
-/** GET /content → SiteContent (optionally wrapped as { content: SiteContent }) */
-export async function fetchRemoteContent(config: BackendConfig): Promise<SiteContent> {
-  const payload = await request<SiteContent | {content: SiteContent;}>(config, '/content');
-  const content = (payload as {content?: SiteContent;})?.content ?? payload as SiteContent;
+/** GET /content → the SiteContent document and the version it was saved as. */
+export async function fetchRemoteContent(config: BackendConfig): Promise<{content: SiteContent;version?: number;}> {
+  const payload = await request<SiteContent | {content: SiteContent;version?: number;}>(config, '/content');
+  const wrapped = payload as {content?: SiteContent;version?: number;};
+  const content = wrapped?.content ?? payload as SiteContent;
   if (!content || typeof content !== 'object' || !content.sections) {
     throw new Error('The /content response is missing a "sections" object.');
   }
-  return content;
+  return { content, version: wrapped?.version };
 }
 
-/** PUT /content with the full SiteContent document */
-export async function pushRemoteContent(config: BackendConfig, content: SiteContent): Promise<void> {
-  await request<void>(config, '/content', { method: 'PUT', body: JSON.stringify({ content }) });
+/**
+ * PUT /content with the full SiteContent document. `baseVersion` is the version the
+ * editor loaded; the server refuses (409) if the site has changed since. Returns the new version.
+ */
+export async function pushRemoteContent(
+config: BackendConfig,
+content: SiteContent,
+baseVersion?: number)
+: Promise<number | undefined> {
+  const payload = await request<{version?: number;} | undefined>(config, '/content', {
+    method: 'PUT',
+    body: JSON.stringify({ content, baseVersion })
+  });
+  return payload?.version;
 }
 
 /** GET /health, falling back to /content when no health route exists */
@@ -396,6 +408,11 @@ config: BackendConfig,
 data: NewTenant)
 : Promise<{tenant: Tenant;ai: boolean;aiError?: string;photos: number;photosError?: string;}> {
   return request(config, '/super/tenants', { method: 'POST', body: JSON.stringify(data) });
+}
+
+/** Replace every piece of copy on a client's site with a fresh mix. */
+export async function rewriteTenantCopy(config: BackendConfig, id: number): Promise<{ai: boolean;aiError?: string;}> {
+  return request(config, `/super/tenants/${id}/rewrite`, { method: 'POST', body: '{}' });
 }
 
 /** Replace every photo on a client's site with new ones (Unsplash). */
