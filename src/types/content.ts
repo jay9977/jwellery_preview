@@ -76,7 +76,8 @@ export interface FontPair {
 /** Layout + motion family of the whole site. Colours and fonts are chosen separately. */
 export type TemplateId =
 'original' | 'classic' | 'royal' | 'modern' | 'blush' | 'temple' | 'midnight' |
-'polki' | 'pearl' | 'emerald' | 'velvet' | 'sunlit' | 'heirloom';
+'polki' | 'pearl' | 'emerald' | 'velvet' | 'sunlit' | 'heirloom' |
+'aurora' | 'celeste' | 'rani' | 'solitaire';
 
 export interface Theme {
   paletteId: string;

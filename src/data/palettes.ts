@@ -672,6 +672,18 @@ export const FONT_PAIRS: FontPair[] = [
   name: 'Heirloom',
   display: 'Prata, Georgia, serif',
   body: 'Hind, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'italiana',
+  name: 'Aurora',
+  display: 'Italiana, Georgia, serif',
+  body: 'Manrope, ui-sans-serif, system-ui, sans-serif'
+},
+{
+  id: 'bellefair',
+  name: 'Solitaire',
+  display: 'Bellefair, Georgia, serif',
+  body: 'Jost, ui-sans-serif, system-ui, sans-serif'
 }];
 
 

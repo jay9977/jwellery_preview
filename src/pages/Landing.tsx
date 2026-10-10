@@ -54,6 +54,24 @@ import {
   ZoomHero } from
 '../components/site/templates/Heroes';
 import { GlassHeader } from '../components/site/GlassHeader';
+import { CurtainHero, HorizontalHero, StackHero, TextMaskHero } from '../components/site/templates/Heroes2';
+import {
+  AccordionCategories,
+  BannerNewsletter,
+  CardsFaq,
+  CarouselFeatured,
+  FeatureJournal,
+  GlassNewsletter,
+  ListCategories,
+  ListJournal,
+  MarqueeTestimonials,
+  MarqueeTrust,
+  MasonryGallery,
+  StackTestimonials,
+  StickyEditorial,
+  StickyFaq,
+  TextMaskPromo } from
+'../components/site/templates/Sections2';
 import { templateById, type TemplateDef } from '../data/templates';
 import { hexToRgbTriple, mixHex } from '../utils/color';
 import { motion, useScroll, useSpring } from 'framer-motion';
@@ -98,15 +116,29 @@ const LAYOUTS: {[K in LayoutSection]: Record<Layouts[K], React.ComponentType<{da
     bento: BentoHero,
     zoom: ZoomHero,
     columns: ColumnsHero,
-    coverflow: CoverflowHero
+    coverflow: CoverflowHero,
+    textmask: TextMaskHero,
+    horizontal: HorizontalHero,
+    curtain: CurtainHero,
+    stack: StackHero
   },
-  categories: { grid: Categories, arch: RoyalCategories, circle: CircleCategories, scroll: ScrollCategories },
-  featured: { cards: Featured, framed: RoyalFeatured, minimal: MinimalFeatured, spotlight: SpotlightFeatured },
-  promo: { split: Promo, parallax: RoyalPromo, band: BandPromo },
-  trust: { row: Trust, diamond: RoyalTrust, cards: CardsTrust },
-  testimonials: { grid: Testimonials, carousel: RoyalTestimonials },
-  editorial: { side: Editorial, arch: RoyalEditorial, overlap: OverlapEditorial },
-  gallery: { grid: Gallery, mosaic: RoyalGallery, strip: StripGallery }
+  categories: {
+    grid: Categories,
+    arch: RoyalCategories,
+    circle: CircleCategories,
+    scroll: ScrollCategories,
+    accordion: AccordionCategories,
+    list: ListCategories
+  },
+  featured: { cards: Featured, framed: RoyalFeatured, minimal: MinimalFeatured, spotlight: SpotlightFeatured, carousel: CarouselFeatured },
+  promo: { split: Promo, parallax: RoyalPromo, band: BandPromo, textmask: TextMaskPromo },
+  trust: { row: Trust, diamond: RoyalTrust, cards: CardsTrust, marquee: MarqueeTrust },
+  testimonials: { grid: Testimonials, carousel: RoyalTestimonials, marquee: MarqueeTestimonials, stack: StackTestimonials },
+  editorial: { side: Editorial, arch: RoyalEditorial, overlap: OverlapEditorial, sticky: StickyEditorial },
+  gallery: { grid: Gallery, mosaic: RoyalGallery, strip: StripGallery, masonry: MasonryGallery },
+  journal: { grid: Journal, list: ListJournal, feature: FeatureJournal },
+  faq: { accordion: Faq, cards: CardsFaq, sticky: StickyFaq },
+  newsletter: { centered: Newsletter, banner: BannerNewsletter, glass: GlassNewsletter }
 };
 
 function ScrollProgress() {
@@ -177,14 +209,8 @@ export function Landing() {
     if (!sections[id]?.visible) return null;
     if (id in LAYOUTS) return layout(id as LayoutSection);
     switch (id) {
-      case 'journal':
-        return <Journal key={id} data={sections.journal} />;
-      case 'faq':
-        return <Faq key={id} data={sections.faq} />;
       case 'contact':
         return <Contact key={id} data={sections.contact} />;
-      case 'newsletter':
-        return <Newsletter key={id} data={sections.newsletter} />;
       default: {
         // Sections added from the admin panel render through the generic block.
         const section = sections[id];

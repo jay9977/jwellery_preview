@@ -104,6 +104,29 @@ function Sketch({ t, c }: {t: TemplateDef;c: ThemeColors;}) {
           </div>
       )}
       </>,
+    textmask:
+    <div className="absolute inset-0 flex items-center justify-center">
+        <span className="display text-[34px] font-bold uppercase leading-none" style={{ backgroundImage: `linear-gradient(135deg, ${c.gold}, ${tile})`, WebkitBackgroundClip: 'text', color: 'transparent' }}>
+          Aa
+        </span>
+      </div>,
+    horizontal:
+    <div className="absolute inset-y-3 left-2 flex gap-1.5">
+        <div className="flex w-12 flex-col justify-center gap-1">{bar('90%', 5)}{bar('60%', 3, c.gold)}</div>
+        {[0, 1, 2, 3].map((i) => <span key={i} className="h-full w-10 shrink-0" style={{ background: i === 1 ? c.gold : tile, opacity: i === 1 ? 0.6 : 1, borderRadius: r === RADIUS.arch ? 4 : r }} />)}
+      </div>,
+    curtain:
+    <>
+        <span className="absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed" style={{ borderColor: c.gold }} />
+        {box({ left: '50%', top: '50%', width: 26, height: 30, transform: 'translate(-50%,-50%)', borderRadius: RADIUS.arch })}
+        <span className="absolute inset-y-0 left-0 w-[22%]" style={{ background: c.accentDeep, borderRight: `1px solid ${c.gold}` }} />
+        <span className="absolute inset-y-0 right-0 w-[22%]" style={{ background: c.accentDeep, borderLeft: `1px solid ${c.gold}` }} />
+      </>,
+    stack:
+    <>
+        <div className="absolute left-2 top-1/2 flex w-[38%] -translate-y-1/2 flex-col gap-1">{bar('40%', 2, c.gold)}{bar('95%', 5)}</div>
+        {[2, 1, 0].map((i) => box({ right: 14 + i * 4, top: 12 + i * 4, width: 38, height: 52, transform: `rotate(${(i % 2 ? 1 : -1) * i * 4}deg)`, background: i === 0 ? c.gold : tile, opacity: i === 0 ? 0.7 : 1 }, i))}
+      </>,
     coverflow:
     <>
         <div className="absolute inset-x-0 top-2">{bar('45%', 4, fg, { margin: '0 auto' })}</div>

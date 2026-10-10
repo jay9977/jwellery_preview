@@ -250,7 +250,7 @@ function StoryHero({ data, intro }: {data: HeroSection;intro: Intro;}) {
 
         <motion.div
           style={{ opacity: introOpacity, y: introY }}
-          className="pointer-events-none absolute inset-x-0 bottom-[9vh] z-10 px-6 text-center">
+          className="pointer-events-none absolute inset-x-0 bottom-[13vh] z-10 px-6 text-center">
 
           <motion.p
             initial={{ opacity: 0, letterSpacing: '0.6em' }}
@@ -264,7 +264,7 @@ function StoryHero({ data, intro }: {data: HeroSection;intro: Intro;}) {
             initial={{ opacity: 0, transform: 'translateY(16px)' }}
             animate={{ opacity: 1, transform: 'translateY(0px)' }}
             transition={{ duration: 1, ease: EASE_OUT, delay: 0.3 }}
-            className="display mx-auto mt-3 max-w-[36rem] text-[clamp(1.6rem,3.6vw,2.75rem)] leading-tight text-ink">
+            className="display mx-auto mt-3 max-w-[44rem] text-[clamp(1.4rem,3vw,2.4rem)] leading-tight text-ink">
 
             {content.brand.tagline}
           </motion.p>
