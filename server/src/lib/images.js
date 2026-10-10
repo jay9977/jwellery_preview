@@ -29,11 +29,19 @@ function queryFor(content, path, style) {
   const name = String(item.title || item.name || item.caption || '').replace(/[^\p{L}\p{N} ]/gu, ' ').trim();
   const base = style ? `${style} jewellery` : 'indian jewellery';
   if (section === 'hero') return `${base} model`;
-  if (name && section === 'categories') return `${name} luxury jewellery`;
-  if (name && section === 'featured') return `${name} luxury jewellery close up`;
+  if (name && section === 'categories') return `${name} jewelry product photography`;
+  if (name && section === 'featured') return `${name} jewelry product photography`;
   if (section === 'gallery') return `${base} close up`;
   if (section === 'journal') return 'jewellery craftsmanship';
   return base;
+}
+
+const PEOPLE = /\b(hand|hands|finger|fingers|person|people|woman|women|man|men|girl|boy|bride|groom|model|wearing|wrist|neck|ear|face|portrait|couple|watch|watches|clock|timepiece|wedding|silhouette)\b/i;
+
+/** True when Unsplash's own description of the photo mentions no one in it. */
+function isProductShot(photo) {
+  const words = [photo.alt_description, photo.description, ...(photo.tags ?? []).map((t) => t.title)].filter(Boolean).join(' ');
+  return !PEOPLE.test(words);
 }
 
 async function search(key, query, orientation) {
@@ -73,12 +81,16 @@ export async function freshPhotos(content, { style = '', usedText = '' } = {}) {
     let pool = pools.get(poolKey);
 
     // Specific query came back thin: fall back to a broad one rather than repeat a photo.
-    let photo = pool.find((p) => !taken.has(p.id) && !usedText.includes(p.id));
+    // Product and category tiles show the piece alone — never a hand, a person or a casual snapshot.
+    const productSlot = path[1] === 'featured' || path[1] === 'categories';
+    const usable = (p) => !taken.has(p.id) && !usedText.includes(p.id) && (!productSlot || isProductShot(p));
+    let photo = pool.find(usable);
     if (!photo) {
-      const broadKey = `jewellery|${orientation}`;
-      if (!pools.has(broadKey)) pools.set(broadKey, await search(key, 'luxury jewellery', orientation));
+      const broadQuery = productSlot ? 'luxury jewelry product photography' : 'luxury jewellery';
+      const broadKey = `${broadQuery}|${orientation}`;
+      if (!pools.has(broadKey)) pools.set(broadKey, await search(key, broadQuery, orientation));
       pool = pools.get(broadKey);
-      photo = pool.find((p) => !taken.has(p.id) && !usedText.includes(p.id));
+      photo = pool.find(usable);
     }
     if (!photo) continue;
 

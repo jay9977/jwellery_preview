@@ -327,8 +327,10 @@ app.put('/api/content', writeLimiter, requireAuth, requireRole('admin', 'superad
     // the site changed elsewhere (another tab, or the super admin rewriting text or photos)
     // and saving would silently wipe that work.
     // ponytail: check-then-save is not atomic; two saves in the same millisecond can still race.
+    // A save without a version comes from an editor opened before versions existed; it is
+    // just as stale, so it is refused the same way.
     const base = req.body?.baseVersion;
-    if (base !== undefined && !force) {
+    if (!force) {
       const latest = await latestVersion(prisma, req.tenant.id);
       if (latest !== undefined && latest !== base) {
         return res.status(409).json({

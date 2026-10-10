@@ -69,6 +69,8 @@ try {
   assert.equal(first.status, 200, JSON.stringify(first.json));
   const stale = await call('PUT', '/content', { token: client.json.token, body: { content: loaded.json.content, baseVersion: loaded.json.version } });
   assert.equal(stale.status, 409, 'a save over a newer version must be refused');
+  const unversioned = await call('PUT', '/content', { token: client.json.token, body: { content: loaded.json.content } });
+  assert.equal(unversioned.status, 409, 'a save that names no version must be refused');
 
   // Expired -> site and client login both stop; super admin can still support it.
   await call('PATCH', `/super/tenants/${id}`, { token: superToken, body: { expiresAt: '2020-01-01' } });

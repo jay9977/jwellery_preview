@@ -70,7 +70,11 @@ function Piece({
   const py = useTransform(sy, (v) => v * -depth);
 
   // Where each piece rests, and where the scroll sends it.
-  const angle = index / total * Math.PI * 2 - Math.PI / 2;
+  // Satellites sit on the left and right arcs only, so none covers the main piece or the
+  // headline beneath it.
+  const rows = Math.ceil(total / 2);
+  const row = Math.floor(index / 2) - (rows - 1) / 2;
+  const angle = (index % 2 ? 0 : Math.PI) + (index % 2 ? 1 : -1) * row * 0.62;
   const plan = {
     orbit: {
       start: main ? [0, 0, 0] : [Math.cos(angle) * 34, Math.sin(angle) * 30, 0],
