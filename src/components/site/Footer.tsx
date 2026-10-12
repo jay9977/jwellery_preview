@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useLayoutEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { PhoneIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
@@ -9,6 +10,23 @@ export function Footer({ wordmark = false }: {wordmark?: boolean;}) {
   const { content } = useContent();
   const { brand, footer } = content;
   const social = usableSocialLinks(footer.social);
+  const wordmarkRef = useRef<HTMLParagraphElement>(null);
+
+  // The wordmark is set as large as the footer allows, then shrunk until the whole
+  // name fits on one line — measured, so it works for any name and any template font.
+  useLayoutEffect(() => {
+    const el = wordmarkRef.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.fontSize = `${Math.min(192, window.innerWidth * 0.13)}px`;
+      const ratio = el.clientWidth / el.scrollWidth;
+      if (ratio < 1) el.style.fontSize = `${parseFloat(el.style.fontSize) * ratio * 0.97}px`;
+    };
+    fit();
+    void document.fonts?.ready.then(fit);
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [brand.name, wordmark]);
 
   return (
     <footer className={`section-y-sm w-full bg-ink text-cream ${wordmark ? 'overflow-hidden' : ''}`}>
@@ -63,12 +81,13 @@ export function Footer({ wordmark = false }: {wordmark?: boolean;}) {
 
         {wordmark &&
         <motion.p
+          ref={wordmarkRef}
           aria-hidden
           initial={{ opacity: 0, transform: 'translateY(40%)' }}
           whileInView={{ opacity: 1, transform: 'translateY(0%)' }}
           viewport={{ once: true, margin: '-40px' }}
           transition={{ duration: 1.2, ease: [0.23, 1, 0.32, 1] }}
-          className="display mt-16 select-none whitespace-nowrap bg-gradient-to-b from-cream/25 to-cream/0 bg-clip-text text-center text-[clamp(3rem,13vw,12rem)] leading-[0.85] text-transparent">
+          className="display mt-16 select-none whitespace-nowrap bg-gradient-to-b from-cream/25 to-cream/0 bg-clip-text pb-[0.12em] text-center leading-[0.95] text-transparent">
 
             {brand.name}
           </motion.p>
