@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue } from 'framer-motion';
-import { ArrowRightIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, MailIcon, ShieldCheckIcon, SparklesIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AlertCircleIcon, ArrowRightIcon, EyeIcon, EyeOffIcon, Loader2Icon, ShieldCheckIcon } from 'lucide-react';
 import { useContent } from '../../hooks/useContent';
 import { isConnected } from '../../utils/backend';
 import { loginAccount } from '../../utils/api';
@@ -15,94 +15,59 @@ const DEMO_PASSWORD = (import.meta.env.VITE_ADMIN_DEMO_PASSWORD ?? '').trim();
 
 const display = "font-['Cormorant_Garamond',Georgia,serif]";
 const EASE = [0.23, 1, 0.32, 1] as const;
+// Photograph by rajat sarki on Unsplash (credited on the image).
+const PHOTO = 'https://images.unsplash.com/photo-1625139108082-48bb424c2333?auto=format&fit=crop&q=80&w=1600';
 
 const rise = (delay: number) => ({
-  initial: { opacity: 0, transform: 'translateY(18px)' },
+  initial: { opacity: 0, transform: 'translateY(16px)' },
   animate: { opacity: 1, transform: 'translateY(0px)' },
   transition: { duration: 0.8, ease: EASE, delay }
 });
 
-function useLayer(mx: MotionValue<number>, my: MotionValue<number>, depth: number) {
-  return { x: useTransform(mx, (v) => v * -depth), y: useTransform(my, (v) => v * -depth) };
-}
-
-/** The left half: the platform's own work, floating in layers that follow the pointer. */
-function Showcase() {
-  const reduce = useReducedMotion();
-  const mx = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
-  const my = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
-  const back = useLayer(mx, my, 10);
-  const mid = useLayer(mx, my, 22);
-  const front = useLayer(mx, my, 36);
-
-  useEffect(() => {
-    if (reduce || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    const move = (e: PointerEvent) => {
-      mx.set(e.clientX / window.innerWidth - 0.5);
-      my.set(e.clientY / window.innerHeight - 0.5);
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => window.removeEventListener('pointermove', move);
-  }, [mx, my, reduce]);
-
-  const card = (src: string, delay: number, cls: string) =>
-  <motion.div
-    initial={{ opacity: 0, transform: 'translateY(40px) scale(0.94)' }}
-    animate={{ opacity: 1, transform: 'translateY(0px) scale(1)' }}
-    transition={{ duration: 1.2, ease: EASE, delay }}
-    className={cls}>
-
-      <div className="kit-float overflow-hidden rounded-xl bg-[#1a2340] shadow-[0_40px_90px_-30px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
-        <div className="flex gap-1 px-2.5 py-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-          <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-          <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-        </div>
-        <img src={src} alt="" className="aspect-[16/10] w-full object-cover object-top" />
-      </div>
-    </motion.div>;
+/** A labelled field whose label floats up when the field is focused or filled. */
+function Field({
+  id,
+  label,
+  type,
+  value,
+  onChange,
+  autoComplete,
+  autoFocus,
+  invalid,
+  children
 
 
+
+
+
+
+
+
+
+}: {id: string;label: string;type: string;value: string;onChange: (v: string) => void;autoComplete: string;autoFocus?: boolean;invalid?: boolean;children?: React.ReactNode;}) {
   return (
-    <div className="relative hidden flex-1 flex-col justify-between p-12 lg:flex xl:p-16">
-      <motion.a {...rise(0)} href="/" className="relative z-10 flex items-center gap-2.5 text-[#f6ece8]">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#f0c2ae] to-[#b07560] text-sm font-bold text-[#0f1629]">KIT</span>
-        <span className="leading-none">
-          <span className={`${display} block text-xl font-semibold`}>Kothari IT</span>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-[#f6ece8]/50">Jewellery websites</span>
-        </span>
-      </motion.a>
+    <div className="relative">
+      <input
+        id={id}
+        type={type}
+        value={value}
+        autoComplete={autoComplete}
+        autoFocus={autoFocus}
+        aria-invalid={invalid}
+        placeholder=" "
+        onChange={(e) => onChange(e.target.value)}
+        className={`peer h-14 w-full rounded-xl border bg-white/[0.04] px-4 pb-2 pt-6 text-[15px] text-white outline-none focus-visible:outline-none transition-[border-color,box-shadow,background-color] duration-200 focus:bg-white/[0.07] focus:shadow-[0_0_0_4px_rgb(224_168_145/0.14)] ${
+        invalid ? 'border-red-400/70' : 'border-white/12 hover:border-white/25 focus:border-[#e0a891]'} ${
+        children ? 'pr-12' : ''}`
+        } />
 
-      <div className="relative z-10 max-w-[26rem]">
-        <motion.p {...rise(0.1)} className="text-xs font-semibold uppercase tracking-[0.25em] text-[#f0c2ae]">Your studio</motion.p>
-        <motion.h2 {...rise(0.2)} className={`${display} mt-4 text-5xl font-medium leading-[1.05] text-[#f6ece8] xl:text-6xl`}>
-          Your showroom,{' '}
-          <span className="kit-shine bg-gradient-to-r from-[#f7d3c4] via-[#fff1ea] to-[#b5705a] bg-clip-text italic text-transparent">
-            in your hands
-          </span>
-        </motion.h2>
-        <motion.p {...rise(0.3)} className="mt-5 text-[#f6ece8]/60">
-          Update collections, photos and offers, answer enquiries and watch who is visiting — all from one place.
-        </motion.p>
-      </div>
+      <label
+        htmlFor={id}
+        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-white/45 transition-all duration-200 [transition-timing-function:var(--ease-out)] peer-focus:top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-[0.16em] peer-focus:text-[#f0c2ae] peer-[:not(:placeholder-shown)]:top-4 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-[0.16em]">
 
-      <motion.div {...rise(0.4)} className="relative z-10 flex gap-6 text-xs text-[#f6ece8]/55">
-        <span className="flex items-center gap-2"><ShieldCheckIcon className="h-4 w-4 text-[#e0a891]" /> Encrypted sign-in</span>
-        <span className="flex items-center gap-2"><SparklesIcon className="h-4 w-4 text-[#e0a891]" /> Changes go live instantly</span>
-      </motion.div>
-
-      {/* floating work, on the right of the panel */}
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-[-34%] w-[58%]">
-        <motion.div style={back} className="absolute right-[4%] top-[8%] w-[80%] opacity-50">
-          {card('/kit/templates/midnight.jpg', 0.2, '')}
-        </motion.div>
-        <motion.div style={mid} className="absolute right-[22%] top-[36%] w-[80%]">
-          {card('/kit/templates/rani.jpg', 0.35, '[&_.kit-float]:[animation-delay:-2s]')}
-        </motion.div>
-        <motion.div style={front} className="absolute right-[6%] top-[66%] w-[72%]">
-          {card('/kit/templates/celeste.jpg', 0.5, '[&_.kit-float]:[animation-delay:-4s]')}
-        </motion.div>
-      </div>
+        {label}
+      </label>
+      {children}
     </div>);
 
 }
@@ -117,7 +82,7 @@ export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo', 
   const [shake, setShake] = useState(0);
   const connected = isConnected(backend);
   const demoAvailable = DEMO_PASSWORD.length > 0;
-  // On a client's own domain the card names their store; on the platform's, the platform.
+  // On a client's own domain the page names their store; on the platform's, the platform.
   const siteName = noSite ? 'Kothari IT' : content.brand.name;
 
   function fail(message: string) {
@@ -152,121 +117,117 @@ export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo', 
     fail(demoAvailable ? 'Wrong password. Try again.' : 'Offline editing is disabled.');
   }
 
-  const field =
-  'peer w-full rounded-xl border border-white/12 bg-white/[0.06] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-white/30 focus:border-[#e0a891] focus:bg-white/[0.09] focus:shadow-[0_0_0_4px_rgb(224_168_145/0.15)]';
-
   return (
-    <div className="relative flex min-h-screen w-full overflow-hidden bg-[#0f1629] font-['Inter',system-ui,sans-serif]">
-      <div aria-hidden className="kit-aurora pointer-events-none absolute inset-0" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(#f0c2ae_1px,transparent_1px)] [background-size:28px_28px]" />
+    <div className="flex min-h-screen w-full flex-col bg-[#0f1629] font-['Inter',system-ui,sans-serif] lg:flex-row">
+      {/* ---------- the photograph ---------- */}
+      <div className="relative h-[34vh] min-h-[220px] w-full overflow-hidden lg:h-auto lg:min-h-screen lg:w-[52%]">
+        <motion.img
+          src={PHOTO}
+          alt=""
+          initial={{ opacity: 0, transform: 'scale(1.12)' }}
+          animate={{ opacity: 1, transform: 'scale(1)' }}
+          transition={{ opacity: { duration: 1.2 }, transform: { duration: 14, ease: EASE } }}
+          className="absolute inset-0 h-full w-full object-cover object-[50%_28%]" />
 
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0f1629] via-[#0f1629]/35 to-[#0f1629]/10 lg:bg-gradient-to-r lg:from-transparent lg:via-[#0f1629]/10 lg:to-[#0f1629]" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0f1629]/90 via-transparent to-transparent" />
 
-      <Showcase />
+        <motion.a {...rise(0.2)} href="/" className="absolute left-6 top-6 flex items-center gap-2.5 text-white lg:left-12 lg:top-10">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#f0c2ae] to-[#b07560] text-sm font-bold text-[#0f1629]">KIT</span>
+          <span className={`${display} text-xl font-semibold drop-shadow`}>Kothari IT</span>
+        </motion.a>
 
-      <div className="relative z-10 flex w-full items-center justify-center px-5 py-12 lg:w-[520px] lg:shrink-0 lg:px-12">
+        <div className="absolute inset-x-6 bottom-6 hidden lg:inset-x-12 lg:bottom-12 lg:block">
+          <motion.span {...rise(0.4)} className="block h-px w-14 bg-gradient-to-r from-[#f0c2ae] to-transparent" />
+          <motion.p {...rise(0.5)} className={`${display} mt-6 max-w-md text-[2.6rem] font-medium leading-[1.1] text-white`}>
+            Every piece deserves a beautiful home online.
+          </motion.p>
+          <motion.p {...rise(0.6)} className="mt-4 text-sm text-white/60">
+            Manage your collections, offers and enquiries from one elegant studio.
+          </motion.p>
+        </div>
+        <span className="absolute bottom-2 right-3 text-[10px] text-white/35">Photo · rajat sarki / Unsplash</span>
+      </div>
+
+      {/* ---------- the form ---------- */}
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-6 pb-12 pt-4 lg:px-16 lg:py-16">
+        <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-[#e0a891]/10 blur-3xl" />
         <motion.div
           key={shake}
-          initial={shake ? { transform: 'translateX(0px)' } : { opacity: 0, transform: 'translateY(30px) scale(0.98)' }}
+          initial={shake ? false : { opacity: 0, transform: 'translateY(24px)' }}
           animate={
           shake ?
-          { transform: ['translateX(0px)', 'translateX(-10px)', 'translateX(8px)', 'translateX(-5px)', 'translateX(0px)'] } :
-          { opacity: 1, transform: 'translateY(0px) scale(1)' }
+          { transform: ['translateX(0px)', 'translateX(-10px)', 'translateX(8px)', 'translateX(-4px)', 'translateX(0px)'] } :
+          { opacity: 1, transform: 'translateY(0px)' }
           }
-          transition={{ duration: shake ? 0.45 : 0.9, ease: EASE, delay: shake ? 0 : 0.15 }}
-          className="kit-glass w-full max-w-sm rounded-3xl !bg-[#0f1629]/70 p-8 sm:p-10">
+          transition={{ duration: shake ? 0.45 : 0.9, ease: EASE, delay: shake ? 0 : 0.25 }}
+          className="relative w-full max-w-[24rem]">
 
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f0c2ae] to-[#b07560] text-[#0f1629] shadow-lg shadow-[#b07560]/30">
-              <LockIcon className="h-5 w-5" />
-            </span>
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f0c2ae]/80">{siteName}</span>
-          </div>
-
-          <h1 className={`${display} mt-7 text-4xl font-medium text-white`}>Welcome back</h1>
-          <p className="mt-2 text-sm text-white/55">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f0c2ae]">{siteName}</p>
+          <h1 className={`${display} mt-4 text-[3.25rem] font-medium leading-none text-white`}>Sign in</h1>
+          <p className="mt-4 text-sm leading-relaxed text-white/55">
             {connected ?
-            'Sign in to manage your website.' :
+            'Welcome back. Enter your details to manage your website.' :
             demoAvailable ?
             'Offline demo mode — changes are saved in this browser only.' :
             'No API is configured, so there is nothing to sign in to.'}
           </p>
 
           {!connected && !demoAvailable ?
-          <p className="mt-6 rounded-xl bg-white/5 px-4 py-3 text-xs leading-relaxed text-white/60">
+          <p className="mt-8 rounded-xl border border-white/10 px-4 py-3 text-xs leading-relaxed text-white/60">
               Set <code className="font-semibold text-white/80">VITE_API_URL</code> in your <code className="font-semibold text-white/80">.env</code> and
               rebuild to connect the editor to your server. See <code className="font-semibold text-white/80">.env.example</code>.
             </p> :
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-10 space-y-4" noValidate>
               {connected &&
-            <div>
-                  <label htmlFor="admin-email" className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
-                    Email
-                  </label>
-                  <div className="relative mt-2">
-                    <input
-                  id="admin-email"
-                  type="email"
-                  value={email}
-                  autoComplete="username"
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="you@yourstore.com"
-                  className={field} />
+            <Field
+              id="admin-email"
+              label="Email address"
+              type="email"
+              value={email}
+              autoComplete="username"
+              onChange={(v) => {
+                setEmail(v);
+                setError('');
+              }} />
 
-                    <MailIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35 transition-colors peer-focus:text-[#f0c2ae]" />
-                  </div>
-                </div>
             }
+              <Field
+              id="admin-password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              autoComplete="current-password"
+              autoFocus
+              invalid={Boolean(error)}
+              onChange={(v) => {
+                setPassword(v);
+                setError('');
+              }}>
 
-              <div>
-                <label htmlFor="admin-password" className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
-                  Password
-                </label>
-                <div className="relative mt-2">
-                  <input
-                  id="admin-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  autoFocus
-                  autoComplete="current-password"
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="••••••••"
-                  aria-invalid={Boolean(error)}
-                  className={`${field} pr-12 ${error ? 'border-red-400/70' : ''}`} />
+                {/* Not inside the label: a button inside a label would also fire its focus behaviour. */}
+                <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                // tabIndex -1 keeps Tab going straight from the field to Sign in.
+                tabIndex={-1}
+                className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-white/40 transition-colors hover:text-white">
 
-                  <LockIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35 transition-colors peer-focus:text-[#f0c2ae]" />
-                  {/* Not inside a label: the toggle sits in the field, and a button inside a
-                      label would also fire the label's focus behaviour. */}
-                  <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
-                  title={showPassword ? 'Hide password' : 'Show password'}
-                  // tabIndex -1 keeps Tab going straight from the field to Sign in.
-                  tabIndex={-1}
-                  className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-white/40 transition-colors hover:text-white">
-
-                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
+                  {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                </button>
+              </Field>
 
               {error &&
             <motion.p
               role="alert"
               initial={{ opacity: 0, transform: 'translateY(-4px)' }}
               animate={{ opacity: 1, transform: 'translateY(0px)' }}
-              className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-200">
+              className="flex items-start gap-2.5 rounded-xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm text-red-100">
 
+                  <AlertCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
                   {error}
                 </motion.p>
             }
@@ -274,24 +235,27 @@ export function AdminLogin({ onSuccess }: {onSuccess: (mode: 'server' | 'demo', 
               <button
               type="submit"
               disabled={busy}
-              className="kit-cta group relative mt-2 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#f0c2ae] via-[#e0a891] to-[#b5705a] py-3.5 text-sm font-semibold text-[#0f1629] disabled:opacity-70">
+              className="group relative mt-2 inline-flex h-14 w-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f0c2ae] items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#f0c2ae] via-[#e0a891] to-[#c98b74] text-[15px] font-semibold text-[#0f1629] shadow-lg shadow-[#c98b74]/20 transition-[transform,box-shadow,filter] duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#c98b74]/30 hover:brightness-105 active:translate-y-0 active:scale-[0.99] disabled:opacity-70">
 
-                <span aria-hidden className="kit-shine pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
                 {busy ?
-              <Loader2Icon className="relative h-4 w-4 animate-spin" /> :
+              <Loader2Icon className="h-5 w-5 animate-spin" /> :
 
               <>
-                    <span className="relative">Sign in</span>
-                    <ArrowRightIcon className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    Sign in
+                    <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </>
               }
               </button>
             </form>
           }
 
-          <Link to="/" className="mt-7 inline-flex items-center gap-1.5 text-xs text-white/45 transition-colors hover:text-[#f0c2ae]">
-            ← Back to the website
-          </Link>
+          <div className="mt-10 flex items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/45">
+            <Link to="/" className="transition-colors hover:text-[#f0c2ae]">← Back to the website</Link>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheckIcon className="h-3.5 w-3.5 text-[#e0a891]" />
+              Encrypted sign-in
+            </span>
+          </div>
         </motion.div>
       </div>
     </div>);
