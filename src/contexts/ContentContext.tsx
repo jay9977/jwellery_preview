@@ -120,13 +120,16 @@ export function ContentProvider({ children }: {children: React.ReactNode;}) {
   const publishTimer = useRef<number | null>(null);
 
   /* ---------- local cache (offline draft) ---------- */
+  // Only a site that really loaded is cached; a cached default (Giriraj) would flash up
+  // on addresses with no site, before the server says so.
   useEffect(() => {
     try {
-      window.localStorage.setItem(storageKey(), JSON.stringify(content));
+      if (noSite || suspended) window.localStorage.removeItem(storageKey());
+      else if (loaded) window.localStorage.setItem(storageKey(), JSON.stringify(content));
     } catch {
 
       /* storage unavailable — in-memory edits still work */}
-  }, [content]);
+  }, [content, loaded, noSite, suspended]);
 
   /* ---------- theme tokens ---------- */
   useEffect(() => {
