@@ -742,3 +742,97 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tpl-mesh, .tpl-sheen { animation: none; }
 }
+
+/* ---------- KIT homepage, second pass ---------- */
+
+/* Slow aurora of gold light behind the hero. */
+.kit-aurora {
+  background:
+    radial-gradient(40% 55% at 18% 25%, rgb(201 164 92 / 0.22), transparent 70%),
+    radial-gradient(35% 50% at 85% 20%, rgb(122 90 42 / 0.35), transparent 70%),
+    radial-gradient(45% 45% at 60% 95%, rgb(226 194 125 / 0.14), transparent 70%);
+  background-size: 160% 160%;
+  animation: kit-aurora 20s ease-in-out infinite alternate;
+}
+@keyframes kit-aurora {
+  from { background-position: 0% 0%; }
+  to { background-position: 100% 100%; }
+}
+
+/* A glint that travels across the gold words. */
+.kit-shine {
+  background-size: 220% 100%;
+  animation: kit-shine 6s linear infinite;
+}
+@keyframes kit-shine {
+  from { background-position: 100% 0; }
+  to { background-position: -120% 0; }
+}
+
+.kit-glass {
+  background: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6);
+}
+
+/* Template tiles: lift, tilt a touch, and let the page scroll inside the frame. */
+.kit-tile {
+  transition: transform 500ms var(--ease-out);
+}
+.kit-tile-img {
+  transition: transform 1600ms var(--ease-out), object-position 3s var(--ease-in-out);
+}
+
+/* Feature cards: a soft gold light that follows the pointer. */
+.kit-spot {
+  position: relative;
+  overflow: hidden;
+}
+.kit-spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), rgb(201 164 92 / 0.18), transparent 70%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+/* The featured plan wears a slowly turning gold edge. */
+.kit-border-glow {
+  position: relative;
+  isolation: isolate;
+}
+.kit-border-glow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(from var(--kit-angle, 0deg), transparent 0 70%, rgb(226 194 125 / 0.9), transparent 85%);
+  animation: kit-turn 6s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@property --kit-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes kit-turn {
+  to { --kit-angle: 360deg; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kit-tile:hover { transform: translateY(-10px) rotate(-0.6deg); }
+  .kit-tile:hover .kit-tile-img { transform: scale(1.04); object-position: 50% 100%; }
+  .kit-spot:hover::before { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-aurora, .kit-shine, .kit-border-glow::after { animation: none; }
+  .kit-tile:hover, .kit-tile:hover .kit-tile-img { transform: none; }
+}

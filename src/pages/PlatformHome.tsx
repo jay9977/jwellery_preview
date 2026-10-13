@@ -1,5 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue } from
+'framer-motion';
+import {
   ArrowRightIcon,
   BarChart3Icon,
   CheckIcon,
@@ -18,6 +29,8 @@ import {
   type LucideIcon } from
 'lucide-react';
 import { PALETTES } from '../data/palettes';
+import { TEMPLATES } from '../data/templates';
+import { Magnetic } from '../components/site/templates/Magnetic';
 
 /**
  * The platform's own homepage (Kothari IT). Shown on any address that has no client
@@ -26,17 +39,24 @@ import { PALETTES } from '../data/palettes';
 
 const CONTACT_EMAIL = 'info@kothariit.com';
 const display = "font-['Cormorant_Garamond',Georgia,serif]";
+const EASE = [0.23, 1, 0.32, 1] as const;
 
-const IMG = {
-  hero: '/42249ea0-d991-43cd-ab3a-09084d8b829f.jpg',
-  bridal: '/78ca5a4c-1b01-4e4f-9196-50934d1ac47c.jpg',
-  a: '/5f2ce6fe-ae11-47f6-bdd7-492c795e26db.jpg',
-  b: '/1b9349e0-3204-4747-9fdd-6f4f9d4ae1b2.jpg',
-  c: '/9060c6ae-43da-47e8-8157-2aa34f885062.jpg',
-  d: '/da864486-67e2-4b70-ab54-7d4cccabd89b.jpg',
-  e: '/d1067c91-5550-49a5-9a10-babd26de23d2.jpg',
-  f: '/b3114d75-2704-4097-998c-0ee579e1e09a.jpg'
-};
+/* Photography from Unsplash (credited in the footer), served at the size each slot needs. */
+const PHOTO = {
+  necklaceSet: ['https://images.unsplash.com/photo-1601121141461-9d6647bca1ed', 'Vaibhav Nagare'],
+  necklaceBust: ['https://images.unsplash.com/photo-1600862754152-80a263dd564f', 'Hiya Jewellery'],
+  kundanBracelet: ['https://images.unsplash.com/photo-1638617501607-5dfb8b079ebf', 'Hemant Latawa'],
+  pendant: ['https://images.unsplash.com/photo-1724937721228-f7bf3df2a4d8', 'One Carat Store'],
+  diamondRings: ['https://images.unsplash.com/photo-1583937443566-6fe1a1c6e400', 'engin akyurt'],
+  goldRings: ['https://images.unsplash.com/photo-1543294001-f7cd5d7fb516', 'Cornelia Ng'],
+  ringBox: ['https://images.unsplash.com/photo-1605100804763-247f67b3557e', 'Sabrianna'],
+  earrings: ['https://images.unsplash.com/photo-1665159882377-385d68d2bdff', 'Mahbod Akhzami'],
+  bride: ['https://images.unsplash.com/photo-1625139108082-48bb424c2333', 'rajat sarki'],
+  bride2: ['https://images.unsplash.com/photo-1610173826014-d131b02d69ca', 'Alok Verma']
+} as const;
+const img = (key: keyof typeof PHOTO, w: number) => `${PHOTO[key][0]}?auto=format&fit=crop&q=80&w=${w}`;
+
+const shot = (id: string) => `/kit/templates/${id}.jpg`;
 
 /** Marks the element visible the first time it scrolls into view — never re-animates. */
 function useReveal<T extends HTMLElement>() {
@@ -82,10 +102,34 @@ function Reveal({
 
 }
 
+/** Counts up from zero the first time it is seen. */
+function Count({ to, suffix = '' }: {to: number;suffix?: string;}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const seen = useInView(ref, { once: true, margin: '-60px' });
+  const reduce = useReducedMotion();
+  useEffect(() => {
+    const el = ref.current;
+    if (!seen || !el) return;
+    if (reduce) {
+      el.textContent = `${to}${suffix}`;
+      return;
+    }
+    const controls = animate(0, to, {
+      duration: 1.6,
+      ease: EASE,
+      onUpdate: (v) => {
+        el.textContent = `${Math.round(v)}${suffix}`;
+      }
+    });
+    return () => controls.stop();
+  }, [seen, to, suffix, reduce]);
+  return <span ref={ref}>0{suffix}</span>;
+}
+
 const NAV = [
+['Templates', '#templates'],
 ['Features', '#features'],
 ['Showcase', '#showcase'],
-['How it works', '#how'],
 ['Plans', '#plans'],
 ['FAQ', '#faq']];
 
@@ -101,7 +145,7 @@ const FEATURES: [LucideIcon, string, string][] = [
 
 const STEPS: [string, string, string][] = [
 ['01', 'Tell us about your store', 'Your shop name, city, speciality and the look you love. That is all we need to begin.'],
-['02', 'We design it for you', 'Your website is generated with your brand, colours and copy, then polished by our team.'],
+['02', 'We design it for you', 'Pick from 16 templates. Your site is built with your brand, colours and copy, then polished by our team.'],
 ['03', 'Go live & grow', 'Connect your domain, share the link on WhatsApp and Instagram, and watch enquiries arrive.']];
 
 
@@ -113,7 +157,7 @@ const PLANS: {name: string;period: string;note: string;featured?: boolean;}[] = 
 
 const PLAN_INCLUDES = [
 'Complete jewellery website',
-'AI-written headlines & content',
+'Choice of 16 designer templates',
 'Custom domain + free HTTPS',
 'Leads & enquiry desk',
 'Editor access + support'];
@@ -123,7 +167,7 @@ const FAQS: [string, string][] = [
 ['Do I need any technical knowledge?', 'No. We set up the website for you. Afterwards you can edit text and photos from a simple editor, or simply message us and we will do it.'],
 ['Can I use my existing domain?', 'Yes. Point your domain to us with two DNS records — we share the exact steps — and HTTPS is switched on automatically.'],
 ['What happens when my plan ends?', 'Your website pauses and shows a polite “back soon” page. Nothing is deleted — renew and everything is restored instantly.'],
-['Can I change the design later?', 'Anytime. Colours, fonts, sections, photos and wording can all be changed whenever you like.']];
+['Can I change the design later?', 'Anytime. Switch to any of the 16 templates, or change colours, fonts, sections, photos and wording whenever you like.']];
 
 
 const MARQUEE = ['Bridal sets', 'Polki', 'Kundan', 'Solitaires', 'Temple jewellery', 'Gold bangles', 'Diamond rings', 'Silver', 'Mangalsutra', 'Jhumkas'];
@@ -138,9 +182,254 @@ const goldBtn =
 const ghostBtn =
 'kit-cta inline-flex items-center justify-center gap-2 rounded-full border border-[#f3e6c8]/25 px-6 py-3 text-sm font-semibold text-[#f3e6c8] hover:bg-white/5';
 
+/* ================================================================== hero */
+
+function useDepth(sx: MotionValue<number>, sy: MotionValue<number>, d: number) {
+  return { x: useTransform(sx, (v) => v * -d), y: useTransform(sy, (v) => v * -d) };
+}
+
+function HeroScene() {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness: 60, damping: 18 });
+  const sy = useSpring(my, { stiffness: 60, damping: 18 });
+  const rotY = useTransform(sx, [-0.5, 0.5], [10, -10]);
+  const rotX = useTransform(sy, [-0.5, 0.5], [-7, 7]);
+  // Each layer drifts by its own depth — the near jewels move most.
+  const near = useDepth(sx, sy, 46);
+  const mid = useDepth(sx, sy, 26);
+  const far = useDepth(sx, sy, 12);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
+  const sceneY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '18%']);
+
+  useEffect(() => {
+    if (reduce || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const move = (e: PointerEvent) => {
+      mx.set(e.clientX / window.innerWidth - 0.5);
+      my.set(e.clientY / window.innerHeight - 0.5);
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    return () => window.removeEventListener('pointermove', move);
+  }, [mx, my, reduce]);
+
+  const enter = (delay: number) => ({
+    initial: { opacity: 0, transform: 'translateY(40px) scale(0.96)' },
+    animate: { opacity: 1, transform: 'translateY(0px) scale(1)' },
+    transition: { duration: 1.2, ease: EASE, delay }
+  });
+
+  return (
+    <motion.div ref={ref} style={{ y: sceneY }} className="relative mx-auto aspect-[5/4] w-full max-w-[40rem] [perspective:1600px]">
+      <motion.div style={{ rotateX: rotX, rotateY: rotY }} className="relative h-full w-full [transform-style:preserve-3d]">
+        {/* the site, in a browser */}
+        <motion.div style={far} className="absolute inset-x-[4%] top-[6%]">
+          <motion.div {...enter(0.2)} className="overflow-hidden rounded-2xl bg-[#241d16] shadow-[0_50px_120px_-30px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
+            <div className="flex items-center gap-1.5 px-3 py-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+              <span className="ml-3 flex flex-1 items-center gap-1.5 rounded-md bg-black/30 px-3 py-1 text-[11px] text-[#f3e6c8]/50">
+                <LockIcon className="h-3 w-3" />
+                yourjewellers.com
+              </span>
+            </div>
+            <img src={shot('royal')} alt="A jewellery website built with the Royal Heritage template" className="aspect-[16/10] w-full object-cover object-top" />
+          </motion.div>
+        </motion.div>
+
+        {/* the same platform, on a phone */}
+        <motion.div style={mid} className="absolute -bottom-[4%] right-[-2%] w-[30%]">
+          <motion.div {...enter(0.45)} className="rotate-[6deg] overflow-hidden rounded-[1.6rem] border-[6px] border-[#16120e] bg-black shadow-[0_40px_80px_-20px_rgb(0_0_0/0.8)]">
+            <img src={shot('m-celeste')} alt="The Celeste template on a phone" className="aspect-[500/1080] w-full object-cover object-top" />
+          </motion.div>
+        </motion.div>
+
+        {/* jewels floating in front */}
+        <motion.div style={near} className="absolute -left-[6%] bottom-[2%] w-[26%]">
+          <motion.div {...enter(0.6)}>
+            <div className="kit-float overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-[#e2c27d]/40 [animation-delay:-1s]">
+              <img src={img('ringBox', 420)} alt="" className="aspect-square w-full object-cover" />
+            </div>
+          </motion.div>
+        </motion.div>
+        <motion.div style={near} className="absolute -top-[6%] right-[8%] w-[20%]">
+          <motion.div {...enter(0.75)}>
+            <div className="kit-float overflow-hidden rounded-full shadow-2xl shadow-black/60 ring-1 ring-[#e2c27d]/40 [animation-delay:-3s]">
+              <img src={img('pendant', 360)} alt="" className="aspect-square w-full object-cover" />
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* little glass notes */}
+        <motion.div style={mid} className="absolute left-[2%] top-[-2%] hidden sm:block">
+          <motion.div {...enter(0.9)} className="kit-glass flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c9a45c]/25 text-[#e2c27d]"><SparklesIcon className="h-4 w-4" /></span>
+            16 designer templates
+          </motion.div>
+        </motion.div>
+        <motion.div style={mid} className="absolute bottom-[18%] left-[24%] hidden sm:block">
+          <motion.div {...enter(1.05)} className="kit-glass flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-400/20 text-green-300"><BarChart3Icon className="h-4 w-4" /></span>
+            New enquiry received
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    </motion.div>);
+
+}
+
+/* ============================================================ templates */
+
+function TemplateRail() {
+  const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  // the rows also slide with the scroll, on top of their own slow drift
+  const a = useTransform(scrollYProgress, [0, 1], ['4%', reduce ? '4%' : '-10%']);
+  const b = useTransform(scrollYProgress, [0, 1], ['-10%', reduce ? '-10%' : '4%']);
+  const list = TEMPLATES.filter((t) => t.id !== 'original');
+  const rows = [list.slice(0, 8), list.slice(8)];
+
+  return (
+    <section ref={ref} id="templates" className="scroll-mt-20 overflow-hidden bg-[#16120e] py-24 text-[#f3e6c8] sm:py-32">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <Reveal className="flex flex-wrap items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#e2c27d]">16 designer templates</p>
+            <h2 className={`${display} mt-3 text-4xl font-medium sm:text-6xl`}>
+              One for every kind of <span className="italic text-[#e2c27d]">jeweller</span>
+            </h2>
+          </div>
+          <p className="max-w-sm text-sm text-[#f3e6c8]/60">
+            Each one moves differently — orbiting jewels, velvet curtains, glass vitrines, a card stack. Pick yours; your colours,
+            photos and words go in.
+          </p>
+        </Reveal>
+      </div>
+
+      <div className="kit-marquee-wrap mt-16 space-y-6">
+        {rows.map((row, r) =>
+        <motion.div key={r} style={{ x: r ? b : a }}>
+            <div className={`kit-marquee flex w-max gap-6 ${r ? '[animation-direction:reverse]' : ''}`} style={{ animationDuration: '90s' }}>
+              {[...row, ...row].map((t, i) =>
+            <figure key={`${t.id}-${i}`} className="kit-tile group relative w-[300px] shrink-0 sm:w-[420px]">
+                  <div className="overflow-hidden rounded-xl bg-[#241d16] ring-1 ring-white/10">
+                    <div className="flex items-center gap-1 px-2.5 py-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                    </div>
+                    <div className="overflow-hidden">
+                      <img src={shot(t.id)} alt={`${t.name} template`} loading="lazy" className="kit-tile-img aspect-[16/10] w-full object-cover object-top" />
+                    </div>
+                  </div>
+                  <figcaption className="mt-3 flex items-baseline justify-between gap-3">
+                    <span className={`${display} text-2xl`}>{t.name}</span>
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-[#f3e6c8]/45">{t.mode} · {t.layout.hero.replace('story-', '')}</span>
+                  </figcaption>
+                </figure>
+            )}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </section>);
+
+}
+
+/* ====================================================== feature card glow */
+
+function SpotCard({ children }: {children: React.ReactNode;}) {
+  return (
+    <div
+      onPointerMove={(e) => {
+        const box = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--x', `${e.clientX - box.left}px`);
+        e.currentTarget.style.setProperty('--y', `${e.clientY - box.top}px`);
+      }}
+      className="kit-spot kit-lift group h-full rounded-2xl border border-[#1c1712]/10 bg-white p-7">
+
+      {children}
+    </div>);
+
+}
+
+/* ====================================================== how it works */
+
+function Steps() {
+  const ref = useRef<HTMLOListElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 80%', 'end 60%'] });
+  const line = useSpring(scrollYProgress, { stiffness: 90, damping: 24 });
+  return (
+    <ol ref={ref} className="relative mt-16 grid gap-6 md:grid-cols-3">
+      <span aria-hidden className="absolute left-0 right-0 top-10 hidden h-px bg-[#1c1712]/10 md:block" />
+      <motion.span
+        aria-hidden
+        style={{ scaleX: line }}
+        className="absolute left-0 right-0 top-10 hidden h-px origin-left bg-gradient-to-r from-[#e2c27d] via-[#c9a45c] to-[#a8823a] md:block" />
+
+      {STEPS.map(([n, title, text], i) =>
+      <Reveal key={n} as="li" delay={i * 140} className="relative">
+          <div className="kit-lift h-full rounded-2xl border border-[#1c1712]/10 bg-white p-7 text-center">
+            <span className={`${display} mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#16120e] text-2xl text-[#e2c27d] ring-8 ring-[#f7f4ee]`}>
+              {n}
+            </span>
+            <h3 className={`${display} mt-5 text-2xl font-semibold`}>{title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#1c1712]/60">{text}</p>
+          </div>
+        </Reveal>
+      )}
+    </ol>);
+
+}
+
+/* ============================================================== CTA */
+
+function ContactBand() {
+  const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const y = useTransform(scrollYProgress, [0, 1], ['-12%', reduce ? '-12%' : '12%']);
+  return (
+    <section ref={ref} id="contact" className="scroll-mt-20 px-5 pb-24 sm:px-8">
+      <Reveal className="mx-auto max-w-7xl">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#16120e] px-8 py-20 text-center text-[#f3e6c8] sm:px-16 sm:py-28">
+          <motion.img style={{ y }} src={img('bride2', 1800)} alt="" aria-hidden className="absolute inset-0 h-[125%] w-full object-cover object-[50%_30%] opacity-45" />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-[#16120e] via-[#16120e]/75 to-[#3a2c18]/40" />
+          <div className="relative">
+            <StoreIcon className="mx-auto h-10 w-10 text-[#e2c27d]" />
+            <h2 className={`${display} mx-auto mt-5 max-w-2xl text-4xl font-medium sm:text-6xl`}>Let’s put your showroom online</h2>
+            <p className="mx-auto mt-4 max-w-lg text-[#f3e6c8]/70">Tell us your store name and city — we will send you a preview of your website.</p>
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
+              <Magnetic>
+                <a href={quote()} className={goldBtn}>
+                  <MailIcon className="h-4 w-4" />
+                  {CONTACT_EMAIL}
+                </a>
+              </Magnetic>
+              <Magnetic>
+                <a href="/?site=giriraj" target="_blank" rel="noreferrer" className={ghostBtn}>
+                  <RocketIcon className="h-4 w-4" />
+                  See a live example
+                </a>
+              </Magnetic>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </section>);
+
+}
+
+/* ============================================================== page */
+
 export function PlatformHome() {
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
 
   useEffect(() => {
     const prev = document.title;
@@ -156,10 +445,12 @@ export function PlatformHome() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-[#f7f4ee] font-['Inter',system-ui,sans-serif] text-[#1c1712] [scroll-behavior:smooth]">
+      <motion.div aria-hidden style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-[#e2c27d] to-[#a8823a]" />
+
       {/* ---------- nav ---------- */}
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow] duration-300 ${
-        scrolled || menu ? 'bg-[#16120e]/90 shadow-lg shadow-black/20 backdrop-blur-md' : 'bg-transparent'}`
+        scrolled || menu ? 'bg-[#16120e]/75 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150' : 'bg-transparent'}`
         }>
 
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
@@ -174,18 +465,16 @@ export function PlatformHome() {
           </a>
           <nav className="hidden items-center gap-8 md:flex">
             {NAV.map(([name, href]) =>
-            <a key={href} href={href} className="text-sm text-[#f3e6c8]/70 transition-colors duration-200 hover:text-[#e2c27d]">
+            <a key={href} href={href} className="tpl-nav-link text-sm text-[#f3e6c8]/70 hover:text-[#e2c27d]">
                 {name}
               </a>
             )}
           </nav>
           <div className="hidden items-center gap-3 md:flex">
-            <a href="/admin-login" className="text-sm font-medium text-[#f3e6c8]/80 hover:text-white">
-              Login
-            </a>
-            <a href="#contact" className={`${goldBtn} px-5 py-2.5`}>
-              Get your website
-            </a>
+            <a href="/admin-login" className="text-sm font-medium text-[#f3e6c8]/80 hover:text-white">Login</a>
+            <Magnetic>
+              <a href="#contact" className={`${goldBtn} px-5 py-2.5`}>Get your website</a>
+            </Magnetic>
           </div>
           <button
             type="button"
@@ -204,52 +493,51 @@ export function PlatformHome() {
                 {name}
               </a>
           )}
-            <a href="#contact" onClick={() => setMenu(false)} className={`${goldBtn} mt-2`}>
-              Get your website
-            </a>
+            <a href="#contact" onClick={() => setMenu(false)} className={`${goldBtn} mt-2`}>Get your website</a>
           </nav>
         }
       </header>
 
       {/* ---------- hero ---------- */}
-      <section id="top" className="relative overflow-hidden bg-[#16120e] pb-24 pt-32 text-[#f3e6c8] sm:pt-40">
-        <div aria-hidden className="pointer-events-none absolute -left-40 top-10 h-[32rem] w-[32rem] rounded-full bg-[#c9a45c]/15 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-[#7a5a2a]/25 blur-3xl" />
+      <section id="top" className="relative overflow-hidden bg-[#16120e] pb-28 pt-32 text-[#f3e6c8] sm:pt-40">
+        <div aria-hidden className="kit-aurora pointer-events-none absolute inset-0" />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(#e2c27d_1px,transparent_1px)] [background-size:28px_28px]" />
+          className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(#e2c27d_1px,transparent_1px)] [background-size:28px_28px]" />
 
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.05fr_1fr]">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-5 sm:px-8 lg:grid-cols-[1fr_1.1fr]">
           <div>
             <Reveal>
               <span className="inline-flex items-center gap-2 rounded-full border border-[#e2c27d]/30 bg-[#e2c27d]/10 px-3.5 py-1.5 text-xs font-medium text-[#e2c27d]">
-                <SparklesIcon className="h-3.5 w-3.5" />
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e2c27d]" />
                 The website platform built for jewellers
               </span>
             </Reveal>
             <Reveal delay={80}>
-              <h1 className={`${display} mt-6 text-5xl font-medium leading-[1.02] sm:text-6xl lg:text-7xl`}>
+              <h1 className={`${display} mt-6 text-5xl font-medium leading-[1.02] sm:text-6xl lg:text-[5.25rem]`}>
                 Your jewellery store,{' '}
-                <span className="bg-gradient-to-r from-[#f1d898] via-[#d4ae64] to-[#a8823a] bg-clip-text italic text-transparent">
+                <span className="kit-shine bg-gradient-to-r from-[#f1d898] via-[#fff3d1] to-[#a8823a] bg-clip-text italic text-transparent">
                   beautifully online
                 </span>
               </h1>
             </Reveal>
             <Reveal delay={160}>
               <p className="mt-6 max-w-xl text-base leading-relaxed text-[#f3e6c8]/65 sm:text-lg">
-                A luxury website for your showroom — designed, written and launched for you. Your colours, your
-                collections, your domain. Ready to share in a day.
+                A luxury website for your showroom — designed, written and launched for you. Sixteen designer templates, your
+                colours, your collections, your domain. Ready to share in a day.
               </p>
             </Reveal>
             <Reveal delay={240} className="mt-9 flex flex-wrap gap-3">
-              <a href="#contact" className={goldBtn}>
-                Get your website
-                <ArrowRightIcon className="h-4 w-4" />
-              </a>
-              <a href="/?site=giriraj" target="_blank" rel="noreferrer" className={ghostBtn}>
-                See a live store
-              </a>
+              <Magnetic>
+                <a href="#contact" className={goldBtn}>
+                  Get your website
+                  <ArrowRightIcon className="h-4 w-4" />
+                </a>
+              </Magnetic>
+              <Magnetic>
+                <a href="#templates" className={ghostBtn}>See the templates</a>
+              </Magnetic>
             </Reveal>
             <Reveal delay={320} className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-[#f3e6c8]/60">
               {['Live in 24 hours', 'Free HTTPS', 'Mobile-first design'].map((t) =>
@@ -261,44 +549,7 @@ export function PlatformHome() {
             </Reveal>
           </div>
 
-          {/* browser mockup */}
-          <Reveal delay={200} className="relative">
-            <div className="kit-float relative rounded-2xl bg-[#241d16] p-2 shadow-2xl shadow-black/50 ring-1 ring-white/10">
-              <div className="flex items-center gap-1.5 px-3 py-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                <span className="ml-3 flex flex-1 items-center gap-1.5 rounded-md bg-black/30 px-3 py-1 text-[11px] text-[#f3e6c8]/50">
-                  <LockIcon className="h-3 w-3" />
-                  yourjewellers.com
-                </span>
-              </div>
-              <div className="relative overflow-hidden rounded-xl">
-                <img src={IMG.hero} alt="" className="aspect-[4/3] w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6">
-                  <p className="text-[10px] uppercase tracking-[0.25em] text-[#e2c27d]">The Bridal Edit</p>
-                  <p className={`${display} mt-1 text-3xl text-white`}>Crafted for your forever</p>
-                </div>
-              </div>
-            </div>
-            <div className="kit-float absolute -bottom-6 -left-6 hidden rounded-xl bg-white p-3 text-[#1c1712] shadow-xl sm:block [animation-delay:-2s]">
-              <p className="flex items-center gap-2 text-xs font-semibold">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c9a45c]/15 text-[#a8823a]">
-                  <SparklesIcon className="h-4 w-4" />
-                </span>
-                Content written by AI
-              </p>
-            </div>
-            <div className="kit-float absolute -right-4 -top-5 hidden rounded-xl bg-white p-3 text-[#1c1712] shadow-xl sm:block [animation-delay:-4s]">
-              <p className="flex items-center gap-2 text-xs font-semibold">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-100 text-green-700">
-                  <BarChart3Icon className="h-4 w-4" />
-                </span>
-                New enquiry received
-              </p>
-            </div>
-          </Reveal>
+          <HeroScene />
         </div>
       </section>
 
@@ -314,6 +565,27 @@ export function PlatformHome() {
         </div>
       </div>
 
+      {/* ---------- numbers ---------- */}
+      <section className="border-b border-[#1c1712]/10 bg-[#f7f4ee] py-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-5 sm:px-8 lg:grid-cols-4">
+          {[
+          [16, '', 'Designer templates'],
+          [40, '+', 'Colour palettes'],
+          [24, 'h', 'From brief to live'],
+          [100, '%', 'Mobile-first']].
+          map(([n, s, label], i) =>
+          <Reveal key={String(label)} delay={i * 90} className="text-center">
+              <p className={`${display} text-6xl font-medium text-[#1c1712] sm:text-7xl`}>
+                <Count to={Number(n)} suffix={String(s)} />
+              </p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#a8823a]">{label}</p>
+            </Reveal>
+          )}
+        </div>
+      </section>
+
+      <TemplateRail />
+
       {/* ---------- features ---------- */}
       <section id="features" className="scroll-mt-20 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -321,20 +593,20 @@ export function PlatformHome() {
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">Everything included</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Built for how jewellery sells</h2>
             <p className="mt-4 text-[#1c1712]/60">
-              Not a generic template. Every part is made for showrooms, bridal collections and customers who want to
-              visit in person.
+              Not a generic template. Every part is made for showrooms, bridal collections and customers who want to visit in
+              person.
             </p>
           </Reveal>
           <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(([Icon, title, text], i) =>
             <Reveal key={title} as="article" delay={i % 3 * 80}>
-                <div className="kit-lift group h-full rounded-2xl border border-[#1c1712]/10 bg-white p-7">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#16120e] text-[#e2c27d] transition-transform duration-300 [transition-timing-function:var(--ease-out)] group-hover:-rotate-6">
+                <SpotCard>
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-[#16120e] text-[#e2c27d] transition-transform duration-300 [transition-timing-function:var(--ease-out)] group-hover:-rotate-6 group-hover:scale-110">
                     <Icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${display} mt-5 text-2xl font-semibold`}>{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[#1c1712]/60">{text}</p>
-                </div>
+                  <h3 className={`${display} relative mt-5 text-2xl font-semibold`}>{title}</h3>
+                  <p className="relative mt-2 text-sm leading-relaxed text-[#1c1712]/60">{text}</p>
+                </SpotCard>
               </Reveal>
             )}
           </div>
@@ -347,29 +619,35 @@ export function PlatformHome() {
           <div className="flex flex-wrap items-end justify-between gap-6">
             <Reveal className="max-w-xl">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">Showcase</p>
-              <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Websites that feel like your showroom</h2>
+              <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Your pieces, shown the way they deserve</h2>
             </Reveal>
             <Reveal delay={100}>
               <a href="/?site=giriraj" target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2 text-sm font-semibold text-[#8a6a2c]">
-                Visit Giriraj Jewellers
+                Visit a live store
                 <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
             </Reveal>
           </div>
 
-          <div className="mt-14 grid gap-5 md:grid-cols-6 md:grid-rows-2">
+          <div className="mt-14 grid grid-flow-dense auto-rows-[200px] grid-cols-2 gap-4 md:grid-cols-4 md:auto-rows-[230px]">
             {[
-            { src: IMG.bridal, label: 'Bridal collections', cls: 'md:col-span-3 md:row-span-2 aspect-[4/5] md:aspect-auto' },
-            { src: IMG.a, label: 'Product catalogue', cls: 'md:col-span-3 aspect-[16/9]' },
-            { src: IMG.e, label: 'Featured pieces', cls: 'md:col-span-2 aspect-square' },
-            { src: IMG.f, label: 'Gallery', cls: 'md:col-span-1 aspect-square' }].
+            { k: 'necklaceSet' as const, label: 'Bridal sets', cls: 'col-span-2 row-span-2' },
+            { k: 'ringBox' as const, label: 'Engagement rings', cls: '' },
+            { k: 'kundanBracelet' as const, label: 'Kundan & polki', cls: '' },
+            { k: 'bride' as const, label: 'As worn', cls: 'row-span-2' },
+            { k: 'earrings' as const, label: 'Earrings', cls: '' },
+            { k: 'necklaceBust' as const, label: 'Temple gold', cls: 'col-span-2' },
+            { k: 'goldRings' as const, label: 'Gold & diamonds', cls: 'col-span-2 md:col-span-1' }].
             map((tile, i) =>
-            <Reveal key={tile.label} unveil delay={i * 120} className={`${tile.cls} relative`}>
-                <a href="/?site=giriraj" target="_blank" rel="noreferrer" className="kit-zoom group relative block h-full overflow-hidden rounded-2xl">
-                  <img src={tile.src} alt={tile.label} loading="lazy" className="h-full w-full object-cover" />
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-                  <span className={`${display} absolute bottom-4 left-5 text-xl text-white`}>{tile.label}</span>
-                </a>
+            <Reveal key={tile.k} unveil delay={i * 110} className={`${tile.cls} relative`}>
+                <figure className="kit-zoom group relative h-full overflow-hidden rounded-2xl">
+                  <img src={img(tile.k, 900)} alt={tile.label} loading="lazy" className="h-full w-full object-cover" />
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
+                  <figcaption className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
+                    <span className={`${display} text-2xl text-white transition-transform duration-500 [transition-timing-function:var(--ease-out)] group-hover:-translate-y-1`}>{tile.label}</span>
+                    <ArrowRightIcon className="h-5 w-5 -translate-x-2 text-[#e2c27d] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
+                  </figcaption>
+                </figure>
               </Reveal>
             )}
           </div>
@@ -383,10 +661,10 @@ export function PlatformHome() {
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {PALETTES.slice(0, 12).map((p, i) =>
             <Reveal key={p.id} delay={i % 6 * 50}>
-                <div className="kit-lift rounded-xl border border-[#1c1712]/10 bg-white p-2.5">
+                <div className="kit-lift group rounded-xl border border-[#1c1712]/10 bg-white p-2.5">
                   <div className="flex h-16 overflow-hidden rounded-lg">
                     {[p.colors.accent, p.colors.accentDeep, p.colors.gold, p.colors.sand, p.colors.cream].map((c, j) =>
-                  <span key={j} className="flex-1" style={{ background: c }} />
+                  <span key={j} className="flex-1 transition-[flex-grow] duration-500 group-hover:[&:nth-child(3)]:flex-[2.2]" style={{ background: c }} />
                   )}
                   </div>
                   <p className="mt-2 truncate px-0.5 text-xs font-medium">{p.name}</p>
@@ -404,20 +682,7 @@ export function PlatformHome() {
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">How it works</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>From showroom to online in three steps</h2>
           </Reveal>
-          <ol className="relative mt-16 grid gap-6 md:grid-cols-3">
-            <span aria-hidden className="absolute left-0 right-0 top-10 hidden h-px bg-gradient-to-r from-transparent via-[#c9a45c]/50 to-transparent md:block" />
-            {STEPS.map(([n, title, text], i) =>
-            <Reveal key={n} as="li" delay={i * 120} className="relative">
-                <div className="kit-lift h-full rounded-2xl border border-[#1c1712]/10 bg-white p-7 text-center">
-                  <span className={`${display} mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#16120e] text-2xl text-[#e2c27d] ring-8 ring-[#f7f4ee]`}>
-                    {n}
-                  </span>
-                  <h3 className={`${display} mt-5 text-2xl font-semibold`}>{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[#1c1712]/60">{text}</p>
-                </div>
-              </Reveal>
-            )}
-          </ol>
+          <Steps />
         </div>
       </section>
 
@@ -435,9 +700,7 @@ export function PlatformHome() {
             <Reveal key={plan.name} delay={i * 100}>
                 <div
                 className={`kit-lift relative flex h-full flex-col rounded-2xl p-8 ${
-                plan.featured ?
-                'border border-[#e2c27d]/60 bg-gradient-to-b from-[#2c241b] to-[#1c1712]' :
-                'border border-white/10 bg-white/[0.03]'}`
+                plan.featured ? 'kit-border-glow border border-[#e2c27d]/60 bg-gradient-to-b from-[#2c241b] to-[#1c1712]' : 'border border-white/10 bg-white/[0.03]'}`
                 }>
 
                   {plan.featured &&
@@ -457,9 +720,7 @@ export function PlatformHome() {
                   )}
                   </ul>
                   <div className="flex-1" />
-                  <a href={quote(plan.name)} className={`${plan.featured ? goldBtn : ghostBtn} mt-10 w-full`}>
-                    Get pricing
-                  </a>
+                  <a href={quote(plan.name)} className={`${plan.featured ? goldBtn : ghostBtn} mt-10 w-full`}>Get pricing</a>
                 </div>
               </Reveal>
             )}
@@ -475,9 +736,7 @@ export function PlatformHome() {
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Questions jewellers ask us</h2>
             <p className="mt-4 text-[#1c1712]/60">
               Anything else? Write to{' '}
-              <a href={quote()} className="font-medium text-[#8a6a2c] underline-offset-4 hover:underline">
-                {CONTACT_EMAIL}
-              </a>
+              <a href={quote()} className="font-medium text-[#8a6a2c] underline-offset-4 hover:underline">{CONTACT_EMAIL}</a>
             </p>
           </Reveal>
           <div className="space-y-3">
@@ -496,34 +755,7 @@ export function PlatformHome() {
         </div>
       </section>
 
-      {/* ---------- contact CTA ---------- */}
-      <section id="contact" className="scroll-mt-20 px-5 pb-24 sm:px-8">
-        <Reveal className="mx-auto max-w-7xl">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#16120e] px-8 py-16 text-center text-[#f3e6c8] sm:px-16 sm:py-20">
-            <img src={IMG.d} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-20" />
-            <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-[#16120e] via-[#16120e]/80 to-[#3a2c18]/70" />
-            <div className="relative">
-              <StoreIcon className="mx-auto h-10 w-10 text-[#e2c27d]" />
-              <h2 className={`${display} mx-auto mt-5 max-w-2xl text-4xl font-medium sm:text-6xl`}>
-                Let’s put your showroom online
-              </h2>
-              <p className="mx-auto mt-4 max-w-lg text-[#f3e6c8]/65">
-                Tell us your store name and city — we will send you a preview of your website.
-              </p>
-              <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <a href={quote()} className={goldBtn}>
-                  <MailIcon className="h-4 w-4" />
-                  {CONTACT_EMAIL}
-                </a>
-                <a href="/?site=giriraj" target="_blank" rel="noreferrer" className={ghostBtn}>
-                  <RocketIcon className="h-4 w-4" />
-                  See a live example
-                </a>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </section>
+      <ContactBand />
 
       {/* ---------- footer ---------- */}
       <footer className="border-t border-[#1c1712]/10 py-10">
@@ -533,14 +765,13 @@ export function PlatformHome() {
             © {new Date().getFullYear()} Kothari IT. Websites for jewellers.
           </p>
           <div className="flex gap-6">
-            <a href={quote()} className="hover:text-[#1c1712]">
-              Contact
-            </a>
-            <a href="/admin-login" className="hover:text-[#1c1712]">
-              Client login
-            </a>
+            <a href={quote()} className="hover:text-[#1c1712]">Contact</a>
+            <a href="/admin-login" className="hover:text-[#1c1712]">Client login</a>
           </div>
         </div>
+        <p className="mx-auto mt-6 max-w-7xl px-5 text-[11px] text-[#1c1712]/40 sm:px-8">
+          Photography on Unsplash by {Object.values(PHOTO).map(([, name]) => name).join(', ')}.
+        </p>
       </footer>
     </div>);
 
