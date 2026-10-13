@@ -21,7 +21,6 @@ import {
   MenuIcon,
   PaletteIcon,
   PencilRulerIcon,
-  RocketIcon,
   SmartphoneIcon,
   SparklesIcon,
   StoreIcon,
@@ -409,12 +408,6 @@ function ContactBand() {
                   {CONTACT_EMAIL}
                 </a>
               </Magnetic>
-              <Magnetic>
-                <a href="/?site=giriraj" target="_blank" rel="noreferrer" className={ghostBtn}>
-                  <RocketIcon className="h-4 w-4" />
-                  See a live example
-                </a>
-              </Magnetic>
             </div>
           </div>
         </div>
@@ -619,12 +612,6 @@ export function PlatformHome() {
             <Reveal className="max-w-xl">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">Showcase</p>
               <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Your pieces, shown the way they deserve</h2>
-            </Reveal>
-            <Reveal delay={100}>
-              <a href="/?site=giriraj" target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2 text-sm font-semibold text-[#8a6a2c]">
-                Visit a live store
-                <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </a>
             </Reveal>
           </div>
 
