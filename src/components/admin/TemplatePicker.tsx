@@ -158,15 +158,19 @@ function Sketch({ t, c }: {t: TemplateDef;c: ThemeColors;}) {
 export function TemplatePicker({
   value,
   colors,
-  onChange
+  onChange,
+  taken = {}
 
 
 
-}: {value: TemplateId;colors?: ThemeColors;onChange: (id: TemplateId) => void;}) {
+}: {value: TemplateId;colors?: ThemeColors;onChange: (id: TemplateId) => void;
+  /** Templates other clients own, by id -> client name. They are shown but cannot be picked. */
+  taken?: Record<string, string>;}) {
   return (
     <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
       {TEMPLATES.map((t) => {
         const active = t.id === value;
+        const owner = active ? undefined : taken[t.id];
         // Each card is painted in its own suggested colours, the look you get by choosing it.
         const c = colors && t.id === 'original' ? colors : (PALETTES.find((p) => p.id === t.palette) ?? PALETTES[0]).colors;
         return (
@@ -174,10 +178,18 @@ export function TemplatePicker({
             key={t.id}
             type="button"
             onClick={() => onChange(t.id)}
+            disabled={Boolean(owner)}
             aria-pressed={active}
-            className={`group relative overflow-hidden rounded-lg border text-left transition-[border-color,box-shadow,transform] duration-200 ${
-            active ? 'border-[#b8913f] ring-2 ring-[#b8913f]/25' : 'border-slate-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md'}`
+            title={owner ? `Already used by ${owner}` : undefined}
+            className={`group relative overflow-hidden rounded-lg border text-left transition-[border-color,box-shadow,transform] duration-200 disabled:cursor-not-allowed disabled:opacity-45 ${
+            active ? 'border-[#b8913f] ring-2 ring-[#b8913f]/25' : 'border-slate-200 enabled:hover:-translate-y-0.5 enabled:hover:border-slate-300 enabled:hover:shadow-md'}`
             }>
+
+            {owner &&
+            <span className="absolute right-2 top-2 z-10 max-w-[80%] truncate rounded bg-slate-900/85 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
+                Taken · {owner}
+              </span>
+            }
 
             <div className="h-24 overflow-hidden">
               <Sketch t={t} c={c} />

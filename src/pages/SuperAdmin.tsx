@@ -27,6 +27,7 @@ import {
   createTenant,
   deleteTenant,
   fetchAccount,
+  fetchTemplatesInUse,
   fetchTenants,
   refreshTenantPhotos,
   rewriteTenantCopy,
@@ -549,6 +550,30 @@ function AddClient({
   const [paletteId, setPaletteId] = useState(() => TEMPLATES.find((t) => t.id === 'royal')?.palette ?? 'auto');
   const [fontId, setFontId] = useState(() => TEMPLATES.find((t) => t.id === 'royal')?.font ?? FONT_PAIRS[0]?.id ?? '');
   const [templateId, setTemplateId] = useState<TemplateId>('royal');
+  const [taken, setTaken] = useState<Record<string, string>>({});
+
+  // Each template belongs to one client: show who has which, and start on a free one.
+  useEffect(() => {
+    let cancelled = false;
+    void fetchTemplatesInUse(backend).then(
+      (inUse) => {
+        if (cancelled) return;
+        setTaken(Object.fromEntries(Object.entries(inUse).map(([id, t]) => [id, t.name])));
+        const free = TEMPLATES.find((t) => t.id !== 'original' && !inUse[t.id]);
+        if (free && inUse[templateId]) {
+          setTemplateId(free.id);
+          setPaletteId(free.palette);
+          setFontId(free.font);
+        }
+      },
+      // Without the list the picker still works; the server refuses a taken template anyway.
+      () => setTaken({})
+    );
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backend]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -661,6 +686,7 @@ function AddClient({
             <span className={label}>Website template</span>
             <TemplatePicker
               value={templateId}
+              taken={taken}
               onChange={(id) => {
                 // Each template comes with a suggested look — still changeable just below.
                 const def = TEMPLATES.find((t) => t.id === id);

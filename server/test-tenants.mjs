@@ -72,6 +72,19 @@ try {
   const unversioned = await call('PUT', '/content', { token: client.json.token, body: { content: loaded.json.content } });
   assert.equal(unversioned.status, 409, 'a save that names no version must be refused');
 
+  // Templates belong to the platform: a new client gets a free one of its own, the client
+  // cannot change it, and the super admin cannot hand out one another client is using.
+  const own = (await call('GET', '/content', { token: client.json.token })).json;
+  const ownTemplate = own.content.theme.templateId;
+  assert.ok(ownTemplate && ownTemplate !== 'original', 'a new client gets its own template');
+  const tampered = { ...own.content, theme: { ...own.content.theme, templateId: ownTemplate === 'royal' ? 'modern' : 'royal' } };
+  assert.equal((await call('PUT', '/content', { token: client.json.token, body: { content: tampered, baseVersion: own.version } })).status, 200);
+  const after = (await call('GET', '/content', { token: client.json.token })).json;
+  assert.equal(after.content.theme.templateId, ownTemplate, 'a client cannot change its template');
+  const stolen = { ...after.content, theme: { ...after.content.theme, templateId: 'original' } };
+  const steal = await call('PUT', '/content', { token: superToken, site: slug, body: { content: stolen, baseVersion: after.version } });
+  assert.equal(steal.status, 409, "another client's template cannot be assigned");
+
   // Expired -> site and client login both stop; super admin can still support it.
   await call('PATCH', `/super/tenants/${id}`, { token: superToken, body: { expiresAt: '2020-01-01' } });
   assert.equal((await call('GET', '/content', { site: slug })).status, 402);

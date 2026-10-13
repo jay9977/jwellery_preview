@@ -223,6 +223,31 @@ async function withTenant(req, res, next) {
   }
 }
 
+/* ---------- templates: each design belongs to one client ---------- */
+
+// Content saved before templates existed has no id: that is the original design.
+const templateOf = (theme) => (theme && typeof theme === 'object' && theme.templateId) || 'original';
+
+/** templateId -> the client using it, for every client except `exceptTenantId`. */
+async function templatesInUse(exceptTenantId) {
+  const [rows, tenants] = await Promise.all([
+  prisma.globalSetting.findMany({ where: { key: 'theme' }, select: { tenantId: true, data: true } }),
+  prisma.tenant.findMany({ select: { id: true, name: true, slug: true } })]
+  );
+  const byId = new Map(tenants.map((t) => [t.id, t]));
+  const used = new Map();
+  for (const row of rows) {
+    if (row.tenantId === exceptTenantId || !byId.has(row.tenantId)) continue;
+    used.set(templateOf(row.data), byId.get(row.tenantId));
+  }
+  return used;
+}
+
+async function storedTemplate(tenantId) {
+  const row = await prisma.globalSetting.findUnique({ where: { tenantId_key: { tenantId, key: 'theme' } } });
+  return row ? templateOf(row.data) : undefined;
+}
+
 /** Signed-in route on one client's data: auth, then the tenant. */
 const tenantAuth = [requireAuth, withTenant];
 
@@ -337,6 +362,21 @@ app.put('/api/content', writeLimiter, requireAuth, requireRole('admin', 'superad
           error: 'This website was changed somewhere else since you opened it. Reload the editor to get the latest version before editing.',
           conflict: true
         });
+      }
+    }
+    // The template is chosen by the platform, never by the client: a client's save always
+    // keeps the template already on record (an import or an old version cannot change it),
+    // and the super admin may only pick a template no other client is using.
+    if (content && typeof content === 'object' && content.theme && typeof content.theme === 'object') {
+      const current = await storedTemplate(req.tenant.id);
+      if (req.admin.role !== 'superadmin') {
+        if (current === undefined || current === 'original') delete content.theme.templateId;
+        else content.theme.templateId = current;
+      } else if (templateOf(content.theme) !== (current ?? 'original')) {
+        const owner = (await templatesInUse(req.tenant.id)).get(templateOf(content.theme));
+        if (owner) {
+          return res.status(409).json({ error: `That template already belongs to ${owner.name}. Each template is unique to one client.` });
+        }
       }
     }
     // A save that would drop most of the site is almost always a bug, not an intent.
@@ -780,6 +820,8 @@ app.get('/api/domain-check', trackLimiter, async (req, res, next) => {
 /* ---------- super admin: the clients (tenants) ---------- */
 
 const superOnly = [requireAuth, requireRole('superadmin')];
+// Mirrors src/data/templates.ts (minus 'original'); used to hand out a free template.
+const TEMPLATE_IDS = ['classic', 'royal', 'modern', 'blush', 'temple', 'midnight', 'polki', 'pearl', 'emerald', 'velvet', 'sunlit', 'heirloom', 'aurora', 'celeste', 'rani', 'solitaire'];
 const TEMPLATE_PATH = path.join(__dirname, '..', 'prisma', 'defaultContent.json');
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
 const DOMAIN = /^(?=.{4,190}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
@@ -835,6 +877,16 @@ function uniqueClash(err, res) {
   return true;
 }
 
+/** Which client holds each template, so the panel can show the rest as free. */
+app.get('/api/super/templates', ...superOnly, async (_req, res, next) => {
+  try {
+    const used = await templatesInUse(undefined);
+    res.json({ inUse: Object.fromEntries([...used].map(([id, t]) => [id, { name: t.name, slug: t.slug }])) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/api/super/tenants', ...superOnly, async (_req, res, next) => {
   try {
     const tenants = await prisma.tenant.findMany({ orderBy: { createdAt: 'desc' } });
@@ -878,6 +930,17 @@ app.post('/api/super/tenants', writeLimiter, ...superOnly, async (req, res, next
       notes: data.notes ?? '',
       theme: body.theme && typeof body.theme === 'object' ? body.theme : undefined
     };
+    // Every client gets a template of their own: the one asked for if it is free.
+    const used = await templatesInUse(undefined);
+    const wanted = brief.theme?.templateId;
+    if (wanted && used.has(wanted)) {
+      return res.status(409).json({ error: `That template already belongs to ${used.get(wanted).name}. Pick a free one.` });
+    }
+    if (!wanted) {
+      const free = TEMPLATE_IDS.find((id) => !used.has(id));
+      if (!free) return res.status(409).json({ error: 'Every template is already in use by a client.' });
+      brief.theme = { ...brief.theme, templateId: free };
+    }
     const generated = await buildSiteContent(template, brief);
     let photos = 0;
     let photosError;

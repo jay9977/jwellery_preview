@@ -466,7 +466,7 @@ export function Admin() {
 
           <main className="pb-16">
             {tab === 'theme' ?
-          <ThemeEditor /> :
+          <ThemeEditor canChooseTemplate={supportMode} /> :
           tab === 'social' ?
           <SocialLinks /> :
           tab === 'versions' ?

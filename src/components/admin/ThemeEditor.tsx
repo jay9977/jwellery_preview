@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangleIcon,
   CheckIcon,
@@ -24,6 +24,8 @@ import { assignRoles, parseHexList } from '../../utils/palette';
 import type { Palette, ThemeColors } from '../../types/content';
 import { TemplatePicker } from './TemplatePicker';
 import { TEMPLATES } from '../../data/templates';
+import { fetchTemplatesInUse } from '../../utils/api';
+import { currentSite } from '../../utils/backend';
 
 function PaletteCard({
   palette,
@@ -85,8 +87,29 @@ function PaletteCard({
 
 }
 
-export function ThemeEditor() {
-  const { content, updateTheme } = useContent();
+/**
+ * `canChooseTemplate` is true only for the platform's super admin. A client sees no
+ * template choice at all — their design is unique to them and set by the platform.
+ */
+export function ThemeEditor({ canChooseTemplate = false }: {canChooseTemplate?: boolean;}) {
+  const { content, updateTheme, backend } = useContent();
+  const [taken, setTaken] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!canChooseTemplate) return;
+    let cancelled = false;
+    void fetchTemplatesInUse(backend).then(
+      (inUse) => {
+        if (cancelled) return;
+        const site = currentSite();
+        setTaken(Object.fromEntries(Object.entries(inUse).filter(([, t]) => t.slug !== site).map(([id, t]) => [id, t.name])));
+      },
+      // Without the list the picker still works; the server refuses a taken template anyway.
+      () => setTaken({})
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [canChooseTemplate, backend]);
   const { theme } = content;
   const [query, setQuery] = useState('');
   const [newName, setNewName] = useState('');
@@ -200,7 +223,8 @@ export function ThemeEditor() {
         </p>
       }
 
-      {/* ---------- Template ---------- */}
+      {/* ---------- Template (platform only) ---------- */}
+      {canChooseTemplate &&
       <section className="rounded-lg border border-slate-200 bg-white p-4">
         <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Website template</h3>
         <p className="mt-1 text-xs text-slate-400">
@@ -209,6 +233,7 @@ export function ThemeEditor() {
         <TemplatePicker
           value={theme.templateId ?? 'original'}
           colors={theme.colors}
+          taken={taken}
           onChange={(templateId) => {
             // A template is a whole look: its colours and fonts come with it. The original
             // design keeps whatever colours the site already has.
@@ -222,6 +247,7 @@ export function ThemeEditor() {
           }} />
 
       </section>
+      }
 
       {/* ---------- Your palettes ---------- */}
       <section className="rounded-lg border border-slate-200 bg-white p-4">

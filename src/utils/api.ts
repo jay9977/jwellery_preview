@@ -410,6 +410,12 @@ data: NewTenant)
   return request(config, '/super/tenants', { method: 'POST', body: JSON.stringify(data) });
 }
 
+/** templateId -> the client that owns it. */
+export async function fetchTemplatesInUse(config: BackendConfig): Promise<Record<string, {name: string;slug: string;}>> {
+  const payload = await request<{inUse?: Record<string, {name: string;slug: string;}>;}>(config, '/super/templates');
+  return payload?.inUse ?? {};
+}
+
 /** Replace every piece of copy on a client's site with a fresh mix. */
 export async function rewriteTenantCopy(config: BackendConfig, id: number): Promise<{ai: boolean;aiError?: string;}> {
   return request(config, `/super/tenants/${id}/rewrite`, { method: 'POST', body: '{}' });
