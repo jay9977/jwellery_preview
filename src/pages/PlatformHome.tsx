@@ -145,7 +145,7 @@ const FEATURES: [LucideIcon, string, string][] = [
 
 const STEPS: [string, string, string][] = [
 ['01', 'Tell us about your store', 'Your shop name, city, speciality and the look you love. That is all we need to begin.'],
-['02', 'We design it for you', 'Pick from 16 templates. Your site is built with your brand, colours and copy, then polished by our team.'],
+['02', 'We design it for you', 'Pick the design you love. Your site is built with your brand, colours and copy, then polished by our team.'],
 ['03', 'Go live & grow', 'Connect your domain, share the link on WhatsApp and Instagram, and watch enquiries arrive.']];
 
 
@@ -157,7 +157,7 @@ const PLANS: {name: string;period: string;note: string;featured?: boolean;}[] = 
 
 const PLAN_INCLUDES = [
 'Complete jewellery website',
-'Choice of 16 designer templates',
+'Choice of designer templates',
 'Custom domain + free HTTPS',
 'Leads & enquiry desk',
 'Editor access + support'];
@@ -167,7 +167,7 @@ const FAQS: [string, string][] = [
 ['Do I need any technical knowledge?', 'No. We set up the website for you. Afterwards you can edit text and photos from a simple editor, or simply message us and we will do it.'],
 ['Can I use my existing domain?', 'Yes. Point your domain to us with two DNS records — we share the exact steps — and HTTPS is switched on automatically.'],
 ['What happens when my plan ends?', 'Your website pauses and shows a polite “back soon” page. Nothing is deleted — renew and everything is restored instantly.'],
-['Can I change the design later?', 'Anytime. Switch to any of the 16 templates, or change colours, fonts, sections, photos and wording whenever you like.']];
+['Can I change the design later?', 'Anytime. Switch to another template, or change colours, fonts, sections, photos and wording whenever you like.']];
 
 
 const MARQUEE = ['Bridal sets', 'Polki', 'Kundan', 'Solitaires', 'Temple jewellery', 'Gold bangles', 'Diamond rings', 'Silver', 'Mangalsutra', 'Jhumkas'];
@@ -266,7 +266,7 @@ function HeroScene() {
         <motion.div style={mid} className="absolute left-[2%] top-[-2%] hidden sm:block">
           <motion.div {...enter(0.9)} className="kit-glass flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c9a45c]/25 text-[#e2c27d]"><SparklesIcon className="h-4 w-4" /></span>
-            16 designer templates
+            Designer templates
           </motion.div>
         </motion.div>
         <motion.div style={mid} className="absolute bottom-[18%] left-[24%] hidden sm:block">
@@ -297,7 +297,7 @@ function TemplateRail() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#e2c27d]">16 designer templates</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#e2c27d]">Designer templates</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-6xl`}>
               One for every kind of <span className="italic text-[#e2c27d]">jeweller</span>
             </h2>
@@ -524,7 +524,7 @@ export function PlatformHome() {
             </Reveal>
             <Reveal delay={160}>
               <p className="mt-6 max-w-xl text-base leading-relaxed text-[#f3e6c8]/65 sm:text-lg">
-                A luxury website for your showroom — designed, written and launched for you. Sixteen designer templates, your
+                A luxury website for your showroom — designed, written and launched for you. Designer templates, your
                 colours, your collections, your domain. Ready to share in a day.
               </p>
             </Reveal>
@@ -567,9 +567,8 @@ export function PlatformHome() {
 
       {/* ---------- numbers ---------- */}
       <section className="border-b border-[#1c1712]/10 bg-[#f7f4ee] py-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-5 sm:px-8 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-5 sm:grid-cols-3 sm:px-8">
           {[
-          [16, '', 'Designer templates'],
           [40, '+', 'Colour palettes'],
           [24, 'h', 'From brief to live'],
           [100, '%', 'Mobile-first']].
