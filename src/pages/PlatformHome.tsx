@@ -177,9 +177,9 @@ function quote(plan?: string) {
 }
 
 const goldBtn =
-'kit-cta inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#e2c27d] via-[#c9a45c] to-[#a8823a] px-6 py-3 text-sm font-semibold text-[#16120e]';
+'kit-cta inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#f0c2ae] via-[#e0a891] to-[#b5705a] px-6 py-3 text-sm font-semibold text-[#0f1629]';
 const ghostBtn =
-'kit-cta inline-flex items-center justify-center gap-2 rounded-full border border-[#f3e6c8]/25 px-6 py-3 text-sm font-semibold text-[#f3e6c8] hover:bg-white/5';
+'kit-cta inline-flex items-center justify-center gap-2 rounded-full border border-[#f6ece8]/25 px-6 py-3 text-sm font-semibold text-[#f6ece8] hover:bg-white/5';
 
 /* ================================================================== hero */
 
@@ -224,12 +224,12 @@ function HeroScene() {
       <motion.div style={{ rotateX: rotX, rotateY: rotY }} className="relative h-full w-full [transform-style:preserve-3d]">
         {/* the site, in a browser */}
         <motion.div style={far} className="absolute inset-x-[4%] top-[6%]">
-          <motion.div {...enter(0.2)} className="overflow-hidden rounded-2xl bg-[#241d16] shadow-[0_50px_120px_-30px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
+          <motion.div {...enter(0.2)} className="overflow-hidden rounded-2xl bg-[#1a2340] shadow-[0_50px_120px_-30px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
             <div className="flex items-center gap-1.5 px-3 py-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-              <span className="ml-3 flex flex-1 items-center gap-1.5 rounded-md bg-black/30 px-3 py-1 text-[11px] text-[#f3e6c8]/50">
+              <span className="ml-3 flex flex-1 items-center gap-1.5 rounded-md bg-black/30 px-3 py-1 text-[11px] text-[#f6ece8]/50">
                 <LockIcon className="h-3 w-3" />
                 yourjewellers.com
               </span>
@@ -240,7 +240,7 @@ function HeroScene() {
 
         {/* the same platform, on a phone */}
         <motion.div style={mid} className="absolute -bottom-[4%] right-[-2%] w-[30%]">
-          <motion.div {...enter(0.45)} className="rotate-[6deg] overflow-hidden rounded-[1.6rem] border-[6px] border-[#16120e] bg-black shadow-[0_40px_80px_-20px_rgb(0_0_0/0.8)]">
+          <motion.div {...enter(0.45)} className="rotate-[6deg] overflow-hidden rounded-[1.6rem] border-[6px] border-[#0f1629] bg-black shadow-[0_40px_80px_-20px_rgb(0_0_0/0.8)]">
             <img src={shot('m-celeste')} alt="The Celeste template on a phone" className="aspect-[500/1080] w-full object-cover object-top" />
           </motion.div>
         </motion.div>
@@ -248,14 +248,14 @@ function HeroScene() {
         {/* jewels floating in front */}
         <motion.div style={near} className="absolute -left-[6%] bottom-[2%] w-[26%]">
           <motion.div {...enter(0.6)}>
-            <div className="kit-float overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-[#e2c27d]/40 [animation-delay:-1s]">
+            <div className="kit-float overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-[#f0c2ae]/40 [animation-delay:-1s]">
               <img src={img('ringBox', 420)} alt="" className="aspect-square w-full object-cover" />
             </div>
           </motion.div>
         </motion.div>
         <motion.div style={near} className="absolute -top-[6%] right-[8%] w-[20%]">
           <motion.div {...enter(0.75)}>
-            <div className="kit-float overflow-hidden rounded-full shadow-2xl shadow-black/60 ring-1 ring-[#e2c27d]/40 [animation-delay:-3s]">
+            <div className="kit-float overflow-hidden rounded-full shadow-2xl shadow-black/60 ring-1 ring-[#f0c2ae]/40 [animation-delay:-3s]">
               <img src={img('pendant', 360)} alt="" className="aspect-square w-full object-cover" />
             </div>
           </motion.div>
@@ -264,7 +264,7 @@ function HeroScene() {
         {/* little glass notes */}
         <motion.div style={mid} className="absolute left-[2%] top-[-2%] hidden sm:block">
           <motion.div {...enter(0.9)} className="kit-glass flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c9a45c]/25 text-[#e2c27d]"><SparklesIcon className="h-4 w-4" /></span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#e0a891]/25 text-[#f0c2ae]"><SparklesIcon className="h-4 w-4" /></span>
             Designer templates
           </motion.div>
         </motion.div>
@@ -292,16 +292,16 @@ function TemplateRail() {
   const rows = [list.slice(0, 8), list.slice(8)];
 
   return (
-    <section ref={ref} id="templates" className="scroll-mt-20 overflow-hidden bg-[#16120e] py-24 text-[#f3e6c8] sm:py-32">
+    <section ref={ref} id="templates" className="scroll-mt-20 overflow-hidden bg-[#0f1629] py-24 text-[#f6ece8] sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#e2c27d]">Designer templates</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#f0c2ae]">Designer templates</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-6xl`}>
-              One for every kind of <span className="italic text-[#e2c27d]">jeweller</span>
+              One for every kind of <span className="italic text-[#f0c2ae]">jeweller</span>
             </h2>
           </div>
-          <p className="max-w-sm text-sm text-[#f3e6c8]/60">
+          <p className="max-w-sm text-sm text-[#f6ece8]/60">
             Each one moves differently — orbiting jewels, velvet curtains, glass vitrines, a card stack. Pick yours; your colours,
             photos and words go in.
           </p>
@@ -314,7 +314,7 @@ function TemplateRail() {
             <div className={`kit-marquee flex w-max gap-6 ${r ? '[animation-direction:reverse]' : ''}`} style={{ animationDuration: '90s' }}>
               {[...row, ...row].map((t, i) =>
             <figure key={`${t.id}-${i}`} className="kit-tile group relative w-[300px] shrink-0 sm:w-[420px]">
-                  <div className="overflow-hidden rounded-xl bg-[#241d16] ring-1 ring-white/10">
+                  <div className="overflow-hidden rounded-xl bg-[#1a2340] ring-1 ring-white/10">
                     <div className="flex items-center gap-1 px-2.5 py-1.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
@@ -326,7 +326,7 @@ function TemplateRail() {
                   </div>
                   <figcaption className="mt-3 flex items-baseline justify-between gap-3">
                     <span className={`${display} text-2xl`}>{t.name}</span>
-                    <span className="text-[10px] uppercase tracking-[0.18em] text-[#f3e6c8]/45">{t.mode} · {t.layout.hero.replace('story-', '')}</span>
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-[#f6ece8]/45">{t.mode} · {t.layout.hero.replace('story-', '')}</span>
                   </figcaption>
                 </figure>
             )}
@@ -348,7 +348,7 @@ function SpotCard({ children }: {children: React.ReactNode;}) {
         e.currentTarget.style.setProperty('--x', `${e.clientX - box.left}px`);
         e.currentTarget.style.setProperty('--y', `${e.clientY - box.top}px`);
       }}
-      className="kit-spot kit-lift group h-full rounded-2xl border border-[#1c1712]/10 bg-white p-7">
+      className="kit-spot kit-lift group h-full rounded-2xl border border-[#141c33]/10 bg-white p-7">
 
       {children}
     </div>);
@@ -363,20 +363,20 @@ function Steps() {
   const line = useSpring(scrollYProgress, { stiffness: 90, damping: 24 });
   return (
     <ol ref={ref} className="relative mt-16 grid gap-6 md:grid-cols-3">
-      <span aria-hidden className="absolute left-0 right-0 top-10 hidden h-px bg-[#1c1712]/10 md:block" />
+      <span aria-hidden className="absolute left-0 right-0 top-10 hidden h-px bg-[#141c33]/10 md:block" />
       <motion.span
         aria-hidden
         style={{ scaleX: line }}
-        className="absolute left-0 right-0 top-10 hidden h-px origin-left bg-gradient-to-r from-[#e2c27d] via-[#c9a45c] to-[#a8823a] md:block" />
+        className="absolute left-0 right-0 top-10 hidden h-px origin-left bg-gradient-to-r from-[#f0c2ae] via-[#e0a891] to-[#b5705a] md:block" />
 
       {STEPS.map(([n, title, text], i) =>
       <Reveal key={n} as="li" delay={i * 140} className="relative">
-          <div className="kit-lift h-full rounded-2xl border border-[#1c1712]/10 bg-white p-7 text-center">
-            <span className={`${display} mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#16120e] text-2xl text-[#e2c27d] ring-8 ring-[#f7f4ee]`}>
+          <div className="kit-lift h-full rounded-2xl border border-[#141c33]/10 bg-white p-7 text-center">
+            <span className={`${display} mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0f1629] text-2xl text-[#f0c2ae] ring-8 ring-[#fbf6f3]`}>
               {n}
             </span>
             <h3 className={`${display} mt-5 text-2xl font-semibold`}>{title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[#1c1712]/60">{text}</p>
+            <p className="mt-2 text-sm leading-relaxed text-[#141c33]/60">{text}</p>
           </div>
         </Reveal>
       )}
@@ -394,13 +394,13 @@ function ContactBand() {
   return (
     <section ref={ref} id="contact" className="scroll-mt-20 px-5 pb-24 sm:px-8">
       <Reveal className="mx-auto max-w-7xl">
-        <div className="relative overflow-hidden rounded-[2rem] bg-[#16120e] px-8 py-20 text-center text-[#f3e6c8] sm:px-16 sm:py-28">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#0f1629] px-8 py-20 text-center text-[#f6ece8] sm:px-16 sm:py-28">
           <motion.img style={{ y }} src={img('bride2', 1800)} alt="" aria-hidden className="absolute inset-0 h-[125%] w-full object-cover object-[50%_30%] opacity-45" />
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-[#16120e] via-[#16120e]/75 to-[#3a2c18]/40" />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-[#0f1629] via-[#0f1629]/75 to-[#2b2346]/40" />
           <div className="relative">
-            <StoreIcon className="mx-auto h-10 w-10 text-[#e2c27d]" />
+            <StoreIcon className="mx-auto h-10 w-10 text-[#f0c2ae]" />
             <h2 className={`${display} mx-auto mt-5 max-w-2xl text-4xl font-medium sm:text-6xl`}>Let’s put your showroom online</h2>
-            <p className="mx-auto mt-4 max-w-lg text-[#f3e6c8]/70">Tell us your store name and city — we will send you a preview of your website.</p>
+            <p className="mx-auto mt-4 max-w-lg text-[#f6ece8]/70">Tell us your store name and city — we will send you a preview of your website.</p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <Magnetic>
                 <a href={quote()} className={goldBtn}>
@@ -437,34 +437,34 @@ export function PlatformHome() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#f7f4ee] font-['Inter',system-ui,sans-serif] text-[#1c1712] [scroll-behavior:smooth]">
-      <motion.div aria-hidden style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-[#e2c27d] to-[#a8823a]" />
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#fbf6f3] font-['Inter',system-ui,sans-serif] text-[#141c33] [scroll-behavior:smooth]">
+      <motion.div aria-hidden style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-[#f0c2ae] to-[#b5705a]" />
 
       {/* ---------- nav ---------- */}
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow] duration-300 ${
-        scrolled || menu ? 'bg-[#16120e]/75 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150' : 'bg-transparent'}`
+        scrolled || menu ? 'bg-[#0f1629]/75 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150' : 'bg-transparent'}`
         }>
 
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <a href="#top" className="flex items-center gap-2.5 text-[#f3e6c8]">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#e2c27d] to-[#9c7633] text-sm font-bold tracking-tight text-[#16120e]">
+          <a href="#top" className="flex items-center gap-2.5 text-[#f6ece8]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#f0c2ae] to-[#b07560] text-sm font-bold tracking-tight text-[#0f1629]">
               KIT
             </span>
             <span className="leading-none">
               <span className={`${display} block text-xl font-semibold`}>Kothari IT</span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#f3e6c8]/50">Jewellery websites</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#f6ece8]/50">Jewellery websites</span>
             </span>
           </a>
           <nav className="hidden items-center gap-8 md:flex">
             {NAV.map(([name, href]) =>
-            <a key={href} href={href} className="tpl-nav-link text-sm text-[#f3e6c8]/70 hover:text-[#e2c27d]">
+            <a key={href} href={href} className="tpl-nav-link text-sm text-[#f6ece8]/70 hover:text-[#f0c2ae]">
                 {name}
               </a>
             )}
           </nav>
           <div className="hidden items-center gap-3 md:flex">
-            <a href="/admin-login" className="text-sm font-medium text-[#f3e6c8]/80 hover:text-white">Login</a>
+            <a href="/admin-login" className="text-sm font-medium text-[#f6ece8]/80 hover:text-white">Login</a>
             <Magnetic>
               <a href="#contact" className={`${goldBtn} px-5 py-2.5`}>Get your website</a>
             </Magnetic>
@@ -474,7 +474,7 @@ export function PlatformHome() {
             onClick={() => setMenu((v) => !v)}
             aria-label={menu ? 'Close menu' : 'Open menu'}
             aria-expanded={menu}
-            className="rounded-md p-2 text-[#f3e6c8] md:hidden">
+            className="rounded-md p-2 text-[#f6ece8] md:hidden">
 
             {menu ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
           </button>
@@ -482,7 +482,7 @@ export function PlatformHome() {
         {menu &&
         <nav className="flex flex-col gap-1 border-t border-white/10 px-5 pb-5 pt-2 md:hidden">
             {[...NAV, ['Login', '/admin-login']].map(([name, href]) =>
-          <a key={href} href={href} onClick={() => setMenu(false)} className="rounded-md px-2 py-2.5 text-[#f3e6c8]/80 hover:bg-white/5">
+          <a key={href} href={href} onClick={() => setMenu(false)} className="rounded-md px-2 py-2.5 text-[#f6ece8]/80 hover:bg-white/5">
                 {name}
               </a>
           )}
@@ -492,31 +492,31 @@ export function PlatformHome() {
       </header>
 
       {/* ---------- hero ---------- */}
-      <section id="top" className="relative overflow-hidden bg-[#16120e] pb-28 pt-32 text-[#f3e6c8] sm:pt-40">
+      <section id="top" className="relative overflow-hidden bg-[#0f1629] pb-28 pt-32 text-[#f6ece8] sm:pt-40">
         <div aria-hidden className="kit-aurora pointer-events-none absolute inset-0" />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(#e2c27d_1px,transparent_1px)] [background-size:28px_28px]" />
+          className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:radial-gradient(#f0c2ae_1px,transparent_1px)] [background-size:28px_28px]" />
 
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-5 sm:px-8 lg:grid-cols-[1fr_1.1fr]">
           <div>
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#e2c27d]/30 bg-[#e2c27d]/10 px-3.5 py-1.5 text-xs font-medium text-[#e2c27d]">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e2c27d]" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#f0c2ae]/30 bg-[#f0c2ae]/10 px-3.5 py-1.5 text-xs font-medium text-[#f0c2ae]">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#f0c2ae]" />
                 The website platform built for jewellers
               </span>
             </Reveal>
             <Reveal delay={80}>
               <h1 className={`${display} mt-6 text-5xl font-medium leading-[1.02] sm:text-6xl lg:text-[5.25rem]`}>
                 Your jewellery store,{' '}
-                <span className="kit-shine bg-gradient-to-r from-[#f1d898] via-[#fff3d1] to-[#a8823a] bg-clip-text italic text-transparent">
+                <span className="kit-shine bg-gradient-to-r from-[#f7d3c4] via-[#fff1ea] to-[#b5705a] bg-clip-text italic text-transparent">
                   beautifully online
                 </span>
               </h1>
             </Reveal>
             <Reveal delay={160}>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-[#f3e6c8]/65 sm:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-[#f6ece8]/65 sm:text-lg">
                 A luxury website for your showroom — designed, written and launched for you. Designer templates, your
                 colours, your collections, your domain. Ready to share in a day.
               </p>
@@ -532,10 +532,10 @@ export function PlatformHome() {
                 <a href="#templates" className={ghostBtn}>See the templates</a>
               </Magnetic>
             </Reveal>
-            <Reveal delay={320} className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-[#f3e6c8]/60">
+            <Reveal delay={320} className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-[#f6ece8]/60">
               {['Live in 24 hours', 'Free HTTPS', 'Mobile-first design'].map((t) =>
               <span key={t} className="flex items-center gap-2">
-                  <CheckIcon className="h-4 w-4 text-[#c9a45c]" />
+                  <CheckIcon className="h-4 w-4 text-[#e0a891]" />
                   {t}
                 </span>
               )}
@@ -547,19 +547,19 @@ export function PlatformHome() {
       </section>
 
       {/* ---------- marquee ---------- */}
-      <div className="kit-marquee-wrap overflow-hidden border-y border-[#e2c27d]/20 bg-[#1c1712] py-4" aria-hidden>
+      <div className="kit-marquee-wrap overflow-hidden border-y border-[#f0c2ae]/20 bg-[#141c33] py-4" aria-hidden>
         <div className="kit-marquee flex w-max gap-10">
           {[...MARQUEE, ...MARQUEE].map((word, i) =>
-          <span key={i} className={`${display} flex items-center gap-10 whitespace-nowrap text-2xl italic text-[#e2c27d]/80`}>
+          <span key={i} className={`${display} flex items-center gap-10 whitespace-nowrap text-2xl italic text-[#f0c2ae]/80`}>
               {word}
-              <span className="text-sm not-italic text-[#e2c27d]/40">✦</span>
+              <span className="text-sm not-italic text-[#f0c2ae]/40">✦</span>
             </span>
           )}
         </div>
       </div>
 
       {/* ---------- numbers ---------- */}
-      <section className="border-b border-[#1c1712]/10 bg-[#f7f4ee] py-16">
+      <section className="border-b border-[#141c33]/10 bg-[#fbf6f3] py-16">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-5 sm:grid-cols-3 sm:px-8">
           {[
           [40, '+', 'Colour palettes'],
@@ -567,10 +567,10 @@ export function PlatformHome() {
           [100, '%', 'Mobile-first']].
           map(([n, s, label], i) =>
           <Reveal key={String(label)} delay={i * 90} className="text-center">
-              <p className={`${display} text-6xl font-medium text-[#1c1712] sm:text-7xl`}>
+              <p className={`${display} text-6xl font-medium text-[#141c33] sm:text-7xl`}>
                 <Count to={Number(n)} suffix={String(s)} />
               </p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#a8823a]">{label}</p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#b5705a]">{label}</p>
             </Reveal>
           )}
         </div>
@@ -582,9 +582,9 @@ export function PlatformHome() {
       <section id="features" className="scroll-mt-20 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <Reveal className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">Everything included</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b5705a]">Everything included</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Built for how jewellery sells</h2>
-            <p className="mt-4 text-[#1c1712]/60">
+            <p className="mt-4 text-[#141c33]/60">
               Not a generic template. Every part is made for showrooms, bridal collections and customers who want to visit in
               person.
             </p>
@@ -593,11 +593,11 @@ export function PlatformHome() {
             {FEATURES.map(([Icon, title, text], i) =>
             <Reveal key={title} as="article" delay={i % 3 * 80}>
                 <SpotCard>
-                  <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-[#16120e] text-[#e2c27d] transition-transform duration-300 [transition-timing-function:var(--ease-out)] group-hover:-rotate-6 group-hover:scale-110">
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-[#0f1629] text-[#f0c2ae] transition-transform duration-300 [transition-timing-function:var(--ease-out)] group-hover:-rotate-6 group-hover:scale-110">
                     <Icon className="h-5 w-5" />
                   </span>
                   <h3 className={`${display} relative mt-5 text-2xl font-semibold`}>{title}</h3>
-                  <p className="relative mt-2 text-sm leading-relaxed text-[#1c1712]/60">{text}</p>
+                  <p className="relative mt-2 text-sm leading-relaxed text-[#141c33]/60">{text}</p>
                 </SpotCard>
               </Reveal>
             )}
@@ -606,11 +606,11 @@ export function PlatformHome() {
       </section>
 
       {/* ---------- showcase ---------- */}
-      <section id="showcase" className="scroll-mt-20 bg-[#efe8dc] py-24 sm:py-32">
+      <section id="showcase" className="scroll-mt-20 bg-[#f4e8e3] py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <Reveal className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">Showcase</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b5705a]">Showcase</p>
               <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Your pieces, shown the way they deserve</h2>
             </Reveal>
           </div>
@@ -631,7 +631,7 @@ export function PlatformHome() {
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
                   <figcaption className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
                     <span className={`${display} text-2xl text-white transition-transform duration-500 [transition-timing-function:var(--ease-out)] group-hover:-translate-y-1`}>{tile.label}</span>
-                    <ArrowRightIcon className="h-5 w-5 -translate-x-2 text-[#e2c27d] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
+                    <ArrowRightIcon className="h-5 w-5 -translate-x-2 text-[#f0c2ae] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
                   </figcaption>
                 </figure>
               </Reveal>
@@ -641,13 +641,13 @@ export function PlatformHome() {
           <Reveal className="mt-16">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h3 className={`${display} text-3xl font-medium`}>{PALETTES.length}+ palettes, made for gold &amp; gems</h3>
-              <p className="text-sm text-[#1c1712]/55">Switch your entire look in one click.</p>
+              <p className="text-sm text-[#141c33]/55">Switch your entire look in one click.</p>
             </div>
           </Reveal>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {PALETTES.slice(0, 12).map((p, i) =>
             <Reveal key={p.id} delay={i % 6 * 50}>
-                <div className="kit-lift group rounded-xl border border-[#1c1712]/10 bg-white p-2.5">
+                <div className="kit-lift group rounded-xl border border-[#141c33]/10 bg-white p-2.5">
                   <div className="flex h-16 overflow-hidden rounded-lg">
                     {[p.colors.accent, p.colors.accentDeep, p.colors.gold, p.colors.sand, p.colors.cream].map((c, j) =>
                   <span key={j} className="flex-1 transition-[flex-grow] duration-500 group-hover:[&:nth-child(3)]:flex-[2.2]" style={{ background: c }} />
@@ -665,7 +665,7 @@ export function PlatformHome() {
       <section id="how" className="scroll-mt-20 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <Reveal className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">How it works</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b5705a]">How it works</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>From showroom to online in three steps</h2>
           </Reveal>
           <Steps />
@@ -673,34 +673,34 @@ export function PlatformHome() {
       </section>
 
       {/* ---------- plans ---------- */}
-      <section id="plans" className="relative scroll-mt-20 overflow-hidden bg-[#16120e] py-24 text-[#f3e6c8] sm:py-32">
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-[#c9a45c]/10 blur-3xl" />
+      <section id="plans" className="relative scroll-mt-20 overflow-hidden bg-[#0f1629] py-24 text-[#f6ece8] sm:py-32">
+        <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-[#e0a891]/10 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
           <Reveal className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#e2c27d]">Plans</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#f0c2ae]">Plans</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Simple plans. Everything included.</h2>
-            <p className="mt-4 text-[#f3e6c8]/60">Pick how long you want to start with — renew anytime, nothing is ever lost.</p>
+            <p className="mt-4 text-[#f6ece8]/60">Pick how long you want to start with — renew anytime, nothing is ever lost.</p>
           </Reveal>
           <div className="mt-16 grid gap-5 md:grid-cols-3">
             {PLANS.map((plan, i) =>
             <Reveal key={plan.name} delay={i * 100}>
                 <div
                 className={`kit-lift relative flex h-full flex-col rounded-2xl p-8 ${
-                plan.featured ? 'kit-border-glow border border-[#e2c27d]/60 bg-gradient-to-b from-[#2c241b] to-[#1c1712]' : 'border border-white/10 bg-white/[0.03]'}`
+                plan.featured ? 'kit-border-glow border border-[#f0c2ae]/60 bg-gradient-to-b from-[#222d52] to-[#141c33]' : 'border border-white/10 bg-white/[0.03]'}`
                 }>
 
                   {plan.featured &&
-                <span className="absolute -top-3 left-8 rounded-full bg-gradient-to-r from-[#e2c27d] to-[#a8823a] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#16120e]">
+                <span className="absolute -top-3 left-8 rounded-full bg-gradient-to-r from-[#f0c2ae] to-[#b5705a] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f1629]">
                       Best value
                     </span>
                 }
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#e2c27d]">{plan.name}</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#f0c2ae]">{plan.name}</p>
                   <p className={`${display} mt-3 text-5xl font-medium text-white`}>{plan.period}</p>
-                  <p className="mt-3 text-sm text-[#f3e6c8]/55">{plan.note}</p>
+                  <p className="mt-3 text-sm text-[#f6ece8]/55">{plan.note}</p>
                   <ul className="mt-8 space-y-3 text-sm">
                     {PLAN_INCLUDES.map((item) =>
-                  <li key={item} className="flex items-start gap-2.5 text-[#f3e6c8]/80">
-                        <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#c9a45c]" />
+                  <li key={item} className="flex items-start gap-2.5 text-[#f6ece8]/80">
+                        <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#e0a891]" />
                         {item}
                       </li>
                   )}
@@ -718,22 +718,22 @@ export function PlatformHome() {
       <section id="faq" className="scroll-mt-20 py-24 sm:py-32">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_1.4fr]">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a8823a]">FAQ</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b5705a]">FAQ</p>
             <h2 className={`${display} mt-3 text-4xl font-medium sm:text-5xl`}>Questions jewellers ask us</h2>
-            <p className="mt-4 text-[#1c1712]/60">
+            <p className="mt-4 text-[#141c33]/60">
               Anything else? Write to{' '}
-              <a href={quote()} className="font-medium text-[#8a6a2c] underline-offset-4 hover:underline">{CONTACT_EMAIL}</a>
+              <a href={quote()} className="font-medium text-[#a25f4b] underline-offset-4 hover:underline">{CONTACT_EMAIL}</a>
             </p>
           </Reveal>
           <div className="space-y-3">
             {FAQS.map(([q, a], i) =>
             <Reveal key={q} delay={i * 70}>
-                <details className="group rounded-2xl border border-[#1c1712]/10 bg-white px-6 py-5 transition-colors duration-200 open:border-[#c9a45c]/50">
+                <details className="group rounded-2xl border border-[#141c33]/10 bg-white px-6 py-5 transition-colors duration-200 open:border-[#e0a891]/50">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">
                     {q}
-                    <ChevronDownIcon className="h-5 w-5 shrink-0 text-[#a8823a] transition-transform duration-300 [transition-timing-function:var(--ease-out)] group-open:rotate-180" />
+                    <ChevronDownIcon className="h-5 w-5 shrink-0 text-[#b5705a] transition-transform duration-300 [transition-timing-function:var(--ease-out)] group-open:rotate-180" />
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-[#1c1712]/60">{a}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-[#141c33]/60">{a}</p>
                 </details>
               </Reveal>
             )}
@@ -744,18 +744,18 @@ export function PlatformHome() {
       <ContactBand />
 
       {/* ---------- footer ---------- */}
-      <footer className="border-t border-[#1c1712]/10 py-10">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 text-sm text-[#1c1712]/55 sm:px-8">
+      <footer className="border-t border-[#141c33]/10 py-10">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 text-sm text-[#141c33]/55 sm:px-8">
           <p className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#16120e] text-[10px] font-bold text-[#e2c27d]">KIT</span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#0f1629] text-[10px] font-bold text-[#f0c2ae]">KIT</span>
             © {new Date().getFullYear()} Kothari IT. Websites for jewellers.
           </p>
           <div className="flex gap-6">
-            <a href={quote()} className="hover:text-[#1c1712]">Contact</a>
-            <a href="/admin-login" className="hover:text-[#1c1712]">Client login</a>
+            <a href={quote()} className="hover:text-[#141c33]">Contact</a>
+            <a href="/admin-login" className="hover:text-[#141c33]">Client login</a>
           </div>
         </div>
-        <p className="mx-auto mt-6 max-w-7xl px-5 text-[11px] text-[#1c1712]/40 sm:px-8">
+        <p className="mx-auto mt-6 max-w-7xl px-5 text-[11px] text-[#141c33]/40 sm:px-8">
           Photography on Unsplash by {Object.values(PHOTO).map(([, name]) => name).join(', ')}.
         </p>
       </footer>
