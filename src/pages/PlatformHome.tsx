@@ -281,58 +281,154 @@ function HeroScene() {
 
 /* ============================================================ templates */
 
-function TemplateRail() {
-  const ref = useRef<HTMLElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  // the rows also slide with the scroll, on top of their own slow drift
-  const a = useTransform(scrollYProgress, [0, 1], ['4%', reduce ? '4%' : '-10%']);
-  const b = useTransform(scrollYProgress, [0, 1], ['-10%', reduce ? '-10%' : '4%']);
+function TemplateShowcase() {
   const list = TEMPLATES.filter((t) => t.id !== 'original');
-  const rows = [list.slice(0, 8), list.slice(8)];
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reduce = useReducedMotion();
+  const listRef = useRef<HTMLDivElement>(null);
+  const hoverTimer = useRef<number>();
+  // Only the autoplay scrolls the list; scrolling under a resting pointer would select
+  // whatever name slid beneath it.
+  const fromAutoplay = useRef(false);
+  const current = list[active];
+
+  // Walk through the designs on its own; any pointer over the section holds it still.
+  useEffect(() => {
+    if (paused || reduce) return;
+    const timer = window.setTimeout(() => {
+      fromAutoplay.current = true;
+      setActive((i) => (i + 1) % list.length);
+    }, 4200);
+    return () => window.clearTimeout(timer);
+  }, [active, paused, reduce, list.length]);
+
+  // Keep the chosen name in view inside its own scrolling list (never the page).
+  useEffect(() => {
+    if (!fromAutoplay.current) return;
+    fromAutoplay.current = false;
+    const box = listRef.current;
+    const item = box?.querySelector<HTMLElement>(`[data-i="${active}"]`);
+    if (!box || !item) return;
+    const horizontal = box.scrollWidth > box.clientWidth + 4;
+    if (horizontal) box.scrollTo({ left: item.offsetLeft - box.clientWidth / 2 + item.clientWidth / 2, behavior: 'smooth' });
+    else box.scrollTo({ top: item.offsetTop - box.clientHeight / 2 + item.clientHeight / 2, behavior: 'smooth' });
+  }, [active]);
 
   return (
-    <section ref={ref} id="templates" className="scroll-mt-20 overflow-hidden bg-[#0f1629] py-24 text-[#f6ece8] sm:py-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <Reveal className="flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#f0c2ae]">Designer templates</p>
-            <h2 className={`${display} mt-3 text-4xl font-medium sm:text-6xl`}>
-              One for every kind of <span className="italic text-[#f0c2ae]">jeweller</span>
-            </h2>
-          </div>
-          <p className="max-w-sm text-sm text-[#f6ece8]/60">
-            Each one moves differently — orbiting jewels, velvet curtains, glass vitrines, a card stack. Pick yours; your colours,
-            photos and words go in.
+    <section
+      id="templates"
+      onPointerEnter={() => setPaused(true)}
+      onPointerLeave={() => setPaused(false)}
+      className="relative scroll-mt-20 overflow-hidden bg-[#0f1629] py-24 text-[#f6ece8] sm:py-32">
+
+      <div aria-hidden className="pointer-events-none absolute -left-40 top-20 h-[30rem] w-[30rem] rounded-full bg-[#e0a891]/10 blur-3xl" />
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
+        <Reveal className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#f0c2ae]">Designer templates</p>
+          <h2 className={`${display} mt-3 text-4xl font-medium sm:text-6xl`}>
+            A design that is <span className="italic text-[#f0c2ae]">only yours</span>
+          </h2>
+          <p className="mt-5 text-[#f6ece8]/60">
+            Every store gets its own design. Once it is yours, no other jeweller on the platform can use it.
           </p>
         </Reveal>
-      </div>
 
-      <div className="kit-marquee-wrap mt-16 space-y-6">
-        {rows.map((row, r) =>
-        <motion.div key={r} style={{ x: r ? b : a }}>
-            <div className={`kit-marquee flex w-max gap-6 ${r ? '[animation-direction:reverse]' : ''}`} style={{ animationDuration: '90s' }}>
-              {[...row, ...row].map((t, i) =>
-            <figure key={`${t.id}-${i}`} className="kit-tile group relative w-[300px] shrink-0 sm:w-[420px]">
-                  <div className="overflow-hidden rounded-xl bg-[#1a2340] ring-1 ring-white/10">
-                    <div className="flex items-center gap-1 px-2.5 py-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-                    </div>
-                    <div className="overflow-hidden">
-                      <img src={shot(t.id)} alt={`${t.name} template`} loading="lazy" className="kit-tile-img aspect-[16/10] w-full object-cover object-top" />
-                    </div>
-                  </div>
-                  <figcaption className="mt-3 flex items-baseline justify-between gap-3">
-                    <span className={`${display} text-2xl`}>{t.name}</span>
-                    <span className="text-[10px] uppercase tracking-[0.18em] text-[#f6ece8]/45">{t.mode} · {t.layout.hero.replace('story-', '')}</span>
-                  </figcaption>
-                </figure>
-            )}
+        <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.6fr)] lg:gap-14">
+          {/* the names */}
+          <div
+            ref={listRef}
+            className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] lg:mx-0 lg:block lg:max-h-[34rem] lg:overflow-y-auto lg:px-0 lg:pb-0 lg:[mask-image:linear-gradient(transparent,black_8%,black_92%,transparent)] [&::-webkit-scrollbar]:hidden">
+
+            {list.map((t, i) => {
+              const on = i === active;
+              return (
+                <button
+                  key={t.id}
+                  data-i={i}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  // Hover chooses a design only once the pointer rests on it.
+                  onPointerEnter={() => {
+                    window.clearTimeout(hoverTimer.current);
+                    hoverTimer.current = window.setTimeout(() => setActive(i), 150);
+                  }}
+                  onPointerLeave={() => window.clearTimeout(hoverTimer.current)}
+                  aria-pressed={on}
+                  className={`group shrink-0 rounded-full border px-4 py-2 text-left transition-colors duration-300 lg:block lg:w-full lg:rounded-none lg:border-0 lg:border-b lg:border-white/10 lg:px-0 lg:py-4 ${
+                  on ? 'border-[#f0c2ae] bg-[#f0c2ae]/10 lg:bg-transparent' : 'border-white/15'}`
+                  }>
+
+                  <span className="flex items-baseline gap-4">
+                    <span
+                      className={`${display} whitespace-nowrap text-lg transition-[color,transform] duration-500 [transition-timing-function:var(--ease-out)] lg:text-[1.9rem] lg:leading-tight ${
+                      on ? 'text-[#f0c2ae] lg:translate-x-2' : 'text-white/55 group-hover:text-white'}`
+                      }>
+
+                      {t.name}
+                    </span>
+                  </span>
+                  {on &&
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="mt-2 hidden pl-2 text-sm leading-relaxed text-white/55 lg:block">
+
+                      {t.description}
+                    </motion.span>
+                  }
+                </button>);
+
+            })}
+          </div>
+
+          {/* the preview */}
+          <div>
+            <div className="group relative overflow-hidden rounded-2xl bg-[#1a2340] shadow-[0_60px_120px_-40px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
+              <div className="flex items-center gap-1.5 border-b border-white/5 px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                <span className="ml-3 flex flex-1 items-center gap-1.5 truncate rounded-md bg-black/30 px-3 py-1 text-[11px] text-white/45">
+                  <LockIcon className="h-3 w-3 shrink-0" />
+                  yourjewellers.com
+                </span>
+              </div>
+              <div className="relative aspect-[16/10] overflow-hidden">
+                {/* Every design is loaded once and only its opacity changes, so a quick sweep
+                    across the names never stacks half-faded images. */}
+                {list.map((t, i) =>
+                <img
+                  key={t.id}
+                  src={shot(t.id)}
+                  alt={i === active ? `${t.name} design` : ''}
+                  aria-hidden={i !== active}
+                  data-active={i === active || undefined}
+                  className={`absolute inset-0 h-full w-full object-cover object-top transition-[opacity,transform] duration-700 [transition-timing-function:var(--ease-out)] ${
+                  i === active ? 'scale-100 opacity-100' : 'scale-[1.03] opacity-0'}`
+                  } />
+
+                )}
+              </div>
             </div>
-          </motion.div>
-        )}
+            <div className="mt-5 flex items-center gap-4">
+              <p className={`${display} text-2xl lg:hidden`}>{current.name}</p>
+              <span className="h-px flex-1 overflow-hidden bg-white/10">
+                {!paused && !reduce &&
+                <motion.span
+                  key={active}
+                  className="block h-full origin-left bg-gradient-to-r from-[#f0c2ae] to-[#c98b74]"
+                  initial={{ transform: 'scaleX(0)' }}
+                  animate={{ transform: 'scaleX(1)' }}
+                  transition={{ duration: 4.2, ease: 'linear' }} />
+
+                }
+              </span>
+            </div>
+            <p className="mt-3 text-sm text-white/55 lg:hidden">{current.description}</p>
+          </div>
+        </div>
       </div>
     </section>);
 
@@ -576,7 +672,7 @@ export function PlatformHome() {
         </div>
       </section>
 
-      <TemplateRail />
+      <TemplateShowcase />
 
       {/* ---------- features ---------- */}
       <section id="features" className="scroll-mt-20 py-24 sm:py-32">

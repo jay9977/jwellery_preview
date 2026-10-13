@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { useContent } from '../hooks/useContent';
 import { trackLead } from '../utils/leads';
 import { Header } from '../components/site/Header';
@@ -173,11 +173,15 @@ export function Landing() {
   // The original design renders exactly as it was built: no engine attributes, no extras.
   const premium = tpl.id !== 'original';
 
-  // Everyone who reaches the site becomes a lead the moment they land, so the
-  // leads desk sees them even if they never fill anything in.
+  // Everyone who reaches a client's site becomes a lead the moment they land, so the
+  // leads desk sees them even if they never fill anything in. The platform's own
+  // homepage belongs to no client, so nothing is tracked there.
+  const tracked = useRef(false);
   useEffect(() => {
+    if (!loaded || noSite || tracked.current) return;
+    tracked.current = true;
     trackLead('arrived');
-  }, []);
+  }, [loaded, noSite]);
 
   if (noSite) {
     return (
